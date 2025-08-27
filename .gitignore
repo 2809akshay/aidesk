@@ -51,3 +51,4 @@ nbproject
 .temp
 
 auth.json
+config/pimcore/google-api-private-key.json
