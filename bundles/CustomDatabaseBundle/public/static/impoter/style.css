@@ -1,0 +1,231 @@
+/* Data Importer Styles */
+
+#dataImportTitle {
+    text-align: center;
+    font-weight: bold;
+    font-size: 24px;
+    margin: 20px 0;
+    color: #343a40;
+}
+
+/* Sidebar Styles */
+.sidebar-heading {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+}
+
+.nav-link {
+    color: #343a40;
+    padding: .5rem 1rem;
+    border-radius: .25rem;
+    margin: .1rem .5rem;
+    display: flex;
+    align-items: center;
+}
+
+.nav-link:hover {
+    background-color: #e9ecef;
+    color: #007bff;
+}
+
+.nav-link.active {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.nav-item {
+    margin-bottom: .1rem;
+}
+
+/* Import Section */
+#importDataSection {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#importDataSection h3 {
+    margin-top: 0;
+    color: #495057;
+}
+
+/* Card Styles */
+.card {
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background-color: #e9ecef;
+    border-bottom: 1px solid #dee2e6;
+    padding: .75rem 1.25rem;
+    border-radius: calc(.375rem - 1px) calc(.375rem - 1px) 0 0;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* Data Display Section */
+#dataDisplaySection {
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+#dataDisplaySection h3 {
+    margin-top: 0;
+    color: #495057;
+}
+
+/* Preview Table */
+.table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Action Buttons */
+.action-buttons {
+    margin: 20px 0;
+}
+
+.action-buttons .btn {
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+/* Modal Styles */
+.modal-xl {
+    max-width: 90%;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Data Table Styles */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+}
+
+.table th,
+.table td {
+    border: 1px solid #dee2e6;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.table th {
+    background-color: #e9ecef;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* Form Styles */
+.form-check {
+    margin-bottom: .5rem;
+}
+
+/* Alert Styles */
+.alert {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .375rem;
+}
+
+.alert-info {
+    color: #055160;
+    background-color: #cff4fc;
+    border-color: #b6effb;
+}
+
+.alert-danger {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+}
+
+.alert-warning {
+    color: #664d03;
+    background-color: #fff3cd;
+    border-color: #ffecb5;
+}
+
+.alert-success {
+    color: #0f5132;
+    background-color: #d1e7dd;
+    border-color: #badbcc;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column;
+    }
+    
+    .sidebar-container {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+        border-right: none;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .main-content {
+        width: 100%;
+        padding: 10px;
+    }
+    
+    .action-buttons .btn {
+        display: block;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .table {
+        font-size: 0.85rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 6px 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    #dataImportTitle {
+        font-size: 20px;
+    }
+    
+    .modal-xl {
+        max-width: 95%;
+    }
+    
+    .table {
+        font-size: 0.8rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}

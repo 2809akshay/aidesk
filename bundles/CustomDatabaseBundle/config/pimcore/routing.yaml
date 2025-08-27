@@ -1,0 +1,4 @@
+custom_database_bundle:
+  resource: "@CustomDatabaseBundle/src/Controller/"
+  type:     annotation
+  prefix:   /

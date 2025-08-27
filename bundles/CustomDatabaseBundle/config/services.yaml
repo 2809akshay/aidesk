@@ -1,0 +1,15 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    CustomDatabaseBundle\Controller\:
+        resource: '../src/Controller'
+        public: true
+        tags: ['controller.service_arguments']
+
+    CustomDatabaseBundle\Command\:
+        resource: '../src/Command/*'
+        public: true
+        tags: ['console.command']
