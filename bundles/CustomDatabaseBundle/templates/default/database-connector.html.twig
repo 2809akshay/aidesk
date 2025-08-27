@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pimcore Database Connector</title>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-pprn3073KE6tl6lEQgkaIsuaI6ZnI/4eEbsrNRv9+nnl7UMzVf91p+ekQ3CeX9gF" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhG81rKrKrBr/J6f3Lv8eDlhEpX/1z6K3PONi9W8m4Llb5EM26VJoK27HM" crossorigin="anonymous"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        :root {
+            --pimcore-blue: #2D6DB4;
+            --pimcore-light-blue: #4A90E2;
+            --pimcore-dark-blue: #1A365D;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-color: #f8f9fa;
+            --dark-color: #2c3e50;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 0;
+        }
+        
+        .pimcore-header {
+            background: var(--pimcore-dark-blue);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .pimcore-header h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .pimcore-header h1 svg {
+            margin-right: 10px;
+        }
+        
+        .pimcore-nav {
+            background: var(--pimcore-blue);
+            padding: 10px 20px;
+            color: white;
+        }
+        
+        .pimcore-nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            font-weight: 500;
+        }
+        
+        .pimcore-nav a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        
+        .pimcore-panel {
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            background: var(--pimcore-light-blue);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .panel-content {
+            padding: 20px;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .db-selector {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .db-connection {
+            flex: 2;
+            min-width: 350px;
+        }
+        
+        .db-type {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .db-type:hover {
+            background: #e8f4fc;
+        }
+        
+        .db-type.active {
+            border-left: 4px solid var(--pimcore-blue);
+            background: #e8f4fc;
+        }
+        
+        .db-type img {
+            width: 30px;
+            margin-right: 15px;
+        }
+        
+        .connection-form {
+            display: none;
+        }
+        
+        .connection-form.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .test-btn {
+            background: var(--warning-color);
+            color: white;
+            margin-right: 10px;
+        }
+        
+        .test-btn:hover {
+            background: #e67e22;
+        }
+        
+        .save-btn {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .save-btn:hover {
+            background: #27ae60;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .status.success {
+            background: #d5f5e3;
+            color: #27ae60;
+            display: block;
+        }
+        
+        .status.error {
+            background: #fadbd8;
+            color: #e74c3c;
+            display: block;
+        }
+        
+        .saved-configs {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .config-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .config-info {
+            flex: 1;
+        }
+        
+        .config-actions button {
+            margin-left: 10px;
+        }
+        
+        .connect-btn {
+            background: var(--pimcore-blue);
+            color: white;
+        }
+        
+        .delete-btn {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .pimcore-footer {
+            background: var(--pimcore-dark-blue);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .db-selector, .db-connection {
+                width: 100%;
+            }
+        }
+        
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+        }
+        
+        .code-comment {
+            color: #75715e;
+        }
+        
+        .code-keyword {
+            color: #f92672;
+        }
+        
+        .code-function {
+            color: #66d9ef;
+        }
+        
+        .code-variable {
+            color: #a6e22e;
+        }
+        
+        .code-string {
+            color: #e6db74;
+        }
+    </style>
+</head>
+<body>
+    <header class="pimcore-header">
+        <h1>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Pimcore Database Connector
+        </h1>
+        <div class="user-info">Welcome, Admin</div>
+    </header>
+    
+    <nav class="pimcore-nav">
+        <a href="#">Dashboard</a>
+        <a href="#">Assets</a>
+        <a href="#">Objects</a>
+        <a href="#">Documents</a>
+        <a href="#">Tools</a>
+        <a href="#">Settings</a>
+    </nav>
+    
+    <div class="container">
+        <div class="pimcore-panel">
+            <div class="panel-header">Database Connection Manager</div>
+            <div class="panel-content">
+                <p>Connect to your databases easily from your Pimcore admin panel. Select a database type, enter connection details, and save for later use.</p>
+                
+                <div class="main-content">
+                    <div class="db-selector">
+                        <h3>Select Database</h3>
+                        <div class="db-type active" data-db="mysql">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNTEyIj48cGF0aCBmaWxsPSIjNDE3MjkzIiBkPSJNNDQ4IDQwMHYtNDBIMjI0djQwSDQ0OHptMC0xMjB2LTQwSDY0djQwSDQ0OHptMC0xMjB2LTQwSDY0djQwSDQ0OHptMC0xMjBIMFY2MGg0NDh2NDB6TTAgMHY0MGg0NDhWMEgweiIvPjwvc3ZnPg==" alt="MySQL">
+                            <span>MySQL</span>
+                        </div>
+                        <div class="db-type" data-db="mongodb">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSIjMTE2NDQ5IiBkPSJNNDA3IDExMmMtNzYgMC0xMzYgNjAtMTM2IDEzNnM2MCAxMzYgMTM2IDEzNmM3NiAwIDEzNi02MCAxMzYtMTM2cy02MC0xMzYtMTM2LTEzNnptMCAyMjRjLTQ4IDAtODgtNDAtODgtODhzNDAtODggODgtODggODggNDAgODggODgtNDAgODgtODggODh6Ii8+PHBhdGggZmlsbD0iIzRFQTM1MyIgZD0iTTMwNCAyNzJjMCA0OC00MCA4OC04OCA4OHMtODgtNDAtODgtODggNDAtODggODgtODggODggNDAgODggODh6Ii8+PHBhdGggZmlsbD0iI0YyQzkyQiIgZD0iTTI3MiAyNzJjMCAyNC0yMCA0NC00NCA0NHMtNDQtMjAtNDQtNDQgMjAtNDQgNDQtNDQgNDQgMjAgNDQgNDR6Ii8+PC9zdmc+" alt="MongoDB">
+                            <span>MongoDB</span>
+                        </div>
+                        <div class="db-type" data-db="pimcore">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzJENkRCNCI+PHBhdGggZD0iTTEyIDJMMiA3TDEyIDEyTDIyIDdMMTIgMlpNMiAxN0wxMiAyMkwyMiAxN1YxMkwyMiAxMkwyMiA3TDEyIDEyTDIgN1YxMlYxN1pNMiAxMkwxMiAxN0wyMiAxMiIvPjwvc3ZnPg==" alt="Pimcore">
+                            <span>Pimcore DB</span>
+                        </div>
+                    </div>
+                    
+                    <div class="db-connection">
+                        <div id="mysql-form" class="connection-form active">
+                            <h3>MySQL Connection</h3>
+                            <div class="form-group">
+                                <label for="mysql-host">Host</label>
+                                <input type="text" id="mysql-host" placeholder="localhost" value="127.0.0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="mysql-port">Port</label>
+                                <input type="number" id="mysql-port" value="3306">
+                            </div>
+                            <div class="form-group">
+                                <label for="mysql-database">Database Name</label>
+                                <input type="text" id="mysql-database" value="pimcore">
+                            </div>
+                            <div class="form-group">
+                                <label for="mysql-username">Username</label>
+                                <input type="text" id="mysql-username" value="root">
+                            </div>
+                            <div class="form-group">
+                                <label for="mysql-password">Password</label>
+                                <input type="password" id="mysql-password" value="">
+                            </div>
+                            <button class="test-btn" onclick="testConnection('mysql')">Test Connection</button>
+                            <button class="save-btn" onclick="saveConnection('mysql')">Save Connection</button>
+                        </div>
+                        
+                        <div id="mongodb-form" class="connection-form">
+                            <h3>MongoDB Connection</h3>
+                            <div class="form-group">
+                                <label for="mongodb-host">Host</label>
+                                <input type="text" id="mongodb-host" placeholder="localhost" value="127.0.0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="mongodb-port">Port</label>
+                                <input type="number" id="mongodb-port" value="27017">
+                            </div>
+                            <div class="form-group">
+                                <label for="mongodb-database">Database Name</label>
+                                <input type="text" id="mongodb-database" value="pimcore">
+                            </div>
+                            <div class="form-group">
+                                <label for="mongodb-username">Username (optional)</label>
+                                <input type="text" id="mongodb-username" value="">
+                            </div>
+                            <div class="form-group">
+                                <label for="mongodb-password">Password (optional)</label>
+                                <input type="password" id="mongodb-password" value="">
+                            </div>
+                            <button class="test-btn" onclick="testConnection('mongodb')">Test Connection</button>
+                            <button class="save-btn" onclick="saveConnection('mongodb')">Save Connection</button>
+                        </div>
+                        
+                        <div id="pimcore-form" class="connection-form">
+                            <h3>Pimcore Database Connection</h3>
+                            <div class="form-group">
+                                <label for="pimcore-host">Host</label>
+                                <input type="text" id="pimcore-host" placeholder="localhost" value="127.0.0.1">
+                            </div>
+                            <div class="form-group">
+                                <label for="pimcore-port">Port</label>
+                                <input type="number" id="pimcore-port" value="3306">
+                            </div>
+                            <div class="form-group">
+                                <label for="pimcore-database">Database Name</label>
+                                <input type="text" id="pimcore-database" value="pimcore">
+                            </div>
+                            <div class="form-group">
+                                <label for="pimcore-username">Username</label>
+                                <input type="text" id="pimcore-username" value="root">
+                            </div>
+                            <div class="form-group">
+                                <label for="pimcore-password">Password</label>
+                                <input type="password" id="pimcore-password" value="">
+                            </div>
+                            <button class="test-btn" data-id="pimcore">Test Connection</button>
+                            <button class="save-btn" data-id="pimcore">Save Connection</button>
+
+                        </div>
+                        
+                        <div id="status-message" class="status"></div>
+                        
+                        <div class="saved-configs">
+                            <h3>Saved Connections</h3>
+                            <div id="saved-connections-list">
+                                <div class="config-item">
+                                    <div class="config-info">
+                                        <strong>MySQL: 127.0.0.1:3306/pimcore</strong>
+                                    </div>
+                                    <div class="config-actions">
+                                        <button class="connect-btn">Connect</button>
+                                        <button class="delete-btn">Delete</button>
+                                    </div>
+                                </div>
+                                <div class="config-item">
+                                    <div class="config-info">
+                                        <strong>MongoDB: 127.0.0.1:27017/pimcore</strong>
+                                    </div>
+                                    <div class="config-actions">
+                                        <button class="connect-btn">Connect</button>
+                                        <button class="delete-btn">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="pimcore-panel">
+            <div class="panel-header">Pimcore Integration Code</div>
+            <div class="panel-content">
+                <p>To integrate this Database Connector into your Pimcore application, create a controller with the following code:</p>
+                
+                <div class="code-block">
+                    <span class="code-comment">// src/AppBundle/Controller/DatabaseController.php</span><br><br>
+                    
+                    <span class="code-keyword">namespace</span> AppBundle\Controller;<br><br>
+                    
+                    <span class="code-keyword">use</span> Pimcore\Controller\FrontendController;<br>
+                    <span class="code-keyword">use</span> Symfony\Component\HttpFoundation\Request;<br>
+                    <span class="code-keyword">use</span> Symfony\Component\HttpFoundation\JsonResponse;<br>
+                    <span class="code-keyword">use</span> Symfony\Component\Routing\Annotation\Route;<br><br>
+                    
+                    <span class="code-keyword">class</span> DatabaseController <span class="code-keyword">extends</span> FrontendController<br>
+                    {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">/**</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">* @Route("/admin/database-connector", name="admin_database_connector")</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">*/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">public</span> <span class="code-function">function</span> indexAction(Request <span class="code-variable">$request</span>)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Check if user is authenticated and has admin privileges</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">if</span> (!<span class="code-variable">$this</span>-&gt;getUser() || !<span class="code-variable">$this</span>-&gt;getUser()-&gt;isAdmin()) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">return</span> <span class="code-variable">$this</span>-&gt;redirectToRoute('login');<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Render the database connector view</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">return</span> <span class="code-variable">$this</span>-&gt;render('Admin/database-connector.html.twig');<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">/**</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">* @Route("/admin/test-connection", name="admin_test_connection")</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">*/</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">public</span> <span class="code-function">function</span> testConnectionAction(Request <span class="code-variable">$request</span>)<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;{<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Get connection parameters from request</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-variable">$type</span> = <span class="code-variable">$request</span>-&gt;get('type');<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-variable">$host</span> = <span class="code-variable">$request</span>-&gt;get('host');<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-variable">$port</span> = <span class="code-variable">$request</span>-&gt;get('port');<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-variable">$database</span> = <span class="code-variable">$request</span>-&gt;get('database');<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-variable">$username</span> = <span class="code-variable">$request</span>-&gt;get('username');<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-variable">$password</span> = <span class="code-variable">$request</span>-&gt;get('password');<br><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">try</span> {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Try to establish a connection</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">if</span> (<span class="code-variable">$type</span> === 'mysql') {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-variable">$connection</span> = <span class="code-keyword">new</span> \PDO(<span class="code-string">"mysql:host=$host;port=$port;dbname=$database"</span>, <span class="code-variable">$username</span>, <span class="code-variable">$password</span>);<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// Add other database types here</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">return</span> <span class="code-keyword">new</span> JsonResponse(['success' => true, 'message' => 'Connection successful']);<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} <span class="code-keyword">catch</span> (\Exception <span class="code-variable">$e</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">return</span> <span class="code-keyword">new</span> JsonResponse(['success' => false, 'message' => <span class="code-variable">$e</span>-&gt;getMessage()]);<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                    }
+                </div>
+                
+                <p>Then create a Twig template at <code>templates/Admin/database-connector.html.twig</code> with the HTML from this page.</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="pimcore-footer">
+        <p>Pimcore Database Connector &copy; 2023</p>
+    </footer>
+<script src="{{ pimcore_asset('/bundles/customdatabase/static/database/conn-script.js') }}"></script>
+
+</body>
+</html>

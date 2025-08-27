@@ -1,0 +1,25 @@
+<?php
+
+namespace CustomDatabaseBundle;
+
+use Pimcore\Extension\Bundle\AbstractPimcoreBundle;
+use Pimcore\Extension\Bundle\PimcoreBundleAdminClassicInterface;
+use Pimcore\Extension\Bundle\Traits\BundleAdminClassicTrait;
+
+class CustomDatabaseBundle extends AbstractPimcoreBundle implements PimcoreBundleAdminClassicInterface
+{
+    use BundleAdminClassicTrait;
+
+    public function getPath(): string
+    {
+        return \dirname(__DIR__);
+    }
+
+    public function getJsPaths(): array
+    {
+        return [
+            // '/bundles/imageimport/js/pimcore/startup.js'
+        ];
+    }
+
+}
