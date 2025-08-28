@@ -1,0 +1,484 @@
+:root {
+            --primary-color: #4a6ee0;
+            --primary-dark: #3a5ec9;
+            --secondary-color: #6a3db8;
+            --accent-color: #764ba2;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --warning-color: #f39c12;
+            --gray-color: #6c757d;
+            --light-gray: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            font-family: 'Poppins', sans-serif;
+            color: #333;
+        }
+        
+        .auth-system-container {
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        /* Header with company branding */
+        .company-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .company-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .company-header h1 i {
+            margin-right: 15px;
+            font-size: 2.2rem;
+        }
+        
+        .company-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Status bar */
+        .aidesk-status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: #fff;
+            padding: 18px 40px;
+            font-size: 18px;
+            border-radius: 18px 18px 0 0;
+            margin-bottom: 0;
+            box-shadow: 0 2px 8px rgba(74, 110, 224, 0.08);
+        }
+        
+        .aidesk-logo {
+            display: flex;
+            align-items: center;
+            font-size: 22px;
+            font-weight: 600;
+            gap: 10px;
+        }
+        
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .status-dot.online { 
+            background: var(--success-color);
+            box-shadow: 0 0 8px var(--success-color);
+        }
+        
+        .status-dot.offline { 
+            background: var(--error-color); 
+        }
+        
+        .status-info { 
+            font-size: 14px; 
+            opacity: 0.8; 
+            margin-left: 10px; 
+        }
+        
+        /* Auth card */
+        .auth-card {
+            background: #fff;
+            border-radius: 0 0 18px 18px;
+            box-shadow: 0 8px 32px rgba(74, 110, 224, 0.15);
+            overflow: hidden;
+        }
+        
+        /* Toggle buttons */
+        .auth-toggle {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            border-bottom: 1px solid var(--light-gray);
+            background: #f7f7f7;
+        }
+        
+        .toggle-btn {
+            flex: 1;
+            padding: 18px 0;
+            background: none;
+            border: none;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        
+        .toggle-btn.active {
+            background: #fff;
+            color: var(--secondary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .toggle-btn:hover {
+            background: rgba(74, 110, 224, 0.1);
+        }
+        
+        /* Login/Signup containers */
+        .login-container, .signup-container {
+            display: flex;
+            min-height: 550px;
+        }
+        
+        .signup-container { 
+            display: none; 
+        }
+        
+        .login-left, .signup-left {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .login-right, .signup-right {
+            flex: 1.2;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .welcome-text h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-text p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .features {
+            margin-top: 20px;
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 15px;
+        }
+        
+        .feature i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .app-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        
+        .app-logo i {
+            font-size: 32px;
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .app-logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .form-title {
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 110, 224, 0.2);
+            outline: none;
+        }
+        
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .remember {
+            display: flex;
+            align-items: center;
+        }
+        
+        .remember input {
+            margin-right: 8px;
+        }
+        
+        .forgot-password {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+        
+        .login-button, .signup-button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .login-button:hover, .signup-button:hover {
+            background: var(--primary-dark);
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            position: relative;
+            color: var(--gray-color);
+        }
+        
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 42%;
+            height: 1px;
+            background: #ddd;
+        }
+        
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        
+        .auth-options {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .auth-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid #eee;
+        }
+        
+        .auth-option:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(74, 110, 224, 0.3);
+        }
+        
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #555;
+        }
+        
+        .signup-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .notification {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .notification.success {
+            background: #e6f7ee;
+            color: var(--success-color);
+            border: 1px solid #a3e4bc;
+        }
+        
+        .notification.error {
+            background: #fde9e9;
+            color: var(--error-color);
+            border: 1px solid #f5b7b1;
+        }
+        
+        .notification.warning {
+            background: #fef5e6;
+            color: var(--warning-color);
+            border: 1px solid #fad7a0;
+        }
+        
+        .otp-section {
+            display: none;
+        }
+        
+        .password-strength {
+            height: 5px;
+            background: #eee;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .strength-meter {
+            height: 100%;
+            width: 0;
+            border-radius: 3px;
+            transition: width 0.3s, background 0.3s;
+        }
+        
+        /* Footer */
+        .auth-footer {
+            text-align: center;
+            margin-top: 30px;
+            color: white;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .auth-footer a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 992px) {
+            .login-container, .signup-container {
+                flex-direction: column;
+                min-height: auto;
+            }
+            
+            .login-left, .signup-left {
+                padding: 30px;
+                order: 2;
+            }
+            
+            .login-right, .signup-right {
+                padding: 30px;
+                order: 1;
+            }
+            
+            .aidesk-status-bar {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+                padding: 15px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .auth-toggle {
+                flex-direction: column;
+            }
+            
+            .toggle-btn {
+                padding: 15px;
+            }
+            
+            .remember-forgot {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .company-header h1 {
+                font-size: 2rem;
+            }
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }

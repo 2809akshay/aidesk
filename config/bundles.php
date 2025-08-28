@@ -48,5 +48,6 @@ return [
     PrestaSitemapBundle::class => ['all' => true],
     PimcoreGenericExecutionEngineBundle::class => ['all' => true],
     CustomDatabaseBundle\CustomDatabaseBundle::class => ['all' => true],
+    AideskAuthBundle\AideskAuthBundle::class => ['all' => true],
 
 ];

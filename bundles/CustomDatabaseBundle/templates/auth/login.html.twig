@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aidesk - Secure Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-pprn3073KE6tl6lEQgkaIsuaI6ZnI/4eEbsrNRv9+nnl7UMzVf91p+ekQ3CeX9gF" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhG81rKrKrBr/J6f3Lv8eDlhEpX/1z6K3PONi9W8m4Llb5EM26VJoK27HM" crossorigin="anonymous"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-pprn3073KE6tl6lEQgkaIsuaI6ZnI/4eEbsrNRv9+nnl7UMzVf91p+ekQ3CeX9gF" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/auth/style.css') }}" crossorigin="anonymous" />
+</head>
+<body>
+    <div class="auth-system-container">
+        <!-- Company Header -->
+        <div class="company-header">
+            <h1><i class="fas fa-headset"></i> Aidesk Authentication</h1>
+            <p>Secure access to your customer support management system</p>
+        </div>
+        
+        <!-- Status Bar -->
+        <div class="aidesk-status-bar">
+            <div class="aidesk-logo">
+                <i class="fas fa-headset"></i>
+                <span>Aidesk Admin Portal</span>
+            </div>
+            <div class="aidesk-status">
+                <span class="status-dot online"></span> Systems Operational
+                <span class="status-info">| Last sync: just now</span>
+            </div>
+        </div>
+        
+        <!-- Auth Card -->
+        <div class="auth-card">
+            <!-- Toggle Buttons -->
+            <div class="auth-toggle">
+                <button id="showLogin" class="toggle-btn active">Sign In</button>
+                <button id="showSignup" class="toggle-btn">Sign Up</button>
+            </div>
+            
+            <!-- Login Form -->
+            <div class="login-container" id="loginContainer">
+                <div class="login-left">
+                    <div class="welcome-text">
+                        <h2>Welcome to Aidesk</h2>
+                        <p>Sign in to access your account and manage your services with our secure authentication system.</p>
+                    </div>
+                    <div class="features">
+                        <div class="feature"><i class="fas fa-shield-alt"></i> <span>Multi-factor authentication</span></div>
+                        <div class="feature"><i class="fas fa-mobile-alt"></i> <span>OTP verification via SMS and Email</span></div>
+                        <div class="feature"><i class="fas fa-fingerprint"></i> <span>Fingerprint and Face ID support</span></div>
+                        <div class="feature"><i class="fas fa-lock"></i> <span>Secure password encryption</span></div>
+                    </div>
+                </div>
+                <div class="login-right">
+                    <div class="app-logo"><i class="fas fa-headset"></i><h1>Aidesk</h1></div>
+                    
+                    <div class="notification success" id="loginSuccessNotification">OTP has been sent to your registered phone and email.</div>
+                    <div class="notification error" id="loginErrorNotification">Invalid credentials. Please try again.</div>
+                    <div class="notification warning" id="loginWarningNotification">Please check your credentials.</div>
+                    
+                    <form class="login-form" id="loginForm">
+                        <h2 class="form-title">Sign In to Your Account</h2>
+                        <div class="input-group">
+                            <label for="email">Email or Phone Number</label>
+                            <input type="text" id="loginEmail" placeholder="Enter your email or phone number" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                        </div>
+                        <div class="remember-forgot">
+                            <div class="remember">
+                                <input type="checkbox" id="remember">
+                                <label for="remember">Remember me</label>
+                            </div>
+                            <a href="#" class="forgot-password" id="forgotPassword">Forgot Password?</a>
+                        </div>
+                        <button type="submit" class="login-button">Sign In</button>
+                    </form>
+                    
+                    <div class="otp-section" id="otpSection">
+                        <div class="input-group">
+                            <label for="otp">Enter OTP</label>
+                            <input type="text" id="otp" placeholder="Enter OTP sent to your phone/email" required>
+                        </div>
+                        <button class="login-button" id="verifyOtp">Verify OTP</button>
+                        <p style="text-align: center; margin-top: 10px; font-size: 14px;">
+                            <a href="#" id="resendOtp">Resend OTP</a> | <a href="#" id="useBackupMethod">Use backup method</a>
+                        </p>
+                    </div>
+                    
+                    <div class="divider">Or continue with</div>
+                    <div class="auth-options">
+                        <div class="auth-option" title="Fingerprint Login" id="fingerprintLogin"><i class="fas fa-fingerprint"></i></div>
+                        <div class="auth-option" title="Face ID Login" id="faceLogin"><i class="fas fa-user-check"></i></div>
+                        <div class="auth-option" title="Phone Login" id="phoneLogin"><i class="fas fa-mobile-alt"></i></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Signup Form -->
+            <div class="signup-container" id="signupContainer">
+                <div class="signup-left">
+                    <div class="welcome-text">
+                        <h2>Join Aidesk</h2>
+                        <p>Create your account and start managing your services securely and efficiently.</p>
+                    </div>
+                    <div class="features">
+                        <div class="feature"><i class="fas fa-user-plus"></i> <span>Easy onboarding</span></div>
+                        <div class="feature"><i class="fas fa-envelope"></i> <span>Email verification</span></div>
+                        <div class="feature"><i class="fas fa-mobile-alt"></i> <span>Phone verification</span></div>
+                        <div class="feature"><i class="fas fa-lock"></i> <span>Strong password policy</span></div>
+                    </div>
+                </div>
+                <div class="signup-right">
+                    <div class="app-logo"><i class="fas fa-headset"></i><h1>Aidesk</h1></div>
+                    
+                    <div class="notification success" id="signupSuccessNotification">Account created successfully! Please verify your email.</div>
+                    <div class="notification error" id="signupErrorNotification">Please check the form for errors.</div>
+                    
+                    <form class="signup-form" id="signupForm">
+                        <h2 class="form-title">Create Your Account</h2>
+                        <div class="input-group">
+                            <label for="signupName">Full Name</label>
+                            <input type="text" id="signupName" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="signupEmail">Email</label>
+                            <input type="email" id="signupEmail" placeholder="Enter your email" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="signupPhone">Phone Number</label>
+                            <input type="text" id="signupPhone" placeholder="Enter your phone number" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="signupPassword">Password</label>
+                            <input type="password" id="signupPassword" placeholder="Create a password" required>
+                            <div class="password-strength">
+                                <div class="strength-meter" id="passwordStrengthMeter"></div>
+                            </div>
+                            <div id="passwordStrengthText" style="font-size: 12px; margin-top: 5px; color: var(--gray-color);"></div>
+                        </div>
+                        <div class="input-group">
+                            <label for="signupConfirmPassword">Confirm Password</label>
+                            <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="signupTerms">
+                                <input type="checkbox" id="signupTerms" required>
+                                I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                            </label>
+                        </div>
+                        <button type="submit" class="signup-button">Sign Up</button>
+                    </form>
+                    
+                    <div class="divider">Or sign up with</div>
+                    <div class="auth-options">
+                        <div class="auth-option" title="Google"><i class="fab fa-google"></i></div>
+                        <div class="auth-option" title="Facebook"><i class="fab fa-facebook-f"></i></div>
+                        <div class="auth-option" title="Phone"><i class="fas fa-mobile-alt"></i></div>
+                    </div>
+                    
+                    <div class="signup-link">
+                        Already have an account? <a href="#" id="backToLogin">Sign in</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="auth-footer">
+            <p>&copy; 2023 Aidesk Customer Support Platform. All rights reserved. | <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a></p>
+        </div>
+    </div>
+
+    <script src="{{ asset('bundles/customdatabase/static/auth/script.js') }}"></script>
+</body>
+</html>
