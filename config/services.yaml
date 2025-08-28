@@ -1,5 +1,8 @@
 imports:
   - { resource: '../bundles/CustomDatabaseBundle/config/services.yaml' }
+  - { resource: '../bundles/AideskAuthBundle/config/services.yaml' }
+
+
   
 parameters:
     secret: nPKgsZEkEv3yPDZskWvbhbrn7yz7ze53vNvAUwNUljE=

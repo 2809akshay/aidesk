@@ -1,0 +1,4 @@
+aidesk_auth:
+    resource: '@AideskAuthBundle/src/Controller/'
+    type: annotation
+    prefix: /

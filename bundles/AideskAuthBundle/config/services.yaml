@@ -1,0 +1,16 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # All controllers inside this bundle
+    AideskAuthBundle\Controller\:
+        resource: '../src/Controller/*'
+        tags: ['controller.service_arguments']
+        public: true
+
+    # All commands inside this bundle
+    AideskAuthBundle\Command\:
+        resource: '../src/Command/*'
+        tags: ['console.command']
