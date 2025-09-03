@@ -1,97 +1,2562 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Database Interface</title>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-pprn3073KE6tl6lEQgkaIsuaI6ZnI/4eEbsrNRv9+nnl7UMzVf91p+ekQ3CeX9gF" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhG81rKrKrBr/J6f3Lv8eDlhEpX/1z6K3PONi9W8m4Llb5EM26VJoK27HM" crossorigin="anonymous"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head> 
-<body>
-    
-    <div class="container-fluid">
-        <div class="main-layout">
-            <!-- Sidebar -->
-            <nav id="sidebar" class="sidebar-container d-md-block bg-light sidebar collapse">
-                <div class="position-sticky pt-3">
-                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                        <span>Database Tables</span>
-                    </h6>
-                    <div class="px-3 mb-3">
-                        <input type="text" id="tableSearch" class="form-control" placeholder="Search tables...">
+{% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
+
+{% block content %}
+<div class="main-content">
+    <div class="database-content">
+    <div class="database-header">
+        <div class="header-actions">
+            <a href="{{ path('home') }}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+        <h1><i class="fas fa-database"></i> Advanced Database Management System</h1>
+        <p>Comprehensive database exploration, management, and analytics with advanced query capabilities</p>
+    </div>
+
+    {# Top Section: Database Overview & Quick Stats #}
+    <div class="top-section">
+        <div class="database-overview-section">
+            <h2><i class="fas fa-chart-line"></i> Database Overview</h2>
+            <div class="overview-grid">
+                <div class="overview-card">
+                    <div class="card-icon">
+                        <i class="fas fa-server"></i>
                     </div>
-                    <ul class="nav flex-column" id="tablesList">
-                        {% for option in tables %}
-                            {% set tableName = option|first %}
-                            <li class="nav-item table-item" data-table="{{ tableName }}">
-                                <a class="nav-link table-link" href="#" data-table="{{ tableName }}">
-                                    <i class="fas fa-table"></i>
-                                    {{ tableName | replace({'_': ' '}) | capitalize }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </nav>
-            
-            <!-- Main Content -->
-            <main class="main-content">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Database Explorer</h1>
-                </div>
-                
-                <!-- Table Info Section -->
-                <div id="tableInfo" class="mb-4">
-                    <h3 id="selectedTableName">Select a table from the sidebar</h3>
-                    <div id="strucher"></div>
-                </div>
-
-                
-                <!-- Table Structure Section -->
-                <div id="tableStructureSection" class="mb-4" style="display: none;">
-                    <div id="tableStructure"></div>
-                </div>
-
-                <!-- Table Fielter Section -->
-                <div id="tableFielterSection" class="mb-4" style="display: none;">
-                    <div id="tableFielter">
-                        <div id="interfaceContainer">
-                            <div id="ruleContainer"></div>
-                            <button id="addRuleButton">Add Group</button>
-                            <button id="saveAllButton">Show Data</button>
+                    <div class="card-content">
+                        <h3 id="total-tables">{{ tables|length }}</h3>
+                        <p>Total Tables</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%"></div>
                         </div>
                     </div>
                 </div>
 
-                <div id="popup" class="popup">
-                    <p id="popupMessage"></p>
-                    <button id="closePopup">Close</button>
-                </div>
-                
-                <!-- Table Data Section -->
-                <div id="tableDataSection" class="mb-4" style="display: none;">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4>Table Data</h4>
-                        <div>
-                            <label for="rowsPerPage">Rows per page:</label>
-                            <select id="rowsPerPage" class="form-control d-inline w-auto">
-                                <option value="25">25</option>
-                                <option value="50">50</option>
-                                <option value="100">100</option>
-                                <option value="200">200</option>
-                            </select>
+                <div class="overview-card">
+                    <div class="card-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="database-size">2.4 GB</h3>
+                        <p>Database Size</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
                         </div>
                     </div>
-                    <div id="tableData"></div>
                 </div>
-            </main>
+
+                <div class="overview-card">
+                    <div class="card-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="last-backup">2 hours ago</h3>
+                        <p>Last Backup</p>
+                        <div class="status-indicator success">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overview-card">
+                    <div class="card-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <h3 id="performance-score">94%</h3>
+                        <p>Performance Score</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill performance" style="width: 94%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    
-    <script src="{{ asset('bundles/customdatabase/static/database/script.js') }}"></script>
-</body>
-</html>
+
+    {# Middle Section: Database Tables & Structure #}
+    <div class="middle-section">
+        <div class="database-tables-section">
+            <h2><i class="fas fa-table"></i> Database Tables</h2>
+            <div class="tables-management-panel">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-tab="tables">Tables</button>
+                    <button class="tab-btn" data-tab="structure">Structure</button>
+                    <button class="tab-btn" data-tab="relationships">Relationships</button>
+                    <button class="tab-btn" data-tab="indexes">Indexes</button>
+                    <button class="tab-btn" data-tab="triggers">Triggers</button>
+                    <button class="tab-btn" data-tab="views">Views</button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Tables Tab -->
+                    <div id="tables-tab" class="tab-pane active" style="display: block;">
+                        <div class="tables-grid">
+                            <div class="table-search-section">
+                                <div class="search-controls">
+                                    <div class="search-group">
+                                        <i class="fas fa-search"></i>
+                                        <input type="text" id="tableSearch" placeholder="Search tables..." class="search-input">
+                                    </div>
+                                    <div class="filter-controls">
+                                        <select id="tableTypeFilter" class="filter-select">
+                                            <option value="all">All Types</option>
+                                            <option value="base">Base Tables</option>
+                                            <option value="view">Views</option>
+                                            <option value="system">System Tables</option>
+                                        </select>
+                                        <select id="sortBy" class="filter-select">
+                                            <option value="name">Sort by Name</option>
+                                            <option value="rows">Sort by Rows</option>
+                                            <option value="size">Sort by Size</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tables-list">
+                                {% for table in tables %}
+                                    {% set tableName = table|first %}
+                                    <div class="table-card" data-table="{{ tableName }}">
+                                        <div class="table-header">
+                                            <div class="table-icon">
+                                                <i class="fas fa-table"></i>
+                                            </div>
+                                            <div class="table-info">
+                                                <h4>{{ tableName | replace({'_': ' '}) | capitalize }}</h4>
+                                                <div class="table-meta">
+                                                    <span class="table-rows"><i class="fas fa-list"></i> ~1,250 rows</span>
+                                                    <span class="table-size"><i class="fas fa-hdd"></i> 45.2 MB</span>
+                                                </div>
+                                            </div>
+                                            <div class="table-actions">
+                                                <button class="btn btn-sm btn-outline-primary" onclick="viewTable('{{ tableName }}')">
+                                                    <i class="fas fa-eye"></i> View
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="editTable('{{ tableName }}')">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="deleteTable('{{ tableName }}')">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="table-details" id="details-{{ tableName }}" style="display: none;">
+                                            <div class="table-structure-preview">
+                                                <h5>Structure Preview</h5>
+                                                <div class="columns-list" id="columns-{{ tableName }}">
+                                                    <!-- Columns will be loaded dynamically -->
+                                                </div>
+                                            </div>
+                                            <div class="table-stats">
+                                                <div class="stat-item">
+                                                    <span class="stat-label">Engine:</span>
+                                                    <span class="stat-value">InnoDB</span>
+                                                </div>
+                                                <div class="stat-item">
+                                                    <span class="stat-label">Collation:</span>
+                                                    <span class="stat-value">utf8mb4_unicode_ci</span>
+                                                </div>
+                                                <div class="stat-item">
+                                                    <span class="stat-label">Created:</span>
+                                                    <span class="stat-value">2024-01-15</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Structure Tab -->
+                    <div id="structure-tab" class="tab-pane">
+                        <div class="structure-viewer">
+                            <div class="structure-controls">
+                                <div class="control-group">
+                                    <label for="selectedTable">Select Table:</label>
+                                    <select id="selectedTable" class="form-control">
+                                        <option value="">Choose a table...</option>
+                                        {% for table in tables %}
+                                            {% set tableName = table|first %}
+                                            <option value="{{ tableName }}">{{ tableName | replace({'_': ' '}) | capitalize }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="control-actions">
+                                    <button class="btn btn-primary" onclick="loadTableStructure()">
+                                        <i class="fas fa-sync"></i> Load Structure
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="exportStructure()">
+                                        <i class="fas fa-download"></i> Export
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="structure-display" class="structure-display">
+                                <div class="structure-placeholder">
+                                    <i class="fas fa-database"></i>
+                                    <h3>Select a table to view its structure</h3>
+                                    <p>Choose a table from the dropdown above to see its columns, data types, and constraints.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Relationships Tab -->
+                    <div id="relationships-tab" class="tab-pane">
+                        <div class="relationships-viewer">
+                            <div class="relationships-header">
+                                <h3>Table Relationships</h3>
+                                <p>Visual representation of foreign key relationships between tables</p>
+                            </div>
+                            <div class="relationships-canvas" id="relationshipsCanvas">
+                                <div class="canvas-placeholder">
+                                    <i class="fas fa-project-diagram"></i>
+                                    <h4>Relationship Diagram</h4>
+                                    <p>Interactive diagram showing table relationships will be displayed here.</p>
+                                    <button class="btn btn-primary" onclick="generateRelationships()">
+                                        <i class="fas fa-play"></i> Generate Diagram
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Indexes Tab -->
+                    <div id="indexes-tab" class="tab-pane">
+                        <div class="indexes-manager">
+                            <div class="indexes-header">
+                                <h3>Database Indexes</h3>
+                                <p>Manage indexes for optimal query performance</p>
+                            </div>
+                            <div class="indexes-controls">
+                                <button class="btn btn-primary" onclick="createIndex()">
+                                    <i class="fas fa-plus"></i> Create Index
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="analyzeIndexes()">
+                                    <i class="fas fa-chart-bar"></i> Analyze Performance
+                                </button>
+                            </div>
+                            <div class="indexes-list" id="indexesList">
+                                <div class="index-placeholder">
+                                    <i class="fas fa-search"></i>
+                                    <h4>No indexes to display</h4>
+                                    <p>Select a table to view its indexes or create a new one.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Triggers Tab -->
+                    <div id="triggers-tab" class="tab-pane">
+                        <div class="triggers-manager">
+                            <div class="triggers-header">
+                                <h3>Database Triggers</h3>
+                                <p>Automated procedures that execute in response to database events</p>
+                            </div>
+                            <div class="triggers-controls">
+                                <button class="btn btn-primary" onclick="createTrigger()">
+                                    <i class="fas fa-plus"></i> Create Trigger
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="viewTriggerLogs()">
+                                    <i class="fas fa-history"></i> View Logs
+                                </button>
+                            </div>
+                            <div class="triggers-list" id="triggersList">
+                                <div class="trigger-placeholder">
+                                    <i class="fas fa-bolt"></i>
+                                    <h4>No triggers found</h4>
+                                    <p>Create automated triggers to respond to database events.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Views Tab -->
+                    <div id="views-tab" class="tab-pane">
+                        <div class="views-manager">
+                            <div class="views-header">
+                                <h3>Database Views</h3>
+                                <p>Virtual tables based on SQL SELECT queries</p>
+                            </div>
+                            <div class="views-controls">
+                                <button class="btn btn-primary" onclick="createView()">
+                                    <i class="fas fa-plus"></i> Create View
+                                </button>
+                                <button class="btn btn-outline-primary" onclick="refreshViews()">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="views-list" id="viewsList">
+                                <div class="view-placeholder">
+                                    <i class="fas fa-eye"></i>
+                                    <h4>No views found</h4>
+                                    <p>Create virtual tables to simplify complex queries.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Bottom Section: Query Builder & Data Explorer #}
+    <div class="bottom-section">
+        <div class="query-builder-section">
+            <h2><i class="fas fa-code"></i> Advanced Query Builder & Data Explorer</h2>
+            <div class="query-panel">
+                <div class="panel-tabs">
+                    <button class="tab-btn active" data-tab="query-builder">Query Builder</button>
+                    <button class="tab-btn" data-tab="data-explorer">Data Explorer</button>
+                    <button class="tab-btn" data-tab="analytics">Analytics</button>
+                    <button class="tab-btn" data-tab="backup-restore">Backup & Restore</button>
+                    <button class="tab-btn" data-tab="import-export">Import/Export</button>
+                    <button class="tab-btn" data-tab="maintenance">Maintenance</button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Query Builder Tab -->
+                    <div id="query-builder-tab" class="tab-pane active" style="display: block;">
+                        <div class="query-builder-interface">
+                            <div class="query-controls">
+                                <div class="control-row">
+                                    <div class="control-group">
+                                        <label for="queryTable">Table:</label>
+                                        <select id="queryTable" class="form-control">
+                                            <option value="">Select table...</option>
+                                            {% for table in tables %}
+                                                {% set tableName = table|first %}
+                                                <option value="{{ tableName }}">{{ tableName | replace({'_': ' '}) | capitalize }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="control-group">
+                                        <label for="queryType">Query Type:</label>
+                                        <select id="queryType" class="form-control">
+                                            <option value="SELECT">SELECT</option>
+                                            <option value="INSERT">INSERT</option>
+                                            <option value="UPDATE">UPDATE</option>
+                                            <option value="DELETE">DELETE</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-actions">
+                                        <button class="btn btn-primary" onclick="buildQuery()">
+                                            <i class="fas fa-wrench"></i> Build Query
+                                        </button>
+                                        <button class="btn btn-success" onclick="executeQuery()">
+                                            <i class="fas fa-play"></i> Execute
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="query-editor">
+                                <div class="editor-header">
+                                    <h4>SQL Query</h4>
+                                    <div class="editor-actions">
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="formatQuery()">
+                                            <i class="fas fa-magic"></i> Format
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="saveQuery()">
+                                            <i class="fas fa-save"></i> Save
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="clearQuery()">
+                                            <i class="fas fa-trash"></i> Clear
+                                        </button>
+                                    </div>
+                                </div>
+                                <textarea id="sqlQuery" class="sql-editor" placeholder="Enter your SQL query here..."></textarea>
+                            </div>
+
+                            <div class="query-results" id="queryResults" style="display: none;">
+                                <div class="results-header">
+                                    <h4>Query Results</h4>
+                                    <div class="results-actions">
+                                        <span id="executionTime"></span>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="exportResults()">
+                                            <i class="fas fa-download"></i> Export
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="copyResults()">
+                                            <i class="fas fa-copy"></i> Copy
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="results-table-container">
+                                    <table class="results-table" id="resultsTable"></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Explorer Tab -->
+                    <div id="data-explorer-tab" class="tab-pane">
+                        <div class="data-explorer-interface">
+                            <div class="explorer-controls">
+                                <div class="control-row">
+                                    <div class="control-group">
+                                        <label for="explorerTable">Table:</label>
+                                        <select id="explorerTable" class="form-control">
+                                            <option value="">Select table...</option>
+                                            {% for table in tables %}
+                                                {% set tableName = table|first %}
+                                                <option value="{{ tableName }}">{{ tableName | replace({'_': ' '}) | capitalize }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="control-group">
+                                        <label for="pageSize">Page Size:</label>
+                                        <select id="pageSize" class="form-control">
+                                            <option value="25">25 rows</option>
+                                            <option value="50">50 rows</option>
+                                            <option value="100">100 rows</option>
+                                            <option value="200">200 rows</option>
+                                        </select>
+                                    </div>
+                                    <div class="control-actions">
+                                        <button class="btn btn-primary" onclick="loadTableData()">
+                                            <i class="fas fa-table"></i> Load Data
+                                        </button>
+                                        <button class="btn btn-outline-primary" onclick="addNewRecord()">
+                                            <i class="fas fa-plus"></i> Add Record
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="data-table-container" id="dataTableContainer" style="display: none;">
+                                <div class="table-toolbar">
+                                    <div class="table-info">
+                                        <span id="tableInfoText"></span>
+                                    </div>
+                                    <div class="table-pagination">
+                                        <button class="btn btn-sm btn-outline-secondary" id="prevPage" disabled>
+                                            <i class="fas fa-chevron-left"></i> Previous
+                                        </button>
+                                        <span id="pageInfo">Page 1 of 1</span>
+                                        <button class="btn btn-sm btn-outline-secondary" id="nextPage" disabled>
+                                            Next <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="data-table-wrapper">
+                                    <table class="data-table" id="dataTable"></table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Tab -->
+                    <div id="analytics-tab" class="tab-pane">
+                        <div class="analytics-dashboard">
+                            <div class="analytics-header">
+                                <h3>Database Analytics</h3>
+                                <p>Insights and performance metrics for your database</p>
+                            </div>
+                            <div class="analytics-grid">
+                                <div class="analytics-card">
+                                    <div class="card-header">
+                                        <h4>Query Performance</h4>
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="metric">
+                                            <span class="metric-value">1.2s</span>
+                                            <span class="metric-label">Avg Query Time</span>
+                                        </div>
+                                        <div class="metric">
+                                            <span class="metric-value">98%</span>
+                                            <span class="metric-label">Query Success Rate</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="analytics-card">
+                                    <div class="card-header">
+                                        <h4>Storage Usage</h4>
+                                        <i class="fas fa-hdd"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="metric">
+                                            <span class="metric-value">2.4 GB</span>
+                                            <span class="metric-label">Total Size</span>
+                                        </div>
+                                        <div class="metric">
+                                            <span class="metric-value">65%</span>
+                                            <span class="metric-label">Usage</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="analytics-card">
+                                    <div class="card-header">
+                                        <h4>Active Connections</h4>
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="metric">
+                                            <span class="metric-value">12</span>
+                                            <span class="metric-label">Current</span>
+                                        </div>
+                                        <div class="metric">
+                                            <span class="metric-value">25</span>
+                                            <span class="metric-label">Max</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="analytics-card">
+                                    <div class="card-header">
+                                        <h4>Table Growth</h4>
+                                        <i class="fas fa-chart-bar"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <div class="metric">
+                                            <span class="metric-value">+15%</span>
+                                            <span class="metric-label">This Month</span>
+                                        </div>
+                                        <div class="metric">
+                                            <span class="metric-value">+8%</span>
+                                            <span class="metric-label">This Week</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Backup & Restore Tab -->
+                    <div id="backup-restore-tab" class="tab-pane">
+                        <div class="backup-restore-interface">
+                            <div class="backup-header">
+                                <h3>Backup & Restore</h3>
+                                <p>Create and manage database backups for data protection</p>
+                            </div>
+                            <div class="backup-controls">
+                                <div class="backup-actions">
+                                    <button class="btn btn-primary" onclick="createBackup()">
+                                        <i class="fas fa-plus"></i> Create Backup
+                                    </button>
+                                    <button class="btn btn-outline-primary" onclick="scheduleBackup()">
+                                        <i class="fas fa-clock"></i> Schedule Backup
+                                    </button>
+                                    <button class="btn btn-outline-secondary" onclick="restoreBackup()">
+                                        <i class="fas fa-undo"></i> Restore
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="backup-list" id="backupList">
+                                <div class="backup-item">
+                                    <div class="backup-info">
+                                        <h4>Full Backup - 2024-01-15</h4>
+                                        <div class="backup-meta">
+                                            <span><i class="fas fa-hdd"></i> 2.4 GB</span>
+                                            <span><i class="fas fa-clock"></i> 15 minutes</span>
+                                            <span><i class="fas fa-check-circle"></i> Completed</span>
+                                        </div>
+                                    </div>
+                                    <div class="backup-actions">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup()">
+                                            <i class="fas fa-download"></i> Download
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup()">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Import/Export Tab -->
+                    <div id="import-export-tab" class="tab-pane">
+                        <div class="import-export-interface">
+                            <div class="import-export-header">
+                                <h3>Data Import & Export</h3>
+                                <p>Import data from various formats or export your database</p>
+                            </div>
+                            <div class="import-export-grid">
+                                <div class="import-section">
+                                    <h4><i class="fas fa-file-import"></i> Import Data</h4>
+                                    <div class="import-options">
+                                        <div class="import-option" onclick="importFromCSV()">
+                                            <i class="fas fa-file-csv"></i>
+                                            <span>CSV Files</span>
+                                        </div>
+                                        <div class="import-option" onclick="importFromExcel()">
+                                            <i class="fas fa-file-excel"></i>
+                                            <span>Excel Files</span>
+                                        </div>
+                                        <div class="import-option" onclick="importFromJSON()">
+                                            <i class="fas fa-file-code"></i>
+                                            <span>JSON Files</span>
+                                        </div>
+                                        <div class="import-option" onclick="importFromSQL()">
+                                            <i class="fas fa-database"></i>
+                                            <span>SQL Files</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="export-section">
+                                    <h4><i class="fas fa-file-export"></i> Export Data</h4>
+                                    <div class="export-options">
+                                        <div class="export-option" onclick="exportToCSV()">
+                                            <i class="fas fa-file-csv"></i>
+                                            <span>CSV</span>
+                                        </div>
+                                        <div class="export-option" onclick="exportToExcel()">
+                                            <i class="fas fa-file-excel"></i>
+                                            <span>Excel</span>
+                                        </div>
+                                        <div class="export-option" onclick="exportToJSON()">
+                                            <i class="fas fa-file-code"></i>
+                                            <span>JSON</span>
+                                        </div>
+                                        <div class="export-option" onclick="exportToSQL()">
+                                            <i class="fas fa-database"></i>
+                                            <span>SQL</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Maintenance Tab -->
+                    <div id="maintenance-tab" class="tab-pane">
+                        <div class="maintenance-interface">
+                            <div class="maintenance-header">
+                                <h3>Database Maintenance</h3>
+                                <p>Optimize and maintain your database performance</p>
+                            </div>
+                            <div class="maintenance-grid">
+                                <div class="maintenance-card">
+                                    <div class="card-icon">
+                                        <i class="fas fa-broom"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <h4>Optimize Tables</h4>
+                                        <p>Defragment and optimize table storage</p>
+                                        <button class="btn btn-outline-primary" onclick="optimizeTables()">
+                                            Optimize
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="maintenance-card">
+                                    <div class="card-icon">
+                                        <i class="fas fa-wrench"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <h4>Repair Tables</h4>
+                                        <p>Repair corrupted or damaged tables</p>
+                                        <button class="btn btn-outline-primary" onclick="repairTables()">
+                                            Repair
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="maintenance-card">
+                                    <div class="card-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <h4>Analyze Tables</h4>
+                                        <p>Update table statistics for better performance</p>
+                                        <button class="btn btn-outline-primary" onclick="analyzeTables()">
+                                            Analyze
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="maintenance-card">
+                                    <div class="card-icon">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </div>
+                                    <div class="card-content">
+                                        <h4>Clean Up</h4>
+                                        <p>Remove temporary files and old data</p>
+                                        <button class="btn btn-outline-primary" onclick="cleanupDatabase()">
+                                            Clean Up
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<style>
+:root {
+    --pimcore-blue: #2D6DB4;
+    --pimcore-light-blue: #4A90E2;
+    --pimcore-dark-blue: #1A365D;
+    --success-color: #2ecc71;
+    --warning-color: #f39c12;
+    --danger-color: #e74c3c;
+    --light-color: #f8f9fa;
+    --dark-color: #2c3e50;
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+.database-content {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding: 20px 0;
+}
+
+/* Three-Section Layout */
+.top-section {
+    margin-bottom: 40px;
+    padding: 0 20px;
+}
+
+.middle-section {
+    margin-bottom: 40px;
+    padding: 0 20px;
+}
+
+.bottom-section {
+    margin-bottom: 40px;
+    padding: 0 20px;
+}
+
+/* Database Header */
+.database-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.database-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.database-header p {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Overview Cards */
+.database-overview-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.overview-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 25px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.overview-card:hover {
+    transform: translateY(-3px);
+}
+
+.card-icon {
+    font-size: 36px;
+    color: var(--primary-color);
+    min-width: 60px;
+}
+
+.card-content h3 {
+    margin: 0 0 5px 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--dark-color);
+}
+
+.card-content p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-gradient);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.progress-fill.performance {
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+}
+
+.status-indicator {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--success-color);
+    color: white;
+}
+
+.status-indicator.success {
+    background: var(--success-color);
+}
+
+/* Tables Management */
+.database-tables-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.tables-management-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.panel-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.tab-btn.active, .tab-btn:hover {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Tables Grid */
+.tables-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.table-search-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.search-controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 15px;
+    flex: 1;
+    min-width: 250px;
+}
+
+.search-group i {
+    color: #666;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    flex: 1;
+    font-size: 14px;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+}
+
+.tables-list {
+    display: grid;
+    gap: 15px;
+}
+
+.table-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.table-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 20px;
+}
+
+.table-icon {
+    font-size: 24px;
+    color: var(--primary-color);
+    min-width: 40px;
+}
+
+.table-info h4 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+    font-size: 18px;
+}
+
+.table-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #666;
+}
+
+.table-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+}
+
+.table-details {
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+.table-structure-preview h5 {
+    margin: 0 0 15px 0;
+    color: var(--dark-color);
+    font-size: 16px;
+}
+
+.columns-list {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.table-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.stat-value {
+    color: var(--dark-color);
+}
+
+/* Query Builder */
+.query-builder-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.query-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.query-builder-interface {
+    display: grid;
+    gap: 25px;
+}
+
+.query-controls {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.control-row {
+    display: flex;
+    gap: 20px;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.control-group label {
+    font-weight: 600;
+    color: var(--dark-color);
+    font-size: 14px;
+}
+
+.form-control {
+    padding: 10px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.control-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.query-editor {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.editor-header h4 {
+    margin: 0;
+    color: var(--dark-color);
+}
+
+.editor-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.sql-editor {
+    width: 100%;
+    min-height: 200px;
+    padding: 20px;
+    border: none;
+    outline: none;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    background: white;
+    resize: vertical;
+}
+
+.query-results {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.results-header h4 {
+    margin: 0;
+    color: var(--dark-color);
+}
+
+.results-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.results-table-container {
+    overflow-x: auto;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.results-table th {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.results-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.results-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+/* Data Explorer */
+.data-explorer-interface {
+    display: grid;
+    gap: 25px;
+}
+
+.explorer-controls {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.data-table-container {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.table-pagination {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.data-table-wrapper {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.data-table th {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.data-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.data-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+/* Analytics */
+.analytics-dashboard {
+    display: grid;
+    gap: 25px;
+}
+
+.analytics-header {
+    text-align: center;
+}
+
+.analytics-header h3 {
+    font-size: 24px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.analytics-header p {
+    color: #666;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.analytics-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.analytics-card:hover {
+    transform: translateY(-3px);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.card-header h4 {
+    margin: 0;
+    color: var(--dark-color);
+}
+
+.card-header i {
+    font-size: 24px;
+    color: var(--primary-color);
+}
+
+.card-content {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.metric {
+    text-align: center;
+}
+
+.metric-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Import/Export */
+.import-export-interface {
+    display: grid;
+    gap: 25px;
+}
+
+.import-export-header {
+    text-align: center;
+}
+
+.import-export-header h3 {
+    font-size: 24px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.import-export-header p {
+    color: #666;
+}
+
+.import-export-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+}
+
+.import-section, .export-section {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.import-section h4, .export-section h4 {
+    font-size: 18px;
+    color: var(--dark-color);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.import-options, .export-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+}
+
+.import-option, .export-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.import-option:hover, .export-option:hover {
+    background: var(--primary-gradient);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.import-option i, .export-option i {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.import-option span, .export-option span {
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Maintenance */
+.maintenance-interface {
+    display: grid;
+    gap: 25px;
+}
+
+.maintenance-header {
+    text-align: center;
+}
+
+.maintenance-header h3 {
+    font-size: 24px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.maintenance-header p {
+    color: #666;
+}
+
+.maintenance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.maintenance-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 25px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.maintenance-card:hover {
+    transform: translateY(-3px);
+}
+
+.maintenance-card .card-icon {
+    font-size: 32px;
+    color: var(--primary-color);
+    margin-top: 5px;
+}
+
+.maintenance-card .card-content h4 {
+    margin: 0 0 10px 0;
+    color: var(--dark-color);
+    font-size: 18px;
+}
+
+.maintenance-card .card-content p {
+    margin: 0 0 15px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Structure Viewer */
+.structure-viewer {
+    display: grid;
+    gap: 25px;
+}
+
+.structure-controls {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.structure-display {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.structure-placeholder {
+    text-align: center;
+}
+
+.structure-placeholder i {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.structure-placeholder h3 {
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.structure-placeholder p {
+    color: #666;
+}
+
+/* Relationships Viewer */
+.relationships-viewer {
+    display: grid;
+    gap: 25px;
+}
+
+.relationships-header {
+    text-align: center;
+}
+
+.relationships-header h3 {
+    font-size: 24px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.relationships-header p {
+    color: #666;
+}
+
+.relationships-canvas {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.canvas-placeholder {
+    text-align: center;
+}
+
+.canvas-placeholder i {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.canvas-placeholder h4 {
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.canvas-placeholder p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+/* Indexes Manager */
+.indexes-manager {
+    display: grid;
+    gap: 25px;
+}
+
+.indexes-header {
+    text-align: center;
+}
+
+.indexes-header h3 {
+    font-size: 24px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.indexes-header p {
+    color: #666;
+}
+
+.indexes-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.indexes-list {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.index-placeholder {
+    text-align: center;
+}
+
+.index-placeholder i {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.index-placeholder h4 {
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.index-placeholder p {
+    color: #666;
+}
+
+/* Triggers Manager */
+.triggers-manager {
+    display: grid;
+    gap: 25px;
+}
+
+.triggers-header {
+    text-align: center;
+}
+
+.triggers-header h3 {
+    font-size: 24px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.triggers-header p {
+    color: #666;
+}
+
+.triggers-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.triggers-list {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.trigger-placeholder {
+    text-align: center;
+}
+
+.trigger-placeholder i {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.trigger-placeholder h4 {
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.trigger-placeholder p {
+    color: #666;
+}
+
+/* Views Manager */
+.views-manager {
+    display: grid;
+    gap: 25px;
+}
+
+.views-header {
+    text-align: center;
+}
+
+.views-header h3 {
+    font-size: 24px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.views-header p {
+    color: #666;
+}
+
+.views-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.views-list {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-placeholder {
+    text-align: center;
+}
+
+.view-placeholder i {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.view-placeholder h4 {
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.view-placeholder p {
+    color: #666;
+}
+
+/* Backup & Restore */
+.backup-restore-interface {
+    display: grid;
+    gap: 25px;
+}
+
+.backup-header {
+    text-align: center;
+}
+
+.backup-header h3 {
+    font-size: 24px;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.backup-header p {
+    color: #666;
+}
+
+.backup-controls {
+    display: flex;
+    justify-content: center;
+}
+
+.backup-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.backup-list {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.backup-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.backup-item:last-child {
+    border-bottom: none;
+}
+
+.backup-info h4 {
+    margin: 0 0 10px 0;
+    color: var(--dark-color);
+}
+
+.backup-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+.backup-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.backup-item .backup-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Button Styles */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline-primary {
+    background: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    color: #666;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-outline-secondary:hover {
+    background: #e2e8f0;
+    color: var(--dark-color);
+}
+
+.btn-outline-danger {
+    background: transparent;
+    color: var(--danger-color);
+    border: 2px solid var(--danger-color);
+}
+
+.btn-outline-danger:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .database-content {
+        padding: 10px 0;
+    }
+
+    .top-section,
+    .middle-section,
+    .bottom-section {
+        padding: 0 10px;
+        margin-bottom: 30px;
+    }
+
+    .database-header h1 {
+        font-size: 2rem;
+    }
+
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tables-management-panel,
+    .query-panel {
+        padding: 20px;
+    }
+
+    .panel-tabs {
+        flex-wrap: wrap;
+    }
+
+    .tab-btn {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .control-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .search-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .table-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .table-actions {
+        margin-left: 0;
+        justify-content: center;
+    }
+
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .import-export-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .maintenance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .backup-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .backup-item {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .database-content {
+        padding: 5px 0;
+    }
+
+    .top-section,
+    .middle-section,
+    .bottom-section {
+        padding: 0 5px;
+        margin-bottom: 20px;
+    }
+
+    .database-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .tables-management-panel,
+    .query-panel {
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .tab-btn {
+        padding: 10px 15px;
+        font-size: 13px;
+    }
+
+    .control-group {
+        min-width: auto;
+    }
+
+    .search-group {
+        min-width: auto;
+    }
+
+    .filter-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .table-card {
+        margin-bottom: 15px;
+    }
+
+    .backup-meta {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Tab switching functionality
+    $('.tab-btn').click(function() {
+        const tabId = $(this).data('tab');
+
+        // Update tab buttons
+        $('.tab-btn').removeClass('active');
+        $(this).addClass('active');
+
+        // Update tab content
+        $('.tab-pane').removeClass('active').hide();
+        $('#' + tabId + '-tab').addClass('active').show();
+    });
+
+    // Table search functionality
+    $('#tableSearch').on('input', function() {
+        const searchTerm = $(this).val().toLowerCase();
+        $('.table-card').each(function() {
+            const tableName = $(this).data('table').toLowerCase();
+            if (tableName.includes(searchTerm)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    // Table type filter
+    $('#tableTypeFilter').change(function() {
+        const filterValue = $(this).val();
+        // Implement table type filtering logic
+        showNotification('Table type filter: ' + filterValue, 'info');
+    });
+
+    // Sort functionality
+    $('#sortBy').change(function() {
+        const sortValue = $(this).val();
+        // Implement sorting logic
+        showNotification('Sorting by: ' + sortValue, 'info');
+    });
+
+    // Table actions
+    $('.table-card').click(function() {
+        const tableName = $(this).data('table');
+        const details = $('#details-' + tableName);
+
+        if (details.is(':visible')) {
+            details.slideUp();
+        } else {
+            // Hide other details
+            $('.table-details').slideUp();
+            // Load table structure if not loaded
+            loadTableStructure(tableName);
+            details.slideDown();
+        }
+    });
+});
+
+// Table Functions
+function viewTable(tableName) {
+    showNotification('Loading table: ' + tableName, 'info');
+    // Switch to data explorer tab
+    $('.tab-btn').removeClass('active');
+    $('.tab-btn[data-tab="data-explorer"]').addClass('active');
+
+    $('.tab-pane').removeClass('active').hide();
+    $('#data-explorer-tab').addClass('active').show();
+
+    // Set the table in the explorer
+    $('#explorerTable').val(tableName);
+    loadTableData();
+}
+
+function editTable(tableName) {
+    showNotification('Table editor for: ' + tableName, 'info');
+    // Implement table editing functionality
+}
+
+function deleteTable(tableName) {
+    if (confirm('Are you sure you want to delete table: ' + tableName + '? This action cannot be undone.')) {
+        showNotification('Table deletion is not implemented in demo mode', 'warning');
+    }
+}
+
+function loadTableStructure(tableName) {
+    // Simulate loading table structure
+    const columnsContainer = $('#columns-' + tableName);
+    if (columnsContainer.children().length === 0) {
+        const mockColumns = [
+            'id (INT, Primary Key)',
+            'name (VARCHAR(255))',
+            'email (VARCHAR(255))',
+            'created_at (TIMESTAMP)',
+            'updated_at (TIMESTAMP)'
+        ];
+
+        columnsContainer.empty();
+        mockColumns.forEach(column => {
+            columnsContainer.append('<div class="column-item">' + column + '</div>');
+        });
+    }
+}
+
+// Query Builder Functions
+function buildQuery() {
+    const table = $('#queryTable').val();
+    const queryType = $('#queryType').val();
+
+    if (!table) {
+        showNotification('Please select a table first', 'warning');
+        return;
+    }
+
+    let query = queryType + ' * FROM ' + table;
+    $('#sqlQuery').val(query);
+    showNotification('Query built successfully', 'success');
+}
+
+function executeQuery() {
+    const query = $('#sqlQuery').val().trim();
+
+    if (!query) {
+        showNotification('Please enter a SQL query', 'warning');
+        return;
+    }
+
+    showNotification('Executing query...', 'info');
+
+    // Simulate query execution
+    setTimeout(() => {
+        // Mock results
+        const mockResults = [
+            { id: 1, name: 'John Doe', email: 'john@example.com' },
+            { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+            { id: 3, name: 'Bob Johnson', email: 'bob@example.com' }
+        ];
+
+        displayQueryResults(mockResults);
+        $('#executionTime').text('Executed in 0.023 seconds');
+        $('#queryResults').show();
+        showNotification('Query executed successfully', 'success');
+    }, 1000);
+}
+
+function displayQueryResults(results) {
+    if (results.length === 0) {
+        $('#resultsTable').html('<tr><td colspan="3">No results found</td></tr>');
+        return;
+    }
+
+    const headers = Object.keys(results[0]);
+    let tableHtml = '<thead><tr>';
+
+    headers.forEach(header => {
+        tableHtml += '<th>' + header + '</th>';
+    });
+
+    tableHtml += '</tr></thead><tbody>';
+
+    results.forEach(row => {
+        tableHtml += '<tr>';
+        headers.forEach(header => {
+            tableHtml += '<td>' + row[header] + '</td>';
+        });
+        tableHtml += '</tr>';
+    });
+
+    tableHtml += '</tbody>';
+    $('#resultsTable').html(tableHtml);
+}
+
+function formatQuery() {
+    const query = $('#sqlQuery').val();
+    // Basic SQL formatting
+    const formatted = query.replace(/\s+/g, ' ').replace(/\s*,\s*/g, ',\n    ');
+    $('#sqlQuery').val(formatted);
+    showNotification('Query formatted', 'success');
+}
+
+function saveQuery() {
+    const query = $('#sqlQuery').val();
+    if (query) {
+        localStorage.setItem('savedQuery', query);
+        showNotification('Query saved successfully', 'success');
+    } else {
+        showNotification('No query to save', 'warning');
+    }
+}
+
+function clearQuery() {
+    $('#sqlQuery').val('');
+    showNotification('Query cleared', 'info');
+}
+
+function exportResults() {
+    showNotification('Exporting results...', 'info');
+    setTimeout(() => {
+        showNotification('Results exported successfully', 'success');
+    }, 1000);
+}
+
+function copyResults() {
+    showNotification('Results copied to clipboard', 'success');
+}
+
+// Data Explorer Functions
+function loadTableData() {
+    const table = $('#explorerTable').val();
+    const pageSize = $('#pageSize').val();
+
+    if (!table) {
+        showNotification('Please select a table', 'warning');
+        return;
+    }
+
+    showNotification('Loading table data...', 'info');
+
+    // Simulate loading data
+    setTimeout(() => {
+        const mockData = [
+            { id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active' },
+            { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'Active' },
+            { id: 3, name: 'Bob Johnson', email: 'bob@example.com', status: 'Inactive' }
+        ];
+
+        displayTableData(mockData);
+        $('#tableInfoText').text('Showing 3 of 1250 records');
+        $('#dataTableContainer').show();
+        showNotification('Table data loaded successfully', 'success');
+    }, 1000);
+}
+
+function displayTableData(data) {
+    if (data.length === 0) {
+        $('#dataTable').html('<tr><td colspan="4">No data found</td></tr>');
+        return;
+    }
+
+    const headers = Object.keys(data[0]);
+    let tableHtml = '<thead><tr>';
+
+    headers.forEach(header => {
+        tableHtml += '<th>' + header.charAt(0).toUpperCase() + header.slice(1) + '</th>';
+    });
+
+    tableHtml += '<th>Actions</th></tr></thead><tbody>';
+
+    data.forEach(row => {
+        tableHtml += '<tr>';
+        headers.forEach(header => {
+            tableHtml += '<td>' + row[header] + '</td>';
+        });
+        tableHtml += '<td><button class="btn btn-sm btn-outline-primary">Edit</button> <button class="btn btn-sm btn-outline-danger">Delete</button></td>';
+        tableHtml += '</tr>';
+    });
+
+    tableHtml += '</tbody>';
+    $('#dataTable').html(tableHtml);
+}
+
+function addNewRecord() {
+    showNotification('Add new record functionality', 'info');
+}
+
+// Structure Functions
+function loadTableStructure() {
+    const table = $('#selectedTable').val();
+
+    if (!table) {
+        showNotification('Please select a table', 'warning');
+        return;
+    }
+
+    showNotification('Loading table structure...', 'info');
+
+    // Simulate loading structure
+    setTimeout(() => {
+        const mockStructure = `
+            <h4>Structure for table: ${table}</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Null</th>
+                        <th>Key</th>
+                        <th>Default</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>INT(11)</td>
+                        <td>NO</td>
+                        <td>PRI</td>
+                        <td>NULL</td>
+                    </tr>
+                    <tr>
+                        <td>name</td>
+                        <td>VARCHAR(255)</td>
+                        <td>YES</td>
+                        <td></td>
+                        <td>NULL</td>
+                    </tr>
+                    <tr>
+                        <td>email</td>
+                        <td>VARCHAR(255)</td>
+                        <td>YES</td>
+                        <td></td>
+                        <td>NULL</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+
+        $('#structure-display').html(mockStructure);
+        showNotification('Table structure loaded', 'success');
+    }, 1000);
+}
+
+function exportStructure() {
+    showNotification('Exporting table structure...', 'info');
+    setTimeout(() => {
+        showNotification('Structure exported successfully', 'success');
+    }, 1000);
+}
+
+// Relationships Functions
+function generateRelationships() {
+    showNotification('Generating relationship diagram...', 'info');
+    setTimeout(() => {
+        const diagramHtml = `
+            <div class="relationship-diagram">
+                <div class="table-node" style="left: 100px; top: 50px;">users</div>
+                <div class="table-node" style="left: 300px; top: 50px;">orders</div>
+                <div class="table-node" style="left: 500px; top: 50px;">products</div>
+                <svg class="relationship-lines" width="600" height="200">
+                    <line x1="200" y1="75" x2="300" y2="75" stroke="#667eea" stroke-width="2"/>
+                    <line x1="400" y1="75" x2="500" y2="75" stroke="#667eea" stroke-width="2"/>
+                </svg>
+            </div>
+        `;
+        $('#relationshipsCanvas').html(diagramHtml);
+        showNotification('Relationship diagram generated', 'success');
+    }, 2000);
+}
+
+// Index Functions
+function createIndex() {
+    showNotification('Create index functionality', 'info');
+}
+
+function analyzeIndexes() {
+    showNotification('Analyzing indexes...', 'info');
+    setTimeout(() => {
+        showNotification('Index analysis completed', 'success');
+    }, 1500);
+}
+
+// Trigger Functions
+function createTrigger() {
+    showNotification('Create trigger functionality', 'info');
+}
+
+function viewTriggerLogs() {
+    showNotification('Viewing trigger logs...', 'info');
+}
+
+// View Functions
+function createView() {
+    showNotification('Create view functionality', 'info');
+}
+
+function refreshViews() {
+    showNotification('Refreshing views...', 'info');
+    setTimeout(() => {
+        showNotification('Views refreshed successfully', 'success');
+    }, 1000);
+}
+
+// Backup Functions
+function createBackup() {
+    showNotification('Creating database backup...', 'info');
+    setTimeout(() => {
+        showNotification('Backup created successfully', 'success');
+    }, 3000);
+}
+
+function scheduleBackup() {
+    showNotification('Backup scheduling functionality', 'info');
+}
+
+function restoreBackup() {
+    showNotification('Restore backup functionality', 'info');
+}
+
+function downloadBackup() {
+    showNotification('Downloading backup...', 'info');
+    setTimeout(() => {
+        showNotification('Backup downloaded successfully', 'success');
+    }, 1000);
+}
+
+function deleteBackup() {
+    if (confirm('Are you sure you want to delete this backup?')) {
+        showNotification('Backup deleted successfully', 'success');
+    }
+}
+
+// Import/Export Functions
+function importFromCSV() {
+    showNotification('CSV import functionality', 'info');
+}
+
+function importFromExcel() {
+    showNotification('Excel import functionality', 'info');
+}
+
+function importFromJSON() {
+    showNotification('JSON import functionality', 'info');
+}
+
+function importFromSQL() {
+    showNotification('SQL import functionality', 'info');
+}
+
+function exportToCSV() {
+    showNotification('Exporting to CSV...', 'info');
+    setTimeout(() => {
+        showNotification('CSV export completed', 'success');
+    }, 1000);
+}
+
+function exportToExcel() {
+    showNotification('Exporting to Excel...', 'info');
+    setTimeout(() => {
+        showNotification('Excel export completed', 'success');
+    }, 1000);
+}
+
+function exportToJSON() {
+    showNotification('Exporting to JSON...', 'info');
+    setTimeout(() => {
+        showNotification('JSON export completed', 'success');
+    }, 1000);
+}
+
+function exportToSQL() {
+    showNotification('Exporting to SQL...', 'info');
+    setTimeout(() => {
+        showNotification('SQL export completed', 'success');
+    }, 1000);
+}
+
+// Maintenance Functions
+function optimizeTables() {
+    showNotification('Optimizing tables...', 'info');
+    setTimeout(() => {
+        showNotification('Tables optimized successfully', 'success');
+    }, 2000);
+}
+
+function repairTables() {
+    showNotification('Repairing tables...', 'info');
+    setTimeout(() => {
+        showNotification('Tables repaired successfully', 'success');
+    }, 2000);
+}
+
+function analyzeTables() {
+    showNotification('Analyzing tables...', 'info');
+    setTimeout(() => {
+        showNotification('Table analysis completed', 'success');
+    }, 1500);
+}
+
+function cleanupDatabase() {
+    showNotification('Cleaning up database...', 'info');
+    setTimeout(() => {
+        showNotification('Database cleanup completed', 'success');
+    }, 1000);
+}
+
+// Notification System
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    $('.notification').remove();
+
+    // Create notification element
+    const notification = $(`
+        <div class="notification ${type}" style="display: none;">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+            ${message}
+        </div>
+    `);
+
+    // Add to page
+    $('body').append(notification);
+
+    // Show notification
+    notification.fadeIn(300);
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        notification.fadeOut(300, function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
+
+// Initialize on page load
+$(document).ready(function() {
+    // Load saved query if exists
+    const savedQuery = localStorage.getItem('savedQuery');
+    if (savedQuery) {
+        $('#sqlQuery').val(savedQuery);
+    }
+
+    // Initialize pagination
+    $('#prevPage').click(function() {
+        // Implement pagination logic
+        showNotification('Previous page functionality', 'info');
+    });
+
+    $('#nextPage').click(function() {
+        // Implement pagination logic
+        showNotification('Next page functionality', 'info');
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,1144 @@
+{% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+{% endblock %}
+
+{% block headscripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('bundles/customdatabase/static/settings/script.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="settings-content">
+        <div class="database-header">
+            <div class="header-actions">
+                <a href="{{ path('home') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <button class="btn-save-settings" onclick="saveAllSettings()">
+                    <i class="fas fa-save"></i> Save All Settings
+                </button>
+                <button class="btn-reset-settings" onclick="resetToDefaults()">
+                    <i class="fas fa-undo"></i> Reset to Defaults
+                </button>
+            </div>
+            <h1><i class="fas fa-cog"></i> Advanced Settings</h1>
+            <p>Comprehensive system configuration, user preferences, and administrative controls</p>
+        </div>
+
+        <!-- Settings Navigation -->
+        <div class="settings-navigation">
+            <div class="settings-tabs">
+                <button class="settings-tab active" onclick="switchSettingsTab('general')">
+                    <i class="fas fa-sliders-h"></i> General
+                </button>
+                <button class="settings-tab" onclick="switchSettingsTab('security')">
+                    <i class="fas fa-shield-alt"></i> Security
+                </button>
+                <button class="settings-tab" onclick="switchSettingsTab('database')">
+                    <i class="fas fa-database"></i> Database
+                </button>
+                <button class="settings-tab" onclick="switchSettingsTab('notifications')">
+                    <i class="fas fa-bell"></i> Notifications
+                </button>
+                <button class="settings-tab" onclick="switchSettingsTab('performance')">
+                    <i class="fas fa-tachometer-alt"></i> Performance
+                </button>
+                <button class="settings-tab" onclick="switchSettingsTab('integrations')">
+                    <i class="fas fa-plug"></i> Integrations
+                </button>
+                <button class="settings-tab" onclick="switchSettingsTab('maintenance')">
+                    <i class="fas fa-tools"></i> Maintenance
+                </button>
+            </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="settings-container">
+            <!-- General Settings -->
+            <div id="general-settings" class="settings-section active">
+                <h2><i class="fas fa-sliders-h"></i> General Settings</h2>
+
+                <div class="settings-group">
+                    <h3>Application Settings</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="app-name">Application Name</label>
+                            <span class="setting-description">The name displayed in the application header</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="text" id="app-name" value="Custom Database Manager" class="setting-input">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="default-language">Default Language</label>
+                            <span class="setting-description">Primary language for the application interface</span>
+                        </div>
+                        <div class="setting-control">
+                            <select id="default-language" class="setting-select">
+                                <option value="en" selected>English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                                <option value="zh">Chinese</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="timezone">Timezone</label>
+                            <span class="setting-description">Default timezone for date/time display</span>
+                        </div>
+                        <div class="setting-control">
+                            <select id="timezone" class="setting-select">
+                                <option value="UTC" selected>UTC</option>
+                                <option value="America/New_York">Eastern Time</option>
+                                <option value="America/Los_Angeles">Pacific Time</option>
+                                <option value="Europe/London">London</option>
+                                <option value="Europe/Paris">Paris</option>
+                                <option value="Asia/Tokyo">Tokyo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="date-format">Date Format</label>
+                            <span class="setting-description">Format for displaying dates throughout the application</span>
+                        </div>
+                        <div class="setting-control">
+                            <select id="date-format" class="setting-select">
+                                <option value="MM/DD/YYYY" selected>MM/DD/YYYY</option>
+                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                                <option value="DD MMM YYYY">DD MMM YYYY</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>User Interface</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="theme">Theme</label>
+                            <span class="setting-description">Choose the visual theme for the application</span>
+                        </div>
+                        <div class="setting-control">
+                            <select id="theme" class="setting-select">
+                                <option value="light" selected>Light</option>
+                                <option value="dark">Dark</option>
+                                <option value="auto">Auto (System)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="sidebar-collapsed">Sidebar State</label>
+                            <span class="setting-description">Default state of the sidebar navigation</span>
+                        </div>
+                        <div class="setting-control">
+                            <select id="sidebar-collapsed" class="setting-select">
+                                <option value="expanded" selected>Expanded</option>
+                                <option value="collapsed">Collapsed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="items-per-page">Items Per Page</label>
+                            <span class="setting-description">Default number of items to display in tables</span>
+                        </div>
+                        <div class="setting-control">
+                            <select id="items-per-page" class="setting-select">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="auto-refresh">Auto Refresh</label>
+                            <span class="setting-description">Automatically refresh data at regular intervals</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="auto-refresh" checked>
+                                <label for="auto-refresh" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Settings -->
+            <div id="security-settings" class="settings-section">
+                <h2><i class="fas fa-shield-alt"></i> Security Settings</h2>
+
+                <div class="settings-group">
+                    <h3>Authentication</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="session-timeout">Session Timeout</label>
+                            <span class="setting-description">Time before automatic logout (minutes)</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="session-timeout" value="30" min="5" max="480" class="setting-input">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="password-policy">Password Policy</label>
+                            <span class="setting-description">Enforce strong password requirements</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="password-policy" checked>
+                                <label for="password-policy" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="two-factor">Two-Factor Authentication</label>
+                            <span class="setting-description">Require 2FA for all user accounts</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="two-factor">
+                                <label for="two-factor" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="login-attempts">Max Login Attempts</label>
+                            <span class="setting-description">Maximum failed login attempts before lockout</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="login-attempts" value="5" min="3" max="20" class="setting-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Data Protection</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="encryption-enabled">Data Encryption</label>
+                            <span class="setting-description">Encrypt sensitive data at rest</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="encryption-enabled" checked>
+                                <label for="encryption-enabled" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="audit-logging">Audit Logging</label>
+                            <span class="setting-description">Log all user actions for compliance</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="audit-logging" checked>
+                                <label for="audit-logging" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="data-retention">Data Retention Period</label>
+                            <span class="setting-description">How long to retain audit logs and backups</span>
+                        </div>
+                        <div class="setting-control">
+                            <select id="data-retention" class="setting-select">
+                                <option value="30">30 days</option>
+                                <option value="90" selected>90 days</option>
+                                <option value="180">180 days</option>
+                                <option value="365">1 year</option>
+                                <option value="730">2 years</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Settings -->
+            <div id="database-settings" class="settings-section">
+                <h2><i class="fas fa-database"></i> Database Settings</h2>
+
+                <div class="settings-group">
+                    <h3>Connection Settings</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="max-connections">Max Connections</label>
+                            <span class="setting-description">Maximum concurrent database connections</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="max-connections" value="100" min="10" max="1000" class="setting-input">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="query-timeout">Query Timeout</label>
+                            <span class="setting-description">Maximum time for query execution (seconds)</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="query-timeout" value="30" min="5" max="300" class="setting-input">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="connection-pool">Connection Pooling</label>
+                            <span class="setting-description">Enable connection pooling for better performance</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="connection-pool" checked>
+                                <label for="connection-pool" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Performance & Optimization</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="query-caching">Query Caching</label>
+                            <span class="setting-description">Cache frequently used queries</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="query-caching" checked>
+                                <label for="query-caching" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="index-optimization">Auto Index Optimization</label>
+                            <span class="setting-description">Automatically optimize database indexes</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="index-optimization">
+                                <label for="index-optimization" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="backup-compression">Backup Compression</label>
+                            <span class="setting-description">Compress database backups to save space</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="backup-compression" checked>
+                                <label for="backup-compression" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications Settings -->
+            <div id="notifications-settings" class="settings-section">
+                <h2><i class="fas fa-bell"></i> Notification Settings</h2>
+
+                <div class="settings-group">
+                    <h3>Email Notifications</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="email-notifications">Enable Email Notifications</label>
+                            <span class="setting-description">Send notifications via email</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="email-notifications" checked>
+                                <label for="email-notifications" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="smtp-server">SMTP Server</label>
+                            <span class="setting-description">SMTP server for sending emails</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="text" id="smtp-server" value="smtp.gmail.com" class="setting-input">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="smtp-port">SMTP Port</label>
+                            <span class="setting-description">Port number for SMTP server</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="smtp-port" value="587" class="setting-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Notification Types</h3>
+                    <div class="notification-types">
+                        <div class="notification-type">
+                            <div class="type-info">
+                                <h4>System Alerts</h4>
+                                <span>Critical system events and errors</span>
+                            </div>
+                            <div class="type-controls">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="alert-system" checked>
+                                    <label for="alert-system" class="toggle-slider"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-type">
+                            <div class="type-info">
+                                <h4>Security Events</h4>
+                                <span>Security-related activities and threats</span>
+                            </div>
+                            <div class="type-controls">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="alert-security" checked>
+                                    <label for="alert-security" class="toggle-slider"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-type">
+                            <div class="type-info">
+                                <h4>Backup Status</h4>
+                                <span>Backup completion and failure notifications</span>
+                            </div>
+                            <div class="type-controls">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="alert-backup" checked>
+                                    <label for="alert-backup" class="toggle-slider"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="notification-type">
+                            <div class="type-info">
+                                <h4>Performance Alerts</h4>
+                                <span>Performance degradation warnings</span>
+                            </div>
+                            <div class="type-controls">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="alert-performance">
+                                    <label for="alert-performance" class="toggle-slider"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Settings -->
+            <div id="performance-settings" class="settings-section">
+                <h2><i class="fas fa-tachometer-alt"></i> Performance Settings</h2>
+
+                <div class="settings-group">
+                    <h3>Caching</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="page-cache">Page Caching</label>
+                            <span class="setting-description">Cache frequently accessed pages</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="page-cache" checked>
+                                <label for="page-cache" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="api-cache">API Response Caching</label>
+                            <span class="setting-description">Cache API responses for better performance</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="api-cache" checked>
+                                <label for="api-cache" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="cache-ttl">Cache TTL</label>
+                            <span class="setting-description">Time to live for cached content (minutes)</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="cache-ttl" value="60" min="5" max="1440" class="setting-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>Resource Limits</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="max-file-size">Max File Upload Size</label>
+                            <span class="setting-description">Maximum file size for uploads (MB)</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="max-file-size" value="100" min="10" max="1000" class="setting-input">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="memory-limit">Memory Limit</label>
+                            <span class="setting-description">Maximum memory usage per request (MB)</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="memory-limit" value="256" min="64" max="1024" class="setting-input">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="cpu-limit">CPU Usage Limit</label>
+                            <span class="setting-description">Maximum CPU usage percentage</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="cpu-limit" value="80" min="10" max="100" class="setting-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Integrations Settings -->
+            <div id="integrations-settings" class="settings-section">
+                <h2><i class="fas fa-plug"></i> Integrations</h2>
+
+                <div class="settings-group">
+                    <h3>External Services</h3>
+                    <div class="integration-item">
+                        <div class="integration-info">
+                            <div class="integration-icon">
+                                <i class="fab fa-slack"></i>
+                            </div>
+                            <div class="integration-details">
+                                <h4>Slack Integration</h4>
+                                <span>Send notifications to Slack channels</span>
+                            </div>
+                        </div>
+                        <div class="integration-status">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="slack-integration">
+                                <label for="slack-integration" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="integration-item">
+                        <div class="integration-info">
+                            <div class="integration-icon">
+                                <i class="fab fa-webhooks"></i>
+                            </div>
+                            <div class="integration-details">
+                                <h4>Webhook Integration</h4>
+                                <span>Send data to external webhooks</span>
+                            </div>
+                        </div>
+                        <div class="integration-status">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="webhook-integration" checked>
+                                <label for="webhook-integration" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="integration-item">
+                        <div class="integration-info">
+                            <div class="integration-icon">
+                                <i class="fab fa-aws"></i>
+                            </div>
+                            <div class="integration-details">
+                                <h4>AWS S3 Integration</h4>
+                                <span>Store backups in Amazon S3</span>
+                            </div>
+                        </div>
+                        <div class="integration-status">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="aws-integration">
+                                <label for="aws-integration" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="integration-item">
+                        <div class="integration-info">
+                            <div class="integration-icon">
+                                <i class="fab fa-google-drive"></i>
+                            </div>
+                            <div class="integration-details">
+                                <h4>Google Drive Integration</h4>
+                                <span>Sync files with Google Drive</span>
+                            </div>
+                        </div>
+                        <div class="integration-status">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="google-drive-integration">
+                                <label for="google-drive-integration" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>API Configuration</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="api-rate-limit">API Rate Limit</label>
+                            <span class="setting-description">Maximum API requests per minute</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="api-rate-limit" value="1000" min="100" max="10000" class="setting-input">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="api-timeout">API Timeout</label>
+                            <span class="setting-description">Maximum time for API calls (seconds)</span>
+                        </div>
+                        <div class="setting-control">
+                            <input type="number" id="api-timeout" value="30" min="5" max="300" class="setting-input">
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="cors-enabled">CORS Enabled</label>
+                            <span class="setting-description">Allow cross-origin requests</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="cors-enabled" checked>
+                                <label for="cors-enabled" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Settings -->
+            <div id="maintenance-settings" class="settings-section">
+                <h2><i class="fas fa-tools"></i> Maintenance</h2>
+
+                <div class="settings-group">
+                    <h3>Automated Maintenance</h3>
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="auto-cleanup">Auto Cleanup</label>
+                            <span class="setting-description">Automatically clean up temporary files and logs</span>
+                        </div>
+                        <div class="setting-control">
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="auto-cleanup" checked>
+                                <label for="auto-cleanup" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="cleanup-frequency">Cleanup Frequency</label>
+                            <span class="setting-description">How often to run cleanup tasks</span>
+                        </div>
+                        <div class="setting-control">
+                            <select id="cleanup-frequency" class="setting-select">
+                                <option value="daily" selected>Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <label for="maintenance-window">Maintenance Window</label>
+                            <span class="setting-description">Preferred time for maintenance tasks</span>
+                        </div>
+                        <div class="setting-control">
+                            <select id="maintenance-window" class="setting-select">
+                                <option value="02:00" selected>2:00 AM</option>
+                                <option value="03:00">3:00 AM</option>
+                                <option value="04:00">4:00 AM</option>
+                                <option value="22:00">10:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>System Health</h3>
+                    <div class="health-checks">
+                        <div class="health-check">
+                            <div class="check-info">
+                                <h4>Database Health Check</h4>
+                                <span>Verify database connectivity and performance</span>
+                            </div>
+                            <button class="btn-run-check" onclick="runHealthCheck('database')">
+                                <i class="fas fa-play"></i> Run Check
+                            </button>
+                        </div>
+
+                        <div class="health-check">
+                            <div class="check-info">
+                                <h4>Disk Space Check</h4>
+                                <span>Monitor available disk space</span>
+                            </div>
+                            <button class="btn-run-check" onclick="runHealthCheck('disk')">
+                                <i class="fas fa-play"></i> Run Check
+                            </button>
+                        </div>
+
+                        <div class="health-check">
+                            <div class="check-info">
+                                <h4>Memory Usage Check</h4>
+                                <span>Check memory usage and leaks</span>
+                            </div>
+                            <button class="btn-run-check" onclick="runHealthCheck('memory')">
+                                <i class="fas fa-play"></i> Run Check
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>System Information</h3>
+                    <div class="system-info">
+                        <div class="info-item">
+                            <span class="info-label">Version:</span>
+                            <span class="info-value">v2.1.0</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Last Updated:</span>
+                            <span class="info-value">2024-01-15</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Uptime:</span>
+                            <span class="info-value">15 days, 8 hours</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Environment:</span>
+                            <span class="info-value">Production</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Settings Styles */
+.settings-navigation {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.settings-tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.settings-tab {
+    padding: 12px 20px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.settings-tab:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.settings-tab.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.settings-container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.settings-section {
+    display: none;
+}
+
+.settings-section.active {
+    display: block;
+}
+
+.settings-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 30px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.settings-group {
+    margin-bottom: 40px;
+}
+
+.settings-group h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.setting-item:last-child {
+    border-bottom: none;
+}
+
+.setting-info {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.setting-info label {
+    display: block;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 5px;
+}
+
+.setting-description {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.setting-control {
+    min-width: 200px;
+}
+
+.setting-input,
+.setting-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.setting-input:focus,
+.setting-select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 24px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .toggle-slider:before {
+    transform: translateX(26px);
+}
+
+.notification-types {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.notification-type {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.type-info h4 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+}
+
+.type-info span {
+    font-size: 12px;
+    color: #666;
+}
+
+.type-controls {
+    min-width: 60px;
+}
+
+.integration-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.integration-item:last-child {
+    margin-bottom: 0;
+}
+
+.integration-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.integration-icon {
+    font-size: 24px;
+    color: var(--primary-color);
+    background: rgba(74, 110, 224, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.integration-details h4 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+}
+
+.integration-details span {
+    font-size: 12px;
+    color: #666;
+}
+
+.integration-status {
+    min-width: 60px;
+}
+
+.health-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.health-check {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.check-info h4 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+}
+
+.check-info span {
+    font-size: 12px;
+    color: #666;
+}
+
+.btn-run-check {
+    padding: 8px 16px;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-run-check:hover {
+    background: var(--primary-color-dark);
+}
+
+.system-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.info-value {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .settings-navigation,
+    .settings-container {
+        padding: 20px;
+    }
+
+    .settings-tabs {
+        justify-content: center;
+    }
+
+    .settings-tab {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+
+    .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .setting-control {
+        min-width: 100%;
+    }
+
+    .notification-type,
+    .integration-item,
+    .health-check {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .type-controls,
+    .integration-status {
+        align-self: flex-end;
+    }
+
+    .system-info {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+{% endblock %}

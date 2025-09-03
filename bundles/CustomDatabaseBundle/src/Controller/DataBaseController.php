@@ -17,7 +17,7 @@ class DataBaseController extends AbstractController
     protected $db;
 
      /**
-     * @Route("/admin/database", name="database")
+     * @Route("/database", name="database")
      */
     public function summaryAction(Request $request): Response
     {
@@ -29,16 +29,30 @@ class DataBaseController extends AbstractController
             'tables' => $tables,
             'columns' => null,
         ]);
-
     }
+      /**
+       * @Route("/api-conn", name="api_conn")
+       */
+      public function apiConn(Request $request): Response
+      {
+          return $this->render('@CustomDatabase/default/api-connections.html.twig');
+      }
 
       /**
-     * @Route("/admin/database-conn", name="database_conn")
-     */
-    public function dataBaseConn(Request $request): Response
-    {
-        return $this->render('@CustomDatabase/default/database-connector.html.twig');
-    }
+       * @Route("/database-conn", name="database_conn")
+       */
+      public function dataBaseConn(Request $request): Response
+      {
+          return $this->render('@CustomDatabase/default/database-connector.html.twig');
+      }
+  
+      /**
+       * @Route("/data-mapping", name="data_mapping")
+       */
+      public function dataMapping(Request $request): Response
+      {
+          return $this->render('@CustomDatabase/default/data-mapping.html.twig');
+      }
 
      /**
     * @Route("/admin/test-connection", name="admin_test_connection")
@@ -364,4 +378,100 @@ class DataBaseController extends AbstractController
     //         return $this->json([]);
     //     }
     // }
+
+    /**
+     * @Route("/job-automation", name="job_automation")
+     */
+    public function jobAutomation(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/job-automation.html.twig');
+    }
+
+    /**
+     * @Route("/data-importer", name="data_importer")
+     */
+    public function dataImporter(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/data-importer.html.twig');
+    }
+
+    /**
+     * @Route("/security-center", name="security_center")
+     */
+    public function securityCenter(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/security-center.html.twig');
+    }
+
+    /**
+     * @Route("/analytics", name="analytics")
+     */
+    public function analytics(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/analytics.html.twig');
+    }
+
+    /**
+     * @Route("/data-masking", name="data_masking")
+     */
+    public function dataMasking(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/data-masking.html.twig');
+    }
+
+    /**
+     * @Route("/audit-logs", name="audit_logs")
+     */
+    public function auditLogs(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/audit-logs.html.twig');
+    }
+
+    /**
+     * @Route("/backup-restore", name="backup_restore")
+     */
+    public function backupRestore(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/backup-restore.html.twig');
+    }
+
+    /**
+     * @Route("/settings", name="settings")
+     */
+    public function settings(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/settings.html.twig');
+    }
+
+    /**
+     * @Route("/user-management", name="user_management")
+     */
+    public function userManagement(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/user-management.html.twig');
+    }
+
+    /**
+     * @Route("/help-support", name="help_support")
+     */
+    public function helpSupport(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/help-support.html.twig');
+    }
+
+    /**
+     * @Route("/privacy-policy", name="privacy_policy")
+     */
+    public function privacyPolicy(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/privacy-policy.html.twig');
+    }
+
+    /**
+     * @Route("/data-protection", name="data_protection")
+     */
+    public function dataProtection(Request $request): Response
+    {
+        return $this->render('@CustomDatabase/default/data-protection.html.twig');
+    }
 }

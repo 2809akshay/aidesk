@@ -1,0 +1,1295 @@
+{% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+{% endblock %}
+
+{% block headscripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('bundles/customdatabase/static/user-management/script.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="user-management-content">
+        <div class="database-header">
+            <div class="header-actions">
+                <a href="{{ path('home') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <button class="btn-add-user" onclick="openAddUserModal()">
+                    <i class="fas fa-user-plus"></i> Add User
+                </button>
+                <button class="btn-import-users" onclick="importUsers()">
+                    <i class="fas fa-upload"></i> Import Users
+                </button>
+                <button class="btn-export-users" onclick="exportUsers()">
+                    <i class="fas fa-download"></i> Export Users
+                </button>
+            </div>
+            <h1><i class="fas fa-users"></i> Advanced User Management</h1>
+            <p>Comprehensive user administration with role-based access control, permissions management, and user analytics</p>
+        </div>
+
+        <!-- User Overview Section -->
+        <div class="user-overview-section">
+            <h2><i class="fas fa-chart-network"></i> User Overview</h2>
+            <div class="user-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Total Users</h4>
+                        <div class="stat-value" id="total-users">1,247</div>
+                        <div class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> +12.5%
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Active Users</h4>
+                        <div class="stat-value" id="active-users">1,189</div>
+                        <div class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> +8.2%
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Pending Users</h4>
+                        <div class="stat-value" id="pending-users">23</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-lock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Locked Accounts</h4>
+                        <div class="stat-value" id="locked-accounts">35</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Tabs -->
+        <div class="user-management-tabs">
+            <div class="tabs-header">
+                <button class="tab-button active" onclick="switchUserTab('users')">
+                    <i class="fas fa-users"></i> Users
+                </button>
+                <button class="tab-button" onclick="switchUserTab('roles')">
+                    <i class="fas fa-user-tag"></i> Roles & Permissions
+                </button>
+                <button class="tab-button" onclick="switchUserTab('groups')">
+                    <i class="fas fa-users-cog"></i> Groups
+                </button>
+                <button class="tab-button" onclick="switchUserTab('analytics')">
+                    <i class="fas fa-chart-bar"></i> User Analytics
+                </button>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="users-tab" class="tab-content active">
+                <div class="users-header">
+                    <div class="users-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="user-search" placeholder="Search users...">
+                        </div>
+                        <select id="user-status-filter">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="pending">Pending</option>
+                            <option value="locked">Locked</option>
+                        </select>
+                        <select id="user-role-filter">
+                            <option value="all">All Roles</option>
+                            <option value="admin">Administrator</option>
+                            <option value="manager">Manager</option>
+                            <option value="user">User</option>
+                            <option value="viewer">Viewer</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="users-table-container">
+                    <table class="users-table" id="users-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="select-all-users"></th>
+                                <th>Avatar</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Last Login</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- Users will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <div class="table-info">
+                        <span id="users-table-info">Showing 1 to 25 of 1,247 users</span>
+                    </div>
+                    <div class="pagination">
+                        <button class="btn-page" id="users-prev-page" disabled>
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <div class="page-numbers" id="users-page-numbers">
+                            <!-- Page numbers will be generated dynamically -->
+                        </div>
+                        <button class="btn-page" id="users-next-page">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roles & Permissions Tab -->
+            <div id="roles-tab" class="tab-content">
+                <div class="roles-header">
+                    <div class="roles-controls">
+                        <button class="btn-create-role" onclick="openCreateRoleModal()">
+                            <i class="fas fa-plus"></i> Create Role
+                        </button>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="role-search" placeholder="Search roles...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="roles-grid" id="roles-grid">
+                    <!-- Roles will be loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Groups Tab -->
+            <div id="groups-tab" class="tab-content">
+                <div class="groups-header">
+                    <div class="groups-controls">
+                        <button class="btn-create-group" onclick="openCreateGroupModal()">
+                            <i class="fas fa-plus"></i> Create Group
+                        </button>
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="group-search" placeholder="Search groups...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="groups-grid" id="groups-grid">
+                    <!-- Groups will be loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- User Analytics Tab -->
+            <div id="analytics-tab" class="tab-content">
+                <div class="analytics-dashboard">
+                    <div class="analytics-charts">
+                        <div class="analytics-chart">
+                            <h4>User Registration Trend</h4>
+                            <canvas id="registration-chart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="analytics-chart">
+                            <h4>User Activity Heatmap</h4>
+                            <canvas id="activity-heatmap" width="400" height="200"></canvas>
+                        </div>
+                        <div class="analytics-chart">
+                            <h4>Login Frequency</h4>
+                            <canvas id="login-frequency-chart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="analytics-chart">
+                            <h4>Geographic Distribution</h4>
+                            <div class="geo-stats">
+                                <div class="geo-item">
+                                    <span class="geo-country">United States</span>
+                                    <span class="geo-percentage">35%</span>
+                                    <div class="geo-bar">
+                                        <div class="geo-fill" style="width: 35%"></div>
+                                    </div>
+                                </div>
+                                <div class="geo-item">
+                                    <span class="geo-country">United Kingdom</span>
+                                    <span class="geo-percentage">23%</span>
+                                    <div class="geo-bar">
+                                        <div class="geo-fill" style="width: 23%"></div>
+                                    </div>
+                                </div>
+                                <div class="geo-item">
+                                    <span class="geo-country">Germany</span>
+                                    <span class="geo-percentage">15%</span>
+                                    <div class="geo-bar">
+                                        <div class="geo-fill" style="width: 15%"></div>
+                                    </div>
+                                </div>
+                                <div class="geo-item">
+                                    <span class="geo-country">Canada</span>
+                                    <span class="geo-percentage">12%</span>
+                                    <div class="geo-bar">
+                                        <div class="geo-fill" style="width: 12%"></div>
+                                    </div>
+                                </div>
+                                <div class="geo-item">
+                                    <span class="geo-country">Others</span>
+                                    <span class="geo-percentage">15%</span>
+                                    <div class="geo-bar">
+                                        <div class="geo-fill" style="width: 15%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-insights">
+                        <h4>User Insights</h4>
+                        <div class="insights-grid">
+                            <div class="insight-card">
+                                <div class="insight-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h5>Peak Usage Time</h5>
+                                    <p>Most users are active between 9 AM - 11 AM</p>
+                                </div>
+                            </div>
+                            <div class="insight-card">
+                                <div class="insight-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h5>User Retention</h5>
+                                    <p>85% of users return within 7 days</p>
+                                </div>
+                            </div>
+                            <div class="insight-card">
+                                <div class="insight-icon">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h5>Most Used Feature</h5>
+                                    <p>Data queries (45% of all actions)</p>
+                                </div>
+                            </div>
+                            <div class="insight-card">
+                                <div class="insight-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="insight-content">
+                                    <h5>Failed Login Rate</h5>
+                                    <p>2.3% of login attempts fail</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions Panel -->
+        <div class="bulk-actions-panel" id="bulk-actions-panel" style="display: none;">
+            <div class="bulk-actions-content">
+                <span id="selected-count">0 users selected</span>
+                <div class="bulk-action-buttons">
+                    <button class="btn-bulk-action" onclick="bulkActivateUsers()">
+                        <i class="fas fa-user-check"></i> Activate
+                    </button>
+                    <button class="btn-bulk-action" onclick="bulkDeactivateUsers()">
+                        <i class="fas fa-user-times"></i> Deactivate
+                    </button>
+                    <button class="btn-bulk-action" onclick="bulkChangeRole()">
+                        <i class="fas fa-user-tag"></i> Change Role
+                    </button>
+                    <button class="btn-bulk-action" onclick="bulkDeleteUsers()">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <button class="btn-bulk-action" onclick="clearSelection()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-plus"></i> Add New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-user-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="user-first-name">First Name</label>
+                            <input type="text" id="user-first-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-last-name">Last Name</label>
+                            <input type="text" id="user-last-name" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="user-email">Email Address</label>
+                            <input type="email" id="user-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-phone">Phone Number</label>
+                            <input type="tel" id="user-phone">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="user-role">Role</label>
+                            <select id="user-role" required>
+                                <option value="">Select Role</option>
+                                <option value="admin">Administrator</option>
+                                <option value="manager">Manager</option>
+                                <option value="user">User</option>
+                                <option value="viewer">Viewer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="user-department">Department</label>
+                            <select id="user-department">
+                                <option value="">Select Department</option>
+                                <option value="it">IT</option>
+                                <option value="hr">Human Resources</option>
+                                <option value="finance">Finance</option>
+                                <option value="marketing">Marketing</option>
+                                <option value="sales">Sales</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="user-notes">Notes</label>
+                            <textarea id="user-notes" rows="3" placeholder="Optional notes about this user..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="send-invite">Send Invitation Email</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="send-invite" checked>
+                                <label for="send-invite" class="toggle-slider"></label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-primary" onclick="createUser()">Create User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Role Modal -->
+<div class="modal fade" id="createRoleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-tag"></i> Create New Role</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-role-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="role-name">Role Name</label>
+                            <input type="text" id="role-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role-description">Description</label>
+                            <input type="text" id="role-description">
+                        </div>
+                    </div>
+
+                    <div class="permissions-section">
+                        <h4>Permissions</h4>
+                        <div class="permissions-grid">
+                            <div class="permission-category">
+                                <h5>Database Access</h5>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-db-read">
+                                    <label for="perm-db-read">Read Data</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-db-write">
+                                    <label for="perm-db-write">Write Data</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-db-delete">
+                                    <label for="perm-db-delete">Delete Data</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-db-admin">
+                                    <label for="perm-db-admin">Database Administration</label>
+                                </div>
+                            </div>
+
+                            <div class="permission-category">
+                                <h5>User Management</h5>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-user-view">
+                                    <label for="perm-user-view">View Users</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-user-create">
+                                    <label for="perm-user-create">Create Users</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-user-edit">
+                                    <label for="perm-user-edit">Edit Users</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-user-delete">
+                                    <label for="perm-user-delete">Delete Users</label>
+                                </div>
+                            </div>
+
+                            <div class="permission-category">
+                                <h5>System Administration</h5>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-sys-settings">
+                                    <label for="perm-sys-settings">System Settings</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-sys-backup">
+                                    <label for="perm-sys-backup">Backup & Restore</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-sys-logs">
+                                    <label for="perm-sys-logs">View System Logs</label>
+                                </div>
+                                <div class="permission-item">
+                                    <input type="checkbox" id="perm-sys-security">
+                                    <label for="perm-sys-security">Security Settings</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-primary" onclick="createRole()">Create Role</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* User Management Styles */
+.user-overview-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.user-overview-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.user-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.user-management-tabs {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.tabs-header {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.tab-button {
+    padding: 12px 20px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.tab-button.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.users-header,
+.roles-header,
+.groups-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.users-controls,
+.roles-controls,
+.groups-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    color: #666;
+}
+
+.search-box input {
+    padding: 10px 12px 10px 40px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 250px;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+#user-status-filter,
+#user-role-filter {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+}
+
+.users-table-container {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.users-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.users-table tbody tr:hover {
+    background: rgba(74, 110, 224, 0.05);
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+}
+
+.status-active {
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.status-inactive {
+    color: #95a5a6;
+    font-weight: 600;
+}
+
+.status-pending {
+    color: #f39c12;
+    font-weight: 600;
+}
+
+.status-locked {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.user-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-user-action {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-user-action:hover {
+    transform: scale(1.05);
+}
+
+.btn-edit-user {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.btn-delete-user {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.btn-view-user {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.roles-grid,
+.groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.role-card,
+.group-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.role-card:hover,
+.group-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.role-header,
+.group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.role-header h4,
+.group-header h4 {
+    margin: 0;
+    color: var(--dark-color);
+    font-size: 18px;
+}
+
+.role-status,
+.group-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.role-status.active,
+.group-status.active {
+    background: #27ae60;
+    color: white;
+}
+
+.role-status.inactive,
+.group-status.inactive {
+    background: #95a5a6;
+    color: white;
+}
+
+.role-description,
+.group-description {
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.role-permissions,
+.group-members {
+    margin-bottom: 15px;
+}
+
+.role-permissions h5,
+.group-members h5 {
+    margin: 0 0 10px 0;
+    color: var(--dark-color);
+    font-size: 14px;
+}
+
+.permissions-list,
+.members-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.permission-tag,
+.member-tag {
+    padding: 4px 8px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.role-actions,
+.group-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-role-action,
+.btn-group-action {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-edit-role,
+.btn-edit-group {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.btn-delete-role,
+.btn-delete-group {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.btn-manage-permissions,
+.btn-manage-members {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.analytics-dashboard {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+.analytics-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.analytics-chart {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.analytics-chart h4 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+    text-align: center;
+}
+
+.geo-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.geo-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.geo-country {
+    font-weight: 600;
+    color: var(--dark-color);
+    min-width: 120px;
+}
+
+.geo-percentage {
+    font-weight: 600;
+    color: var(--primary-color);
+    min-width: 50px;
+}
+
+.geo-bar {
+    flex: 1;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.geo-fill {
+    height: 100%;
+    background: var(--primary-gradient);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.analytics-insights {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.analytics-insights h4 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.insight-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.insight-icon {
+    color: var(--primary-color);
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.insight-content h5 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+}
+
+.insight-content p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.bulk-actions-panel {
+    background: var(--primary-color);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.bulk-actions-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+#selected-count {
+    font-weight: 600;
+}
+
+.bulk-action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-bulk-action {
+    padding: 8px 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-bulk-action:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.table-info {
+    color: #666;
+    font-size: 14px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-page {
+    padding: 8px 16px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-page:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.btn-page:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 5px;
+}
+
+.page-number {
+    padding: 8px 12px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-number.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.page-number:hover:not(.active) {
+    background: #f8f9fa;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    padding: 20px 25px;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.permissions-section {
+    margin-top: 20px;
+}
+
+.permissions-section h4 {
+    margin-bottom: 20px;
+    color: var(--dark-color);
+}
+
+.permissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.permission-category {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.permission-category h5 {
+    margin: 0 0 15px 0;
+    color: var(--dark-color);
+    font-size: 14px;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.permission-item:last-child {
+    margin-bottom: 0;
+}
+
+.permission-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+}
+
+.permission-item label {
+    font-size: 12px;
+    color: #666;
+    cursor: pointer;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .user-overview-section,
+    .user-management-tabs {
+        padding: 20px;
+    }
+
+    .user-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .tabs-header {
+        justify-content: center;
+    }
+
+    .tab-button {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+
+    .users-header,
+    .roles-header,
+    .groups-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .users-controls,
+    .roles-controls,
+    .groups-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    .users-table-container {
+        overflow-x: auto;
+    }
+
+    .roles-grid,
+    .groups-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-charts {
+        grid-template-columns: 1fr;
+    }
+
+    .insights-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .bulk-actions-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .bulk-action-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .table-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .pagination {
+        justify-content: center;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .permissions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+{% endblock %}

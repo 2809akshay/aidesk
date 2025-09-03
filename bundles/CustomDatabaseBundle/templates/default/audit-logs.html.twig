@@ -1,0 +1,1271 @@
+{% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+{% endblock %}
+
+{% block headscripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('bundles/customdatabase/static/audit-logs/script.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="audit-logs-content">
+        <div class="database-header">
+            <div class="header-actions">
+                <a href="{{ path('home') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <button class="btn-export-logs" onclick="exportAuditLogs()">
+                    <i class="fas fa-download"></i> Export Logs
+                </button>
+                <button class="btn-generate-report" onclick="generateAuditReport()">
+                    <i class="fas fa-file-alt"></i> Generate Report
+                </button>
+            </div>
+            <h1><i class="fas fa-clipboard-list"></i> Advanced Audit Logs</h1>
+            <p>Comprehensive audit trail management with advanced filtering, real-time monitoring, and compliance reporting</p>
+        </div>
+
+        <!-- Audit Overview Section -->
+        <div class="audit-overview-section">
+            <h2><i class="fas fa-chart-network"></i> Audit Overview</h2>
+            <div class="audit-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Total Log Entries</h4>
+                        <div class="stat-value" id="total-log-entries">1,247,890</div>
+                        <div class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> +12.5%
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Critical Events</h4>
+                        <div class="stat-value" id="critical-events">47</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Security Events</h4>
+                        <div class="stat-value" id="security-events">1,234</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Avg Response Time</h4>
+                        <div class="stat-value" id="avg-response-time">245ms</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Filters Section -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <h3><i class="fas fa-filter"></i> Advanced Filters</h3>
+                <button class="btn-toggle-filters" onclick="toggleFilters()">
+                    <i class="fas fa-chevron-down"></i> Toggle Filters
+                </button>
+            </div>
+
+            <div class="filters-content" id="filters-content">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="date-range">Date Range</label>
+                        <select id="date-range">
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="7d" selected>Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="event-type">Event Type</label>
+                        <select id="event-type">
+                            <option value="all">All Events</option>
+                            <option value="login">Login Events</option>
+                            <option value="data-access">Data Access</option>
+                            <option value="data-modification">Data Modification</option>
+                            <option value="security">Security Events</option>
+                            <option value="admin">Administrative</option>
+                            <option value="system">System Events</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="severity">Severity</label>
+                        <select id="severity">
+                            <option value="all">All Severities</option>
+                            <option value="critical">Critical</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                            <option value="info">Info</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="user-filter">User</label>
+                        <input type="text" id="user-filter" placeholder="Search by username...">
+                    </div>
+                </div>
+
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label for="ip-filter">IP Address</label>
+                        <input type="text" id="ip-filter" placeholder="192.168.1.100">
+                    </div>
+                    <div class="filter-group">
+                        <label for="resource-filter">Resource</label>
+                        <input type="text" id="resource-filter" placeholder="Table name, API endpoint...">
+                    </div>
+                    <div class="filter-group">
+                        <label for="action-filter">Action</label>
+                        <select id="action-filter">
+                            <option value="all">All Actions</option>
+                            <option value="create">Create</option>
+                            <option value="read">Read</option>
+                            <option value="update">Update</option>
+                            <option value="delete">Delete</option>
+                            <option value="login">Login</option>
+                            <option value="logout">Logout</option>
+                            <option value="export">Export</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="status-filter">Status</label>
+                        <select id="status-filter">
+                            <option value="all">All Status</option>
+                            <option value="success">Success</option>
+                            <option value="failure">Failure</option>
+                            <option value="warning">Warning</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button class="btn-apply-filters" onclick="applyFilters()">
+                        <i class="fas fa-search"></i> Apply Filters
+                    </button>
+                    <button class="btn-clear-filters" onclick="clearFilters()">
+                        <i class="fas fa-times"></i> Clear Filters
+                    </button>
+                    <button class="btn-save-filter" onclick="saveFilter()">
+                        <i class="fas fa-save"></i> Save Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Table Section -->
+        <div class="logs-table-section">
+            <div class="table-header">
+                <h3><i class="fas fa-table"></i> Audit Log Entries</h3>
+                <div class="table-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="log-search" placeholder="Search logs...">
+                    </div>
+                    <select id="entries-per-page">
+                        <option value="25">25 entries</option>
+                        <option value="50" selected>50 entries</option>
+                        <option value="100">100 entries</option>
+                        <option value="250">250 entries</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="logs-table-container">
+                <table class="logs-table" id="logs-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all"></th>
+                            <th>Timestamp</th>
+                            <th>User</th>
+                            <th>Event Type</th>
+                            <th>Action</th>
+                            <th>Resource</th>
+                            <th>IP Address</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-table-body">
+                        <!-- Log entries will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-footer">
+                <div class="table-info">
+                    <span id="table-info">Showing 1 to 50 of 1,247,890 entries</span>
+                </div>
+                <div class="pagination">
+                    <button class="btn-page" id="prev-page" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <div class="page-numbers" id="page-numbers">
+                        <!-- Page numbers will be generated dynamically -->
+                    </div>
+                    <button class="btn-page" id="next-page">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Monitoring Section -->
+        <div class="real-time-monitoring-section">
+            <h2><i class="fas fa-bolt"></i> Real-time Monitoring</h2>
+            <div class="monitoring-dashboard">
+                <div class="monitoring-cards">
+                    <div class="monitoring-card">
+                        <h4>Live Events</h4>
+                        <div class="live-counter" id="live-events">0</div>
+                        <div class="live-indicator">
+                            <span class="indicator-dot"></span>
+                            <span>Active</span>
+                        </div>
+                    </div>
+
+                    <div class="monitoring-card">
+                        <h4>Events/Minute</h4>
+                        <div class="rate-counter" id="events-per-minute">24</div>
+                        <div class="rate-chart">
+                            <canvas id="rate-chart" width="100" height="30"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="monitoring-card">
+                        <h4>Active Sessions</h4>
+                        <div class="session-counter" id="active-sessions">156</div>
+                        <div class="session-breakdown">
+                            <div class="session-item">
+                                <span>Admin:</span>
+                                <span>12</span>
+                            </div>
+                            <div class="session-item">
+                                <span>User:</span>
+                                <span>144</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="monitoring-card">
+                        <h4>System Health</h4>
+                        <div class="health-status">
+                            <div class="health-indicator good">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Healthy</span>
+                            </div>
+                        </div>
+                        <div class="health-metrics">
+                            <div class="metric">
+                                <span>CPU:</span>
+                                <span>45%</span>
+                            </div>
+                            <div class="metric">
+                                <span>Memory:</span>
+                                <span>67%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-events">
+                    <h4>Recent Events</h4>
+                    <div class="events-stream" id="events-stream">
+                        <!-- Recent events will be loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance & Reporting Section -->
+        <div class="compliance-reporting-section">
+            <h2><i class="fas fa-gavel"></i> Compliance & Reporting</h2>
+            <div class="compliance-panels">
+                <div class="compliance-panel">
+                    <h3>Compliance Status</h3>
+                    <div class="compliance-items">
+                        <div class="compliance-item">
+                            <div class="compliance-info">
+                                <span class="compliance-name">SOX Compliance</span>
+                                <span class="compliance-status compliant">Compliant</span>
+                            </div>
+                            <div class="compliance-details">
+                                <span>Last Audit: 2024-01-15</span>
+                                <span>Retention: 7 years</span>
+                            </div>
+                        </div>
+                        <div class="compliance-item">
+                            <div class="compliance-info">
+                                <span class="compliance-name">HIPAA Compliance</span>
+                                <span class="compliance-status compliant">Compliant</span>
+                            </div>
+                            <div class="compliance-details">
+                                <span>Last Audit: 2024-02-01</span>
+                                <span>Retention: 6 years</span>
+                            </div>
+                        </div>
+                        <div class="compliance-item">
+                            <div class="compliance-info">
+                                <span class="compliance-name">GDPR Compliance</span>
+                                <span class="compliance-status warning">Review Needed</span>
+                            </div>
+                            <div class="compliance-details">
+                                <span>Last Audit: 2023-12-01</span>
+                                <span>Retention: 3 years</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reporting-panel">
+                    <h3>Automated Reports</h3>
+                    <div class="report-schedules">
+                        <div class="report-schedule">
+                            <div class="schedule-info">
+                                <h5>Daily Security Report</h5>
+                                <span class="schedule-time">Daily at 6:00 AM</span>
+                            </div>
+                            <div class="schedule-status active">
+                                <span>Active</span>
+                            </div>
+                        </div>
+                        <div class="report-schedule">
+                            <div class="schedule-info">
+                                <h5>Weekly Compliance Report</h5>
+                                <span class="schedule-time">Weekly on Monday</span>
+                            </div>
+                            <div class="schedule-status active">
+                                <span>Active</span>
+                            </div>
+                        </div>
+                        <div class="report-schedule">
+                            <div class="schedule-info">
+                                <h5>Monthly Audit Summary</h5>
+                                <span class="schedule-time">Monthly on 1st</span>
+                            </div>
+                            <div class="schedule-status inactive">
+                                <span>Inactive</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn-create-report" onclick="createReportSchedule()">
+                            <i class="fas fa-plus"></i> Create Schedule
+                        </button>
+                        <button class="btn-manage-reports" onclick="manageReports()">
+                            <i class="fas fa-cog"></i> Manage Reports
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Analysis Section -->
+        <div class="log-analysis-section">
+            <h2><i class="fas fa-chart-bar"></i> Log Analysis & Insights</h2>
+            <div class="analysis-dashboard">
+                <div class="analysis-charts">
+                    <div class="analysis-chart">
+                        <h4>Events by Type</h4>
+                        <canvas id="events-type-chart" width="300" height="200"></canvas>
+                    </div>
+                    <div class="analysis-chart">
+                        <h4>Events by Hour</h4>
+                        <canvas id="events-hour-chart" width="300" height="200"></canvas>
+                    </div>
+                    <div class="analysis-chart">
+                        <h4>Top Users</h4>
+                        <div class="top-users-list">
+                            <div class="user-item">
+                                <span class="user-name">john.doe</span>
+                                <span class="user-count">1,234 events</span>
+                            </div>
+                            <div class="user-item">
+                                <span class="user-name">admin</span>
+                                <span class="user-count">987 events</span>
+                            </div>
+                            <div class="user-item">
+                                <span class="user-name">jane.smith</span>
+                                <span class="user-count">756 events</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analysis-chart">
+                        <h4>Geographic Distribution</h4>
+                        <div class="geo-distribution">
+                            <div class="geo-item">
+                                <span class="geo-location">United States</span>
+                                <span class="geo-percentage">45%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="geo-location">United Kingdom</span>
+                                <span class="geo-percentage">23%</span>
+                            </div>
+                            <div class="geo-item">
+                                <span class="geo-location">Germany</span>
+                                <span class="geo-percentage">15%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analysis-insights">
+                    <h4>Key Insights</h4>
+                    <div class="insights-list">
+                        <div class="insight-item">
+                            <div class="insight-icon">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h5>Login Activity Increased</h5>
+                                <p>Login events increased by 25% compared to last week</p>
+                            </div>
+                        </div>
+                        <div class="insight-item">
+                            <div class="insight-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h5>Unusual Access Pattern</h5>
+                                <p>Detected unusual access pattern from IP 192.168.1.100</p>
+                            </div>
+                        </div>
+                        <div class="insight-item">
+                            <div class="insight-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="insight-content">
+                                <h5>Security Events Reduced</h5>
+                                <p>Security-related events reduced by 15% this month</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Audit Logs Styles */
+.audit-overview-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.audit-overview-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.audit-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.filters-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filters-header h3 {
+    margin: 0;
+    color: var(--dark-color);
+}
+
+.btn-toggle-filters {
+    padding: 8px 16px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-toggle-filters:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.filters-content {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 20px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 8px;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.btn-apply-filters,
+.btn-clear-filters,
+.btn-save-filter {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-apply-filters {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-clear-filters {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+}
+
+.btn-save-filter {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.logs-table-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.table-header h3 {
+    margin: 0;
+    color: var(--dark-color);
+}
+
+.table-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    color: #666;
+}
+
+.search-box input {
+    padding: 10px 12px 10px 40px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 250px;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+#entries-per-page {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+}
+
+.logs-table-container {
+    max-height: 600px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.logs-table th,
+.logs-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.logs-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.logs-table tbody tr:hover {
+    background: rgba(74, 110, 224, 0.05);
+}
+
+.severity-critical {
+    color: #e74c3c;
+    font-weight: 700;
+}
+
+.severity-high {
+    color: #e67e22;
+    font-weight: 600;
+}
+
+.severity-medium {
+    color: #f39c12;
+    font-weight: 600;
+}
+
+.severity-low {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.severity-info {
+    color: #3498db;
+    font-weight: 500;
+}
+
+.status-success {
+    color: #27ae60;
+}
+
+.status-failure {
+    color: #e74c3c;
+}
+
+.status-warning {
+    color: #f39c12;
+}
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.table-info {
+    color: #666;
+    font-size: 14px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-page {
+    padding: 8px 16px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-page:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.btn-page:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 5px;
+}
+
+.page-number {
+    padding: 8px 12px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.page-number.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.page-number:hover:not(.active) {
+    background: #f8f9fa;
+}
+
+.real-time-monitoring-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.monitoring-dashboard {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+.monitoring-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.monitoring-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.monitoring-card h4 {
+    margin: 0 0 15px 0;
+    color: var(--dark-color);
+    font-size: 16px;
+}
+
+.live-counter,
+.rate-counter,
+.session-counter {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.live-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.indicator-dot {
+    width: 8px;
+    height: 8px;
+    background: #27ae60;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+.session-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.session-item {
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+}
+
+.health-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.health-indicator.good {
+    color: #27ae60;
+}
+
+.health-indicator i {
+    font-size: 18px;
+}
+
+.health-metrics {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+}
+
+.recent-events {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.recent-events h4 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+}
+
+.events-stream {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.event-item {
+    padding: 10px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 12px;
+}
+
+.event-item:last-child {
+    border-bottom: none;
+}
+
+.compliance-reporting-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.compliance-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.compliance-panel,
+.reporting-panel {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.compliance-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.compliance-item {
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.compliance-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.compliance-name {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.compliance-status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.compliance-status.compliant {
+    background: #27ae60;
+    color: white;
+}
+
+.compliance-status.warning {
+    background: #f39c12;
+    color: white;
+}
+
+.compliance-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+}
+
+.report-schedules {
+    margin-bottom: 20px;
+}
+
+.report-schedule {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.schedule-info h5 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+}
+
+.schedule-time {
+    font-size: 12px;
+    color: #666;
+}
+
+.schedule-status {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.schedule-status.active {
+    color: #27ae60;
+}
+
+.schedule-status.inactive {
+    color: #95a5a6;
+}
+
+.report-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-create-report,
+.btn-manage-reports {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-create-report {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-manage-reports {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+}
+
+.log-analysis-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.analysis-dashboard {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+.analysis-charts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.analysis-chart {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.analysis-chart h4 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+    text-align: center;
+}
+
+.top-users-list,
+.geo-distribution {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.user-item,
+.geo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.user-item:last-child,
+.geo-item:last-child {
+    border-bottom: none;
+}
+
+.user-name,
+.geo-location {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.user-count,
+.geo-percentage {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.analysis-insights {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.analysis-insights h4 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+}
+
+.insights-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.insight-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.insight-icon {
+    color: var(--primary-color);
+    font-size: 18px;
+    margin-top: 2px;
+}
+
+.insight-content h5 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+}
+
+.insight-content p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .monitoring-dashboard,
+    .compliance-panels,
+    .analysis-dashboard {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .logs-table th:nth-child(6),
+    .logs-table td:nth-child(6),
+    .logs-table th:nth-child(7),
+    .logs-table td:nth-child(7) {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .audit-overview-section,
+    .filters-section,
+    .logs-table-section,
+    .real-time-monitoring-section,
+    .compliance-reporting-section,
+    .log-analysis-section {
+        padding: 20px;
+    }
+
+    .audit-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .table-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    .monitoring-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .analysis-charts {
+        grid-template-columns: 1fr;
+    }
+
+    .table-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .pagination {
+        justify-content: center;
+    }
+}
+</style>
+
+{% endblock %}

@@ -162,6 +162,8 @@ document.addEventListener("DOMContentLoaded", function () {
             setTimeout(() => {
                 alert('Login successful! You would now be redirected to the Aidesk dashboard.');
             }, 1500);
+            window.location.href = '/home'; // redirect to your home route
+
         } else {
             showNotification(loginErrorNotification, 'Invalid OTP. Please try again.');
         }

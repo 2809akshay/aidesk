@@ -1,0 +1,1236 @@
+{% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+{% endblock %}
+
+{% block headscripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('bundles/customdatabase/static/analytics/script.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="analytics-content">
+        <div class="database-header">
+            <div class="header-actions">
+                <a href="{{ path('home') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <button class="btn-create-report" onclick="createNewReport()">
+                    <i class="fas fa-plus"></i> Create Report
+                </button>
+                <button class="btn-export-analytics" onclick="exportAnalytics()">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+            </div>
+            <h1><i class="fas fa-chart-line"></i> Advanced Analytics Dashboard</h1>
+            <p>Comprehensive business intelligence with real-time analytics, custom dashboards, and advanced reporting</p>
+        </div>
+
+        <!-- Analytics Overview Section -->
+        <div class="analytics-overview-section">
+            <h2><i class="fas fa-tachometer-alt"></i> Analytics Overview</h2>
+            <div class="analytics-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Total Page Views</h4>
+                        <div class="stat-value" id="total-page-views">125,430</div>
+                        <div class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> +12.5%
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Active Users</h4>
+                        <div class="stat-value" id="active-users">8,542</div>
+                        <div class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> +8.2%
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Avg Session Duration</h4>
+                        <div class="stat-value" id="avg-session">4m 32s</div>
+                        <div class="stat-trend negative">
+                            <i class="fas fa-arrow-down"></i> -2.1%
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Conversion Rate</h4>
+                        <div class="stat-value" id="conversion-rate">3.24%</div>
+                        <div class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> +5.7%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Range Selector -->
+        <div class="time-range-section">
+            <div class="time-range-controls">
+                <div class="time-range-buttons">
+                    <button class="btn-time-range active" onclick="setTimeRange('7d')">7 Days</button>
+                    <button class="btn-time-range" onclick="setTimeRange('30d')">30 Days</button>
+                    <button class="btn-time-range" onclick="setTimeRange('90d')">90 Days</button>
+                    <button class="btn-time-range" onclick="setTimeRange('1y')">1 Year</button>
+                    <button class="btn-time-range" onclick="setTimeRange('custom')">Custom</button>
+                </div>
+                <div class="custom-date-range" id="custom-date-range" style="display: none;">
+                    <input type="date" id="start-date">
+                    <span>to</span>
+                    <input type="date" id="end-date">
+                    <button class="btn-apply-range" onclick="applyCustomRange()">Apply</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Analytics Dashboard -->
+        <div class="analytics-dashboard">
+            <div class="dashboard-grid">
+                <!-- Traffic Analytics -->
+                <div class="dashboard-card traffic-analytics">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-area"></i> Traffic Analytics</h3>
+                        <div class="card-actions">
+                            <button class="btn-card-action" onclick="refreshTrafficChart()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                            <button class="btn-card-action" onclick="fullscreenChart('traffic')">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="chart-container">
+                            <canvas id="traffic-chart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="chart-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Peak Traffic:</span>
+                                <span class="metric-value">2,450 users</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Avg Daily:</span>
+                                <span class="metric-value">1,890 users</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Demographics -->
+                <div class="dashboard-card user-demographics">
+                    <div class="card-header">
+                        <h3><i class="fas fa-users"></i> User Demographics</h3>
+                        <div class="card-actions">
+                            <button class="btn-card-action" onclick="refreshDemographics()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="demographics-chart">
+                            <canvas id="demographics-chart" width="300" height="200"></canvas>
+                        </div>
+                        <div class="demographics-breakdown">
+                            <div class="demo-item">
+                                <span class="demo-label">18-24:</span>
+                                <span class="demo-value">25%</span>
+                                <div class="demo-bar"><div class="demo-fill" style="width: 25%"></div></div>
+                            </div>
+                            <div class="demo-item">
+                                <span class="demo-label">25-34:</span>
+                                <span class="demo-value">35%</span>
+                                <div class="demo-bar"><div class="demo-fill" style="width: 35%"></div></div>
+                            </div>
+                            <div class="demo-item">
+                                <span class="demo-label">35-44:</span>
+                                <span class="demo-value">28%</span>
+                                <div class="demo-bar"><div class="demo-fill" style="width: 28%"></div></div>
+                            </div>
+                            <div class="demo-item">
+                                <span class="demo-label">45+:</span>
+                                <span class="demo-value">12%</span>
+                                <div class="demo-bar"><div class="demo-fill" style="width: 12%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Analytics -->
+                <div class="dashboard-card revenue-analytics">
+                    <div class="card-header">
+                        <h3><i class="fas fa-dollar-sign"></i> Revenue Analytics</h3>
+                        <div class="card-actions">
+                            <button class="btn-card-action" onclick="refreshRevenueChart()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="revenue-summary">
+                            <div class="revenue-metric">
+                                <span class="revenue-label">Total Revenue:</span>
+                                <span class="revenue-value">$125,430</span>
+                            </div>
+                            <div class="revenue-metric">
+                                <span class="revenue-label">Avg Order Value:</span>
+                                <span class="revenue-value">$89.50</span>
+                            </div>
+                            <div class="revenue-trend">
+                                <i class="fas fa-arrow-up"></i> +15.2% vs last month
+                            </div>
+                        </div>
+                        <div class="revenue-chart">
+                            <canvas id="revenue-chart" width="400" height="150"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics -->
+                <div class="dashboard-card performance-metrics">
+                    <div class="card-header">
+                        <h3><i class="fas fa-tachometer-alt"></i> Performance Metrics</h3>
+                        <div class="card-actions">
+                            <button class="btn-card-action" onclick="refreshPerformance()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="performance-grid">
+                            <div class="perf-item">
+                                <div class="perf-icon">
+                                    <i class="fas fa-server"></i>
+                                </div>
+                                <div class="perf-info">
+                                    <h4>Server Response</h4>
+                                    <div class="perf-value">245ms</div>
+                                    <div class="perf-status good">Good</div>
+                                </div>
+                            </div>
+                            <div class="perf-item">
+                                <div class="perf-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <div class="perf-info">
+                                    <h4>Database Queries</h4>
+                                    <div class="perf-value">1.2s</div>
+                                    <div class="perf-status warning">Slow</div>
+                                </div>
+                            </div>
+                            <div class="perf-item">
+                                <div class="perf-icon">
+                                    <i class="fas fa-globe"></i>
+                                </div>
+                                <div class="perf-info">
+                                    <h4>Page Load Time</h4>
+                                    <div class="perf-value">2.8s</div>
+                                    <div class="perf-status good">Good</div>
+                                </div>
+                            </div>
+                            <div class="perf-item">
+                                <div class="perf-icon">
+                                    <i class="fas fa-mobile-alt"></i>
+                                </div>
+                                <div class="perf-info">
+                                    <h4>Mobile Score</h4>
+                                    <div class="perf-value">92</div>
+                                    <div class="perf-status excellent">Excellent</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Pages -->
+                <div class="dashboard-card top-pages">
+                    <div class="card-header">
+                        <h3><i class="fas fa-file-alt"></i> Top Pages</h3>
+                        <div class="card-actions">
+                            <button class="btn-card-action" onclick="refreshTopPages()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="pages-list">
+                            <div class="page-item">
+                                <div class="page-info">
+                                    <span class="page-title">/dashboard</span>
+                                    <span class="page-views">12,450 views</span>
+                                </div>
+                                <div class="page-trend positive">
+                                    <i class="fas fa-arrow-up"></i> +8.5%
+                                </div>
+                            </div>
+                            <div class="page-item">
+                                <div class="page-info">
+                                    <span class="page-title">/products</span>
+                                    <span class="page-views">8,320 views</span>
+                                </div>
+                                <div class="page-trend positive">
+                                    <i class="fas fa-arrow-up"></i> +12.3%
+                                </div>
+                            </div>
+                            <div class="page-item">
+                                <div class="page-info">
+                                    <span class="page-title">/about</span>
+                                    <span class="page-views">5,670 views</span>
+                                </div>
+                                <div class="page-trend negative">
+                                    <i class="fas fa-arrow-down"></i> -2.1%
+                                </div>
+                            </div>
+                            <div class="page-item">
+                                <div class="page-info">
+                                    <span class="page-title">/contact</span>
+                                    <span class="page-views">3,890 views</span>
+                                </div>
+                                <div class="page-trend positive">
+                                    <i class="fas fa-arrow-up"></i> +5.7%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Geographic Data -->
+                <div class="dashboard-card geographic-data">
+                    <div class="card-header">
+                        <h3><i class="fas fa-map-marker-alt"></i> Geographic Distribution</h3>
+                        <div class="card-actions">
+                            <button class="btn-card-action" onclick="refreshGeographic()">
+                                <i class="fas fa-sync"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="geo-map-placeholder">
+                            <i class="fas fa-globe-americas"></i>
+                            <p>Interactive map would be displayed here</p>
+                        </div>
+                        <div class="top-countries">
+                            <div class="country-item">
+                                <span class="country-name">United States</span>
+                                <span class="country-percentage">35%</span>
+                            </div>
+                            <div class="country-item">
+                                <span class="country-name">United Kingdom</span>
+                                <span class="country-percentage">18%</span>
+                            </div>
+                            <div class="country-item">
+                                <span class="country-name">Germany</span>
+                                <span class="country-percentage">12%</span>
+                            </div>
+                            <div class="country-item">
+                                <span class="country-name">Canada</span>
+                                <span class="country-percentage">8%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Reports Section -->
+        <div class="custom-reports-section">
+            <h2><i class="fas fa-file-chart-pie"></i> Custom Reports</h2>
+            <div class="reports-grid">
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h4>Sales Performance</h4>
+                    <p>Comprehensive sales analytics and performance metrics</p>
+                    <div class="report-actions">
+                        <button class="btn-view-report" onclick="viewReport('sales')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn-export-report" onclick="exportReport('sales')">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4>User Behavior</h4>
+                    <p>User engagement and behavior analysis</p>
+                    <div class="report-actions">
+                        <button class="btn-view-report" onclick="viewReport('users')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn-export-report" onclick="exportReport('users')">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h4>Performance Report</h4>
+                    <p>System performance and optimization insights</p>
+                    <div class="report-actions">
+                        <button class="btn-view-report" onclick="viewReport('performance')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn-export-report" onclick="exportReport('performance')">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Security Report</h4>
+                    <p>Security incidents and threat analysis</p>
+                    <div class="report-actions">
+                        <button class="btn-view-report" onclick="viewReport('security')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn-export-report" onclick="exportReport('security')">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Analytics -->
+        <div class="real-time-analytics">
+            <h2><i class="fas fa-bolt"></i> Real-time Analytics</h2>
+            <div class="real-time-grid">
+                <div class="real-time-card">
+                    <h4>Live Visitors</h4>
+                    <div class="live-count" id="live-visitors">247</div>
+                    <div class="live-trend">
+                        <i class="fas fa-arrow-up"></i> +12 active now
+                    </div>
+                </div>
+
+                <div class="real-time-card">
+                    <h4>Active Sessions</h4>
+                    <div class="live-count" id="active-sessions">1,432</div>
+                    <div class="live-trend">
+                        <i class="fas fa-arrow-up"></i> +8.5% from yesterday
+                    </div>
+                </div>
+
+                <div class="real-time-card">
+                    <h4>Conversion Events</h4>
+                    <div class="live-count" id="conversion-events">23</div>
+                    <div class="live-trend">
+                        <i class="fas fa-arrow-up"></i> +15.2% today
+                    </div>
+                </div>
+
+                <div class="real-time-card">
+                    <h4>Error Rate</h4>
+                    <div class="live-count" id="error-rate">0.02%</div>
+                    <div class="live-trend good">
+                        <i class="fas fa-arrow-down"></i> -0.01% from yesterday
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Report Modal -->
+<div class="modal fade" id="createReportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Create Custom Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-report-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="report-name">Report Name</label>
+                            <input type="text" id="report-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="report-type">Report Type</label>
+                            <select id="report-type" required>
+                                <option value="">Select Type</option>
+                                <option value="traffic">Traffic Analysis</option>
+                                <option value="conversion">Conversion Funnel</option>
+                                <option value="revenue">Revenue Analysis</option>
+                                <option value="user-behavior">User Behavior</option>
+                                <option value="performance">Performance Metrics</option>
+                                <option value="custom">Custom Query</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="report-description">Description</label>
+                            <textarea id="report-description" rows="3" placeholder="Describe what this report shows..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date-range">Date Range</label>
+                            <select id="date-range">
+                                <option value="7d">Last 7 days</option>
+                                <option value="30d">Last 30 days</option>
+                                <option value="90d">Last 90 days</option>
+                                <option value="1y">Last year</option>
+                                <option value="custom">Custom range</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="report-format">Output Format</label>
+                            <select id="report-format">
+                                <option value="dashboard">Dashboard View</option>
+                                <option value="pdf">PDF Report</option>
+                                <option value="excel">Excel Spreadsheet</option>
+                                <option value="csv">CSV Export</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="schedule-report">Schedule Report</label>
+                            <select id="schedule-report">
+                                <option value="manual">Manual Generation</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-primary" onclick="generateReport()">Create Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Analytics Styles */
+.analytics-overview-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.analytics-overview-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.analytics-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.stat-trend {
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.stat-trend.positive {
+    color: #27ae60;
+}
+
+.stat-trend.negative {
+    color: #e74c3c;
+}
+
+.time-range-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.time-range-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.time-range-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-time-range {
+    padding: 8px 16px;
+    border: 2px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.btn-time-range.active {
+    background: var(--primary-gradient);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.custom-date-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.custom-date-range input {
+    padding: 8px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+}
+
+.btn-apply-range {
+    padding: 8px 16px;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.analytics-dashboard {
+    margin-bottom: 20px;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 20px;
+}
+
+.dashboard-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-card-action {
+    padding: 8px;
+    border: none;
+    background: #f8f9fa;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #666;
+    transition: all 0.3s ease;
+}
+
+.btn-card-action:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.chart-container {
+    margin-bottom: 15px;
+}
+
+.chart-metrics {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.metric {
+    text-align: center;
+}
+
+.metric-label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.metric-value {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.demographics-breakdown {
+    margin-top: 15px;
+}
+
+.demo-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.demo-label {
+    width: 60px;
+    font-size: 12px;
+    color: #666;
+}
+
+.demo-value {
+    width: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.demo-bar {
+    flex: 1;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.demo-fill {
+    height: 100%;
+    background: var(--primary-gradient);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.revenue-summary {
+    margin-bottom: 15px;
+}
+
+.revenue-metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.revenue-label {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.revenue-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.revenue-trend {
+    font-size: 12px;
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.perf-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.perf-icon {
+    font-size: 24px;
+    color: var(--primary-color);
+    background: rgba(74, 110, 224, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.perf-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.perf-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 3px;
+}
+
+.perf-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.perf-status.good {
+    background: #27ae60;
+    color: white;
+}
+
+.perf-status.warning {
+    background: #f39c12;
+    color: white;
+}
+
+.perf-status.excellent {
+    background: #8e44ad;
+    color: white;
+}
+
+.pages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.page-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.page-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.page-title {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.page-views {
+    font-size: 12px;
+    color: #666;
+}
+
+.page-trend {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.page-trend.positive {
+    color: #27ae60;
+}
+
+.page-trend.negative {
+    color: #e74c3c;
+}
+
+.geo-map-placeholder {
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #e2e8f0;
+    margin-bottom: 15px;
+}
+
+.geo-map-placeholder i {
+    font-size: 32px;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.top-countries {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.country-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.country-item:last-child {
+    border-bottom: none;
+}
+
+.country-name {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.country-percentage {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.custom-reports-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.custom-reports-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.report-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.report-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.report-icon {
+    font-size: 36px;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    background: rgba(74, 110, 224, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+}
+
+.report-card h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.report-card p {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.report-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-view-report,
+.btn-export-report {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-view-report {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-export-report {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+}
+
+.real-time-analytics {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.real-time-analytics h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.real-time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.real-time-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.real-time-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.real-time-card h4 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.live-count {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.live-trend {
+    font-size: 12px;
+    color: #27ae60;
+    font-weight: 600;
+}
+
+.live-trend.good {
+    color: #27ae60;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    padding: 20px 25px;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    }
+
+    .reports-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .analytics-overview-section,
+    .time-range-section,
+    .custom-reports-section,
+    .real-time-analytics {
+        padding: 20px;
+    }
+
+    .analytics-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .time-range-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+
+    .time-range-buttons {
+        justify-content: center;
+    }
+
+    .performance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reports-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .real-time-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .report-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-view-report,
+    .btn-export-report {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .analytics-overview-section,
+    .time-range-section,
+    .custom-reports-section,
+    .real-time-analytics {
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .dashboard-card {
+        margin-bottom: 15px;
+    }
+
+    .card-header,
+    .card-content {
+        padding: 15px;
+    }
+
+    .real-time-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .live-count {
+        font-size: 24px;
+    }
+}
+</style>
+
+{% endblock %}
