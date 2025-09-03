@@ -1,0 +1,945 @@
+{% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+{% endblock %}
+
+{% block headscripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('bundles/customdatabase/static/data-masking/script.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="data-masking-content">
+        <div class="database-header">
+            <div class="header-actions">
+                <a href="{{ path('home') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <button class="btn-create-rule" onclick="openCreateRuleModal()">
+                    <i class="fas fa-plus"></i> Create Masking Rule
+                </button>
+                <button class="btn-run-masking" onclick="runDataMasking()">
+                    <i class="fas fa-play"></i> Run Masking
+                </button>
+            </div>
+            <h1><i class="fas fa-user-secret"></i> Advanced Data Masking</h1>
+            <p>Comprehensive data anonymization with intelligent masking rules, compliance management, and privacy protection</p>
+        </div>
+
+        <!-- Masking Overview Section -->
+        <div class="masking-overview-section">
+            <h2><i class="fas fa-chart-network"></i> Masking Overview</h2>
+            <div class="masking-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Masked Databases</h4>
+                        <div class="stat-value" id="masked-databases">8</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-table"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Masked Tables</h4>
+                        <div class="stat-value" id="masked-tables">24</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-columns"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Masked Fields</h4>
+                        <div class="stat-value" id="masked-fields">156</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Compliance Score</h4>
+                        <div class="stat-value" id="compliance-score">94%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Masking Rules Section -->
+        <div class="masking-rules-section">
+            <div class="section-header">
+                <h2><i class="fas fa-cogs"></i> Masking Rules</h2>
+                <div class="section-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="rule-search" placeholder="Search rules...">
+                    </div>
+                    <select id="rule-status-filter">
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="draft">Draft</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="rules-grid" id="rules-grid">
+                <!-- Masking rules will be loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Data Discovery Section -->
+        <div class="data-discovery-section">
+            <h2><i class="fas fa-search"></i> Data Discovery & Classification</h2>
+            <div class="discovery-panels">
+                <div class="discovery-panel">
+                    <h3>Sensitive Data Detection</h3>
+                    <div class="data-types-grid">
+                        <div class="data-type-card">
+                            <div class="data-type-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="data-type-info">
+                                <h4>Credit Card Numbers</h4>
+                                <div class="data-count">2,450 detected</div>
+                                <div class="data-status masked">100% masked</div>
+                            </div>
+                        </div>
+                        <div class="data-type-card">
+                            <div class="data-type-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div class="data-type-info">
+                                <h4>SSN/Personal IDs</h4>
+                                <div class="data-count">1,890 detected</div>
+                                <div class="data-status masked">95% masked</div>
+                            </div>
+                        </div>
+                        <div class="data-type-card">
+                            <div class="data-type-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="data-type-info">
+                                <h4>Email Addresses</h4>
+                                <div class="data-count">8,320 detected</div>
+                                <div class="data-status masked">87% masked</div>
+                            </div>
+                        </div>
+                        <div class="data-type-card">
+                            <div class="data-type-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="data-type-info">
+                                <h4>Phone Numbers</h4>
+                                <div class="data-count">4,670 detected</div>
+                                <div class="data-status masked">92% masked</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="discovery-panel">
+                    <h3>Data Classification</h3>
+                    <div class="classification-chart">
+                        <canvas id="classification-chart" width="300" height="200"></canvas>
+                    </div>
+                    <div class="classification-legend">
+                        <div class="legend-item">
+                            <span class="legend-color public"></span>
+                            <span>Public (35%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color internal"></span>
+                            <span>Internal (28%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color confidential"></span>
+                            <span>Confidential (22%)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color restricted"></span>
+                            <span>Restricted (15%)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Masking Templates Section -->
+        <div class="masking-templates-section">
+            <h2><i class="fas fa-clone"></i> Masking Templates</h2>
+            <div class="templates-grid">
+                <div class="template-card">
+                    <div class="template-icon">
+                        <i class="fas fa-user-secret"></i>
+                    </div>
+                    <h4>GDPR Compliance</h4>
+                    <p>Complete masking template for GDPR compliance with EU standards</p>
+                    <div class="template-actions">
+                        <button class="btn-apply-template" onclick="applyTemplate('gdpr')">
+                            <i class="fas fa-check"></i> Apply
+                        </button>
+                        <button class="btn-preview-template" onclick="previewTemplate('gdpr')">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>HIPAA Compliance</h4>
+                    <p>Healthcare data masking template compliant with HIPAA regulations</p>
+                    <div class="template-actions">
+                        <button class="btn-apply-template" onclick="applyTemplate('hipaa')">
+                            <i class="fas fa-check"></i> Apply
+                        </button>
+                        <button class="btn-preview-template" onclick="previewTemplate('hipaa')">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4>PCI DSS Compliance</h4>
+                    <p>Payment card data masking template for PCI DSS compliance</p>
+                    <div class="template-actions">
+                        <button class="btn-apply-template" onclick="applyTemplate('pci')">
+                            <i class="fas fa-check"></i> Apply
+                        </button>
+                        <button class="btn-preview-template" onclick="previewTemplate('pci')">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <div class="template-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h4>Corporate Standard</h4>
+                    <p>Standard corporate data masking template for internal use</p>
+                    <div class="template-actions">
+                        <button class="btn-apply-template" onclick="applyTemplate('corporate')">
+                            <i class="fas fa-check"></i> Apply
+                        </button>
+                        <button class="btn-preview-template" onclick="previewTemplate('corporate')">
+                            <i class="fas fa-eye"></i> Preview
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Masking History Section -->
+        <div class="masking-history-section">
+            <h2><i class="fas fa-history"></i> Masking History & Audit</h2>
+            <div class="history-table-container">
+                <table class="history-table" id="masking-history-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                            <th>Target</th>
+                            <th>Records Affected</th>
+                            <th>Status</th>
+                            <th>User</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="masking-history-body">
+                        <!-- History entries will be loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Compliance Dashboard Section -->
+        <div class="compliance-dashboard-section">
+            <h2><i class="fas fa-check-circle"></i> Compliance Dashboard</h2>
+            <div class="compliance-grid">
+                <div class="compliance-card">
+                    <h4>GDPR Compliance</h4>
+                    <div class="compliance-score">
+                        <div class="score-circle">
+                            <span class="score-value">96%</span>
+                        </div>
+                    </div>
+                    <div class="compliance-details">
+                        <div class="compliance-item">
+                            <span>Data Subject Rights</span>
+                            <span class="status compliant">✓</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span>Data Processing</span>
+                            <span class="status compliant">✓</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span>Data Transfers</span>
+                            <span class="status warning">⚠</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="compliance-card">
+                    <h4>HIPAA Compliance</h4>
+                    <div class="compliance-score">
+                        <div class="score-circle">
+                            <span class="score-value">92%</span>
+                        </div>
+                    </div>
+                    <div class="compliance-details">
+                        <div class="compliance-item">
+                            <span>PHI Protection</span>
+                            <span class="status compliant">✓</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span>Access Controls</span>
+                            <span class="status compliant">✓</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span>Audit Trails</span>
+                            <span class="status warning">⚠</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="compliance-card">
+                    <h4>PCI DSS Compliance</h4>
+                    <div class="compliance-score">
+                        <div class="score-circle">
+                            <span class="score-value">89%</span>
+                        </div>
+                    </div>
+                    <div class="compliance-details">
+                        <div class="compliance-item">
+                            <span>Card Data Protection</span>
+                            <span class="status compliant">✓</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span>Encryption</span>
+                            <span class="status warning">⚠</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span>Access Monitoring</span>
+                            <span class="status warning">⚠</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Masking Rule Modal -->
+<div class="modal fade" id="createRuleModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Create Masking Rule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="create-rule-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rule-name">Rule Name</label>
+                            <input type="text" id="rule-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rule-type">Masking Type</label>
+                            <select id="rule-type" required>
+                                <option value="">Select Type</option>
+                                <option value="redact">Redact</option>
+                                <option value="hash">Hash</option>
+                                <option value="encrypt">Encrypt</option>
+                                <option value="replace">Replace</option>
+                                <option value="shuffle">Shuffle</option>
+                                <option value="mask">Mask</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="target-database">Target Database</label>
+                            <select id="target-database" required>
+                                <option value="">Select Database</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="target-table">Target Table</label>
+                            <select id="target-table" required>
+                                <option value="">Select Table</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="target-column">Target Column</label>
+                            <select id="target-column" required>
+                                <option value="">Select Column</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="masking-pattern">Masking Pattern</label>
+                            <input type="text" id="masking-pattern" placeholder="e.g., XXXX-XXXX-XXXX-####">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rule-description">Description</label>
+                            <textarea id="rule-description" rows="3" placeholder="Describe what this rule does..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="rule-conditions">Conditions (JSON)</label>
+                            <textarea id="rule-conditions" rows="3" placeholder='{"environment": "production", "data_type": "sensitive"}'></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-primary" onclick="createMaskingRule()">Create Rule</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Data Masking Styles */
+.masking-overview-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.masking-overview-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.masking-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.masking-rules-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.rules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.rule-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.rule-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.rule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.rule-info h4 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+    font-size: 16px;
+}
+
+.rule-type {
+    display: inline-block;
+    padding: 4px 8px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.rule-details {
+    margin-bottom: 15px;
+}
+
+.rule-detail {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.rule-detail-label {
+    color: #666;
+}
+
+.rule-detail-value {
+    color: var(--dark-color);
+    font-weight: 500;
+}
+
+.rule-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-rule-action {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-test-rule {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.btn-edit-rule {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.btn-delete-rule {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.data-discovery-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.discovery-panels {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+.discovery-panel {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.data-types-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.data-type-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.data-type-icon {
+    font-size: 24px;
+    color: var(--primary-color);
+    background: rgba(74, 110, 224, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.data-type-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    color: var(--dark-color);
+}
+
+.data-count {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 3px;
+}
+
+.data-status {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+}
+
+.data-status.masked {
+    background: #27ae60;
+    color: white;
+}
+
+.classification-legend {
+    margin-top: 15px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.legend-color.public {
+    background: #27ae60;
+}
+
+.legend-color.internal {
+    background: #3498db;
+}
+
+.legend-color.confidential {
+    background: #f39c12;
+}
+
+.legend-color.restricted {
+    background: #e74c3c;
+}
+
+.masking-templates-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.template-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.template-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.template-icon {
+    font-size: 36px;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    background: rgba(74, 110, 224, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+}
+
+.template-card h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.template-card p {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.template-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-apply-template,
+.btn-preview-template {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.3s ease;
+}
+
+.btn-apply-template {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.btn-preview-template {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+}
+
+.masking-history-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.history-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.history-table th {
+    background: var(--primary-color);
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
+
+.compliance-dashboard-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.compliance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.compliance-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.compliance-card h4 {
+    margin-bottom: 20px;
+    color: var(--dark-color);
+    font-size: 18px;
+}
+
+.compliance-score {
+    margin-bottom: 20px;
+}
+
+.score-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: conic-gradient(var(--primary-color) 94%, #e2e8f0 94%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.score-value {
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.compliance-details {
+    text-align: left;
+}
+
+.compliance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.compliance-item:last-child {
+    border-bottom: none;
+}
+
+.status.compliant {
+    color: #27ae60;
+    font-weight: 700;
+}
+
+.status.warning {
+    color: #f39c12;
+    font-weight: 700;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    padding: 20px 25px;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .discovery-panels {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .rules-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .templates-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .masking-overview-section,
+    .masking-rules-section,
+    .data-discovery-section,
+    .masking-templates-section,
+    .masking-history-section,
+    .compliance-dashboard-section {
+        padding: 20px;
+    }
+
+    .masking-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .rules-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .data-types-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .templates-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .compliance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .template-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-apply-template,
+    .btn-preview-template {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+{% endblock %}

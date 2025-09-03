@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class DataImporterController extends AbstractController
 {
     /**
-     * @Route("/admin/dataImpoter", name="data_importer")
+     * @Route("/dataImpoter", name="data_importer")
      */
     public function indexAction(Request $request): Response
     {

@@ -1,0 +1,1142 @@
+{% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+{% endblock %}
+
+{% block headscripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('bundles/customdatabase/static/help-support/script.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="help-support-content">
+        <div class="database-header">
+            <div class="header-actions">
+                <a href="{{ path('home') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <button class="btn-contact-support" onclick="contactSupport()">
+                    <i class="fas fa-headset"></i> Contact Support
+                </button>
+                <button class="btn-submit-ticket" onclick="submitTicket()">
+                    <i class="fas fa-ticket-alt"></i> Submit Ticket
+                </button>
+            </div>
+            <h1><i class="fas fa-question-circle"></i> Help & Support</h1>
+            <p>Comprehensive help resources, documentation, and support services for your database management needs</p>
+        </div>
+
+        <!-- Quick Help Section -->
+        <div class="quick-help-section">
+            <h2><i class="fas fa-lightbulb"></i> Quick Help</h2>
+            <div class="quick-help-grid">
+                <div class="quick-help-card">
+                    <div class="help-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h4>Search Documentation</h4>
+                    <p>Find answers to common questions and detailed guides</p>
+                    <div class="search-bar">
+                        <input type="text" id="help-search" placeholder="Search help topics...">
+                        <button class="btn-search" onclick="searchHelp()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="quick-help-card">
+                    <div class="help-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h4>Video Tutorials</h4>
+                    <p>Step-by-step video guides for all features</p>
+                    <button class="btn-watch-tutorials" onclick="watchTutorials()">
+                        <i class="fas fa-play"></i> Watch Tutorials
+                    </button>
+                </div>
+
+                <div class="quick-help-card">
+                    <div class="help-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h4>Community Forum</h4>
+                    <p>Connect with other users and share knowledge</p>
+                    <button class="btn-community" onclick="openCommunity()">
+                        <i class="fas fa-users"></i> Join Community
+                    </button>
+                </div>
+
+                <div class="quick-help-card">
+                    <div class="help-icon">
+                        <i class="fas fa-life-ring"></i>
+                    </div>
+                    <h4>Live Chat Support</h4>
+                    <p>Get instant help from our support team</p>
+                    <button class="btn-live-chat" onclick="startLiveChat()">
+                        <i class="fas fa-comment-dots"></i> Start Chat
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Categories Section -->
+        <div class="help-categories-section">
+            <h2><i class="fas fa-folder"></i> Help Categories</h2>
+            <div class="help-categories-grid">
+                <div class="help-category-card" onclick="openCategory('getting-started')">
+                    <div class="category-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h4>Getting Started</h4>
+                    <p>Learn the basics and get up and running quickly</p>
+                    <div class="category-stats">
+                        <span>12 articles</span>
+                        <span>8 videos</span>
+                    </div>
+                </div>
+
+                <div class="help-category-card" onclick="openCategory('database-management')">
+                    <div class="category-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h4>Database Management</h4>
+                    <p>Connect, query, and manage your databases effectively</p>
+                    <div class="category-stats">
+                        <span>25 articles</span>
+                        <span>15 videos</span>
+                    </div>
+                </div>
+
+                <div class="help-category-card" onclick="openCategory('data-import-export')">
+                    <div class="category-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <h4>Data Import & Export</h4>
+                    <p>Import data from various sources and export results</p>
+                    <div class="category-stats">
+                        <span>18 articles</span>
+                        <span>12 videos</span>
+                    </div>
+                </div>
+
+                <div class="help-category-card" onclick="openCategory('security-privacy')">
+                    <div class="category-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>Security & Privacy</h4>
+                    <p>Protect your data and maintain compliance</p>
+                    <div class="category-stats">
+                        <span>20 articles</span>
+                        <span>10 videos</span>
+                    </div>
+                </div>
+
+                <div class="help-category-card" onclick="openCategory('backup-restore')">
+                    <div class="category-icon">
+                        <i class="fas fa-save"></i>
+                    </div>
+                    <h4>Backup & Restore</h4>
+                    <p>Create backups and restore data when needed</p>
+                    <div class="category-stats">
+                        <span>15 articles</span>
+                        <span>8 videos</span>
+                    </div>
+                </div>
+
+                <div class="help-category-card" onclick="openCategory('troubleshooting')">
+                    <div class="category-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h4>Troubleshooting</h4>
+                    <p>Solve common issues and error messages</p>
+                    <div class="category-stats">
+                        <span>30 articles</span>
+                        <span>5 videos</span>
+                    </div>
+                </div>
+
+                <div class="help-category-card" onclick="openCategory('api-integration')">
+                    <div class="category-icon">
+                        <i class="fas fa-plug"></i>
+                    </div>
+                    <h4>API Integration</h4>
+                    <p>Connect with external APIs and services</p>
+                    <div class="category-stats">
+                        <span>22 articles</span>
+                        <span>14 videos</span>
+                    </div>
+                </div>
+
+                <div class="help-category-card" onclick="openCategory('advanced-features')">
+                    <div class="category-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h4>Advanced Features</h4>
+                    <p>Explore advanced tools and automation features</p>
+                    <div class="category-stats">
+                        <span>16 articles</span>
+                        <span>9 videos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Articles Section -->
+        <div class="popular-articles-section">
+            <h2><i class="fas fa-fire"></i> Popular Articles</h2>
+            <div class="popular-articles-grid">
+                <div class="article-card" onclick="openArticle('connecting-database')">
+                    <div class="article-content">
+                        <h4>How to Connect to Your Database</h4>
+                        <p>Step-by-step guide to establishing database connections</p>
+                        <div class="article-meta">
+                            <span><i class="fas fa-eye"></i> 2.3K views</span>
+                            <span><i class="fas fa-thumbs-up"></i> 95% helpful</span>
+                        </div>
+                    </div>
+                    <div class="article-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="article-card" onclick="openArticle('importing-data')">
+                    <div class="article-content">
+                        <h4>Importing Data from CSV Files</h4>
+                        <p>Learn how to import data from various file formats</p>
+                        <div class="article-meta">
+                            <span><i class="fas fa-eye"></i> 1.8K views</span>
+                            <span><i class="fas fa-thumbs-up"></i> 92% helpful</span>
+                        </div>
+                    </div>
+                    <div class="article-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="article-card" onclick="openArticle('backup-strategy')">
+                    <div class="article-content">
+                        <h4>Creating a Backup Strategy</h4>
+                        <p>Best practices for data backup and recovery</p>
+                        <div class="article-meta">
+                            <span><i class="fas fa-eye"></i> 1.5K views</span>
+                            <span><i class="fas fa-thumbs-up"></i> 88% helpful</span>
+                        </div>
+                    </div>
+                    <div class="article-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="article-card" onclick="openArticle('user-permissions')">
+                    <div class="article-content">
+                        <h4>Managing User Permissions</h4>
+                        <p>Configure roles and permissions for your team</p>
+                        <div class="article-meta">
+                            <span><i class="fas fa-eye"></i> 1.2K views</span>
+                            <span><i class="fas fa-thumbs-up"></i> 90% helpful</span>
+                        </div>
+                    </div>
+                    <div class="article-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="article-card" onclick="openArticle('query-optimization')">
+                    <div class="article-content">
+                        <h4>Optimizing Database Queries</h4>
+                        <p>Improve query performance and efficiency</p>
+                        <div class="article-meta">
+                            <span><i class="fas fa-eye"></i> 980 views</span>
+                            <span><i class="fas fa-thumbs-up"></i> 87% helpful</span>
+                        </div>
+                    </div>
+                    <div class="article-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+
+                <div class="article-card" onclick="openArticle('security-best-practices')">
+                    <div class="article-content">
+                        <h4>Security Best Practices</h4>
+                        <p>Keep your data secure and compliant</p>
+                        <div class="article-meta">
+                            <span><i class="fas fa-eye"></i> 850 views</span>
+                            <span><i class="fas fa-thumbs-up"></i> 93% helpful</span>
+                        </div>
+                    </div>
+                    <div class="article-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Tickets Section -->
+        <div class="support-tickets-section">
+            <h2><i class="fas fa-ticket-alt"></i> Support Tickets</h2>
+            <div class="tickets-overview">
+                <div class="ticket-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="open-tickets">12</div>
+                        <div class="stat-label">Open Tickets</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="pending-tickets">5</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="resolved-tickets">47</div>
+                        <div class="stat-label">Resolved</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="avg-response">2.3h</div>
+                        <div class="stat-label">Avg Response</div>
+                    </div>
+                </div>
+
+                <div class="recent-tickets">
+                    <h4>Recent Tickets</h4>
+                    <div class="tickets-list">
+                        <div class="ticket-item" onclick="viewTicket(1)">
+                            <div class="ticket-info">
+                                <h5>Database connection timeout issue</h5>
+                                <span class="ticket-meta">Ticket #1001 • 2 hours ago</span>
+                            </div>
+                            <div class="ticket-status open">
+                                <span>Open</span>
+                            </div>
+                        </div>
+
+                        <div class="ticket-item" onclick="viewTicket(2)">
+                            <div class="ticket-info">
+                                <h5>Import feature not working with large files</h5>
+                                <span class="ticket-meta">Ticket #998 • 1 day ago</span>
+                            </div>
+                            <div class="ticket-status pending">
+                                <span>Pending</span>
+                            </div>
+                        </div>
+
+                        <div class="ticket-item" onclick="viewTicket(3)">
+                            <div class="ticket-info">
+                                <h5>API authentication setup help</h5>
+                                <span class="ticket-meta">Ticket #995 • 2 days ago</span>
+                            </div>
+                            <div class="ticket-status resolved">
+                                <span>Resolved</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section">
+            <h2><i class="fas fa-question"></i> Frequently Asked Questions</h2>
+            <div class="faq-accordion">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h4>How do I connect to a new database?</h4>
+                        <div class="faq-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>To connect to a new database, navigate to the Database Connector page and click "Add New Connection". Fill in your database credentials including host, port, database name, username, and password. Test the connection before saving.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h4>What file formats are supported for data import?</h4>
+                        <div class="faq-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We support CSV, Excel (.xlsx, .xls), JSON, XML, and SQL dump files for data import. You can also connect directly to external databases for data transfer.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h4>How often should I backup my data?</h4>
+                        <div class="faq-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>We recommend daily full backups for critical data, with incremental backups throughout the day. Set up automated backup schedules in the Backup & Restore section to ensure regular data protection.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h4>How do I reset my password?</h4>
+                        <div class="faq-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>If you're logged in, go to Settings > Security and click "Change Password". If you've forgotten your password, use the "Forgot Password" link on the login page to receive a reset email.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h4>What should I do if I encounter an error?</h4>
+                        <div class="faq-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>First, check our troubleshooting guides in the Help section. If you can't find a solution, submit a support ticket with detailed information about the error, including screenshots and steps to reproduce the issue.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <h4>How do I export my data?</h4>
+                        <div class="faq-icon">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Use the Data Importer page to export data in various formats including CSV, Excel, JSON, and SQL. You can export entire tables, specific queries, or filtered results.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Support Section -->
+        <div class="contact-support-section">
+            <h2><i class="fas fa-envelope"></i> Contact Support</h2>
+            <div class="contact-options">
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h4>Email Support</h4>
+                    <p>Get detailed help via email</p>
+                    <div class="contact-details">
+                        <span>support@company.com</span>
+                        <span>24-48 hour response time</span>
+                    </div>
+                    <button class="btn-contact" onclick="emailSupport()">
+                        <i class="fas fa-envelope"></i> Send Email
+                    </button>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h4>Phone Support</h4>
+                    <p>Speak directly with our experts</p>
+                    <div class="contact-details">
+                        <span>1-800-SUPPORT</span>
+                        <span>Mon-Fri 9AM-6PM EST</span>
+                    </div>
+                    <button class="btn-contact" onclick="callSupport()">
+                        <i class="fas fa-phone"></i> Call Now
+                    </button>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <h4>Live Chat</h4>
+                    <p>Instant help via live chat</p>
+                    <div class="contact-details">
+                        <span>Available 24/7</span>
+                        <span>Average wait: 2 minutes</span>
+                    </div>
+                    <button class="btn-contact" onclick="startLiveChat()">
+                        <i class="fas fa-comment-dots"></i> Start Chat
+                    </button>
+                </div>
+
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4>Community Forum</h4>
+                    <p>Connect with other users</p>
+                    <div class="contact-details">
+                        <span>24/7 access</span>
+                        <span>Active community</span>
+                    </div>
+                    <button class="btn-contact" onclick="openCommunity()">
+                        <i class="fas fa-users"></i> Join Forum
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status Section -->
+        <div class="system-status-section">
+            <h2><i class="fas fa-server"></i> System Status</h2>
+            <div class="status-overview">
+                <div class="status-item">
+                    <div class="status-indicator operational"></div>
+                    <div class="status-info">
+                        <h4>API Services</h4>
+                        <span>All systems operational</span>
+                    </div>
+                </div>
+
+                <div class="status-item">
+                    <div class="status-indicator operational"></div>
+                    <div class="status-info">
+                        <h4>Database Services</h4>
+                        <span>All systems operational</span>
+                    </div>
+                </div>
+
+                <div class="status-item">
+                    <div class="status-indicator maintenance"></div>
+                    <div class="status-info">
+                        <h4>Backup Services</h4>
+                        <span>Scheduled maintenance in progress</span>
+                    </div>
+                </div>
+
+                <div class="status-item">
+                    <div class="status-indicator operational"></div>
+                    <div class="status-info">
+                        <h4>Web Interface</h4>
+                        <span>All systems operational</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Help & Support Styles */
+.quick-help-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.quick-help-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.quick-help-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.quick-help-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.quick-help-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.help-icon {
+    font-size: 36px;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    background: rgba(74, 110, 224, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+}
+
+.quick-help-card h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.quick-help-card p {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.search-bar {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.search-bar input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.btn-search,
+.btn-watch-tutorials,
+.btn-community,
+.btn-live-chat {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-search {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-watch-tutorials,
+.btn-community,
+.btn-live-chat {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.help-categories-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.help-categories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.help-category-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.help-category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.category-icon {
+    font-size: 32px;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    background: rgba(74, 110, 224, 0.1);
+    border-radius: 10px;
+    padding: 12px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-category-card h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.help-category-card p {
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.category-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #888;
+}
+
+.category-stats span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.popular-articles-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.popular-articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.article-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: all 0.3s ease;
+}
+
+.article-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.article-content {
+    flex: 1;
+}
+
+.article-content h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 8px;
+}
+
+.article-content p {
+    color: #666;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.article-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #888;
+}
+
+.article-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.article-arrow {
+    color: var(--primary-color);
+    font-size: 18px;
+    margin-top: 5px;
+}
+
+.support-tickets-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.tickets-overview {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+}
+
+.ticket-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.recent-tickets h4 {
+    margin-bottom: 15px;
+    color: var(--dark-color);
+}
+
+.tickets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.ticket-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ticket-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.ticket-info h5 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+    font-size: 14px;
+}
+
+.ticket-meta {
+    font-size: 12px;
+    color: #666;
+}
+
+.ticket-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 12px;
+}
+
+.ticket-status.open {
+    background: #f39c12;
+    color: white;
+}
+
+.ticket-status.pending {
+    background: #3498db;
+    color: white;
+}
+
+.ticket-status.resolved {
+    background: #27ae60;
+    color: white;
+}
+
+.faq-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.faq-accordion {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.faq-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.faq-question {
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.faq-question:hover {
+    background: rgba(74, 110, 224, 0.05);
+}
+
+.faq-question h4 {
+    margin: 0;
+    color: var(--dark-color);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.faq-icon {
+    color: var(--primary-color);
+    transition: transform 0.3s ease;
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: #f8f9fa;
+}
+
+.faq-answer p {
+    margin: 0;
+    padding: 20px;
+    color: #666;
+    line-height: 1.6;
+}
+
+.contact-support-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.contact-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.contact-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.contact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+.contact-icon {
+    font-size: 36px;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    background: rgba(74, 110, 224, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px auto;
+}
+
+.contact-card h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.contact-card p {
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 20px;
+}
+
+.btn-contact {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    margin: 0 auto;
+}
+
+.btn-contact {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.system-status-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.status-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.status-indicator.operational {
+    background: #27ae60;
+}
+
+.status-indicator.maintenance {
+    background: #f39c12;
+}
+
+.status-indicator.outage {
+    background: #e74c3c;
+}
+
+.status-info h4 {
+    margin: 0 0 5px 0;
+    color: var(--dark-color);
+    font-size: 14px;
+}
+
+.status-info span {
+    font-size: 12px;
+    color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .quick-help-section,
+    .help-categories-section,
+    .popular-articles-section,
+    .support-tickets-section,
+    .faq-section,
+    .contact-support-section,
+    .system-status-section {
+        padding: 20px;
+    }
+
+    .quick-help-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .help-categories-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .popular-articles-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tickets-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .ticket-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-options {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .status-overview {
+        grid-template-columns: 1fr;
+    }
+
+    .faq-question {
+        padding: 15px;
+    }
+
+    .faq-answer p {
+        padding: 15px;
+    }
+
+    .article-card {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .article-arrow {
+        align-self: flex-end;
+    }
+}
+</style>
+
+{% endblock %}

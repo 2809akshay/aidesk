@@ -1,0 +1,944 @@
+{% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+{% endblock %}
+
+{% block headscripts %}
+    {{ parent() }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Debug: Check if jQuery loads
+        console.log('jQuery version:', $.fn.jquery);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Debug: Check if Bootstrap loads
+        console.log('Bootstrap loaded:', typeof $().modal);
+        console.log('Bootstrap available:', typeof $.fn.modal);
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="database-connector-content">
+        <div class="database-header">
+            <div class="header-actions">
+                <a href="{{ path('home') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <button class="btn-add-api" onclick="openAddApiModal()">
+                    <i class="fas fa-plus"></i> Add API Connection
+                </button>
+            </div>
+            <h1><i class="fas fa-plug"></i> Advanced API Connections</h1>
+            <p>Connect to external APIs, manage credentials, test endpoints, and monitor API performance</p>
+        </div>
+
+        <!-- API Overview Section -->
+        <div class="api-overview-section">
+            <h2><i class="fas fa-chart-network"></i> API Connection Overview</h2>
+            <div class="api-stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Active Connections</h4>
+                        <div class="stat-value" id="active-connections">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Successful Calls</h4>
+                        <div class="stat-value" id="successful-calls">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Failed Calls</h4>
+                        <div class="stat-value" id="failed-calls">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4>Avg Response Time</h4>
+                        <div class="stat-value" id="avg-response-time">0ms</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Connections Grid -->
+        <div class="api-connections-section">
+            <div class="section-header">
+                <h2><i class="fas fa-server"></i> API Connections</h2>
+                <div class="section-controls">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="api-search" placeholder="Search APIs...">
+                    </div>
+                    <select id="status-filter">
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="error">Error</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="api-connections-grid" id="api-connections-grid">
+                <!-- API connections will be loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- API Testing Section -->
+        <div class="api-testing-section">
+            <h2><i class="fas fa-flask"></i> API Testing & Debugging</h2>
+            <div class="testing-interface">
+                <div class="test-config-panel">
+                    <h3>Test Configuration</h3>
+                    <div class="test-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="test-api-select">Select API</label>
+                                <select id="test-api-select">
+                                    <option value="">Choose API to test</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="test-method">HTTP Method</label>
+                                <select id="test-method">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="DELETE">DELETE</option>
+                                    <option value="PATCH">PATCH</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="test-endpoint">Endpoint URL</label>
+                                <input type="text" id="test-endpoint" placeholder="e.g., /api/users">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="test-headers">Headers (JSON)</label>
+                                <textarea id="test-headers" placeholder='{"Content-Type": "application/json"}' rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="test-body">Request Body (JSON)</label>
+                                <textarea id="test-body" placeholder='{"key": "value"}' rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn-test-api" onclick="testApiEndpoint()">
+                                <i class="fas fa-play"></i> Test API
+                            </button>
+                            <button class="btn-clear-test" onclick="clearTestForm()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="test-results-panel">
+                    <h3>Test Results</h3>
+                    <div class="results-container">
+                        <div class="response-status">
+                            <span class="status-label">Status:</span>
+                            <span class="status-value" id="response-status">Not tested</span>
+                        </div>
+                        <div class="response-time">
+                            <span class="time-label">Response Time:</span>
+                            <span class="time-value" id="response-time">-</span>
+                        </div>
+                        <div class="response-headers">
+                            <h4>Response Headers</h4>
+                            <pre id="response-headers">No response yet</pre>
+                        </div>
+                        <div class="response-body">
+                            <h4>Response Body</h4>
+                            <pre id="response-body">No response yet</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Monitoring Section -->
+        <div class="api-monitoring-section">
+            <h2><i class="fas fa-chart-line"></i> API Performance Monitoring</h2>
+            <div class="monitoring-dashboard">
+                <div class="monitoring-cards">
+                    <div class="monitor-card">
+                        <h4>Response Time Trend</h4>
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-area"></i>
+                            <p>Response time chart will be displayed here</p>
+                        </div>
+                    </div>
+                    <div class="monitor-card">
+                        <h4>Success Rate</h4>
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-pie"></i>
+                            <p>Success rate chart will be displayed here</p>
+                        </div>
+                    </div>
+                    <div class="monitor-card">
+                        <h4>Error Distribution</h4>
+                        <div class="chart-placeholder">
+                            <i class="fas fa-chart-bar"></i>
+                            <p>Error distribution chart will be displayed here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add API Modal -->
+<div class="modal fade" id="addApiModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Add New API Connection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-api-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="api-name">API Name</label>
+                            <input type="text" id="api-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="api-type">API Type</label>
+                            <select id="api-type" required>
+                                <option value="">Select Type</option>
+                                <option value="rest">REST API</option>
+                                <option value="graphql">GraphQL</option>
+                                <option value="soap">SOAP</option>
+                                <option value="webhook">Webhook</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="api-base-url">Base URL</label>
+                            <input type="url" id="api-base-url" placeholder="https://api.example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="api-version">API Version</label>
+                            <input type="text" id="api-version" placeholder="v1, v2, etc.">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="auth-type">Authentication Type</label>
+                            <select id="auth-type" required>
+                                <option value="">Select Authentication</option>
+                                <option value="none">No Authentication</option>
+                                <option value="basic">Basic Auth</option>
+                                <option value="bearer">Bearer Token</option>
+                                <option value="api-key">API Key</option>
+                                <option value="oauth2">OAuth 2.0</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="api-description">Description</label>
+                            <input type="text" id="api-description" placeholder="Brief description of the API">
+                        </div>
+                    </div>
+
+                    <!-- Authentication Details -->
+                    <div class="auth-details" id="auth-details" style="display: none;">
+                        <h4>Authentication Details</h4>
+                        <div id="auth-fields">
+                            <!-- Dynamic auth fields will be added here -->
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings -->
+                    <div class="advanced-settings">
+                        <h4>Advanced Settings</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="timeout">Timeout (seconds)</label>
+                                <input type="number" id="timeout" value="30" min="1" max="300">
+                            </div>
+                            <div class="form-group">
+                                <label for="retry-count">Retry Count</label>
+                                <input type="number" id="retry-count" value="3" min="0" max="10">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="rate-limit">Rate Limit (requests/minute)</label>
+                                <input type="number" id="rate-limit" value="60" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label for="cache-enabled">Enable Caching</label>
+                                <input type="checkbox" id="cache-enabled" checked>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-primary" onclick="saveApiConnection()">Save Connection</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* API Connections Styles */
+.api-overview-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.api-overview-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.api-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.api-connections-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.section-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin: 0;
+}
+
+.section-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    color: #666;
+}
+
+.search-box input {
+    padding: 10px 12px 10px 40px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    width: 250px;
+}
+
+.search-box input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+#status-filter {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+}
+
+.api-connections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.api-connection-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.api-connection-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.api-connection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.api-info h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin: 0 0 5px 0;
+}
+
+.api-type {
+    display: inline-block;
+    padding: 4px 8px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.api-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.api-status.active {
+    color: #2ecc71;
+}
+
+.api-status.inactive {
+    color: #95a5a6;
+}
+
+.api-status.error {
+    color: #e74c3c;
+}
+
+.api-details {
+    margin-bottom: 15px;
+}
+
+.api-detail {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.api-detail-label {
+    color: #666;
+}
+
+.api-detail-value {
+    color: var(--dark-color);
+    font-weight: 500;
+}
+
+.api-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-api-action {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-test {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.btn-delete {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.btn-logs {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+}
+
+/* API Testing Section */
+.api-testing-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.api-testing-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.testing-interface {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.test-config-panel, .test-results-panel {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.test-config-panel h3, .test-results-panel h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 20px;
+}
+
+.test-form .form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.test-form .form-group {
+    flex: 1;
+}
+
+.test-form label {
+    display: block;
+    font-weight: 500;
+    color: var(--dark-color);
+    margin-bottom: 5px;
+}
+
+.test-form input, .test-form select, .test-form textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.test-form input:focus, .test-form select:focus, .test-form textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.test-form textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.btn-test-api, .btn-clear-test {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-test-api {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: white;
+}
+
+.btn-clear-test {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+}
+
+/* Test Results */
+.results-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.response-status, .response-time {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.status-label, .time-label {
+    font-weight: 500;
+    color: #666;
+}
+
+.status-value, .time-value {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.response-headers, .response-body {
+    margin-top: 20px;
+}
+
+.response-headers h4, .response-body h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 10px;
+}
+
+.response-headers pre, .response-body pre {
+    background: #f8f9fa;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* API Monitoring Section */
+.api-monitoring-section {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.api-monitoring-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-color);
+    margin-bottom: 25px;
+    text-align: center;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.monitoring-dashboard {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.monitoring-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.monitor-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.monitor-card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 15px;
+}
+
+.chart-placeholder {
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #e2e8f0;
+}
+
+.chart-placeholder i {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.chart-placeholder p {
+    margin: 0;
+    font-size: 14px;
+}
+
+/* Modal Styles */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    padding: 20px 25px;
+}
+
+.modal-header .modal-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.modal-body .form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.modal-body .form-group {
+    flex: 1;
+}
+
+.modal-body label {
+    display: block;
+    font-weight: 500;
+    color: var(--dark-color);
+    margin-bottom: 5px;
+}
+
+.modal-body input, .modal-body select, .modal-body textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.modal-body input:focus, .modal-body select:focus, .modal-body textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.auth-details, .advanced-settings {
+    margin-top: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.auth-details h4, .advanced-settings h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 15px;
+}
+
+.modal-footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 20px 25px;
+    border-radius: 0 0 12px 12px;
+}
+
+.btn-add-api {
+    padding: 10px 20px;
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-add-api:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .api-connections-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .testing-interface {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .monitoring-cards {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .api-overview-section,
+    .api-connections-section,
+    .api-testing-section,
+    .api-monitoring-section {
+        padding: 20px;
+    }
+
+    .api-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .section-controls {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    .api-connections-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .test-form .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .modal-body .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .api-overview-section,
+    .api-connections-section,
+    .api-testing-section,
+    .api-monitoring-section {
+        padding: 15px;
+        border-radius: 10px;
+    }
+
+    .stat-card {
+        padding: 15px;
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+
+    .api-connection-card {
+        padding: 20px;
+    }
+
+    .test-config-panel, .test-results-panel {
+        padding: 20px;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+}
+</style>
+
+<script src="{{ asset('bundles/customdatabase/static/api/script.js') }}"></script>
+
+{% endblock %}

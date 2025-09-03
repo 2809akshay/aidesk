@@ -18,7 +18,8 @@ class AideskAuthBundle extends AbstractPimcoreBundle implements PimcoreBundleAdm
     public function getJsPaths(): array
     {
         return [
-            // '/bundles/imageimport/js/pimcore/startup.js'
+            '/bundles/aideskauth/js/pimcore/startup.js',
+            '/bundles/aideskauth/js/pimcore/auth.js',
         ];
     }
 }
