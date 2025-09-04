@@ -1,5 +1,14 @@
 {% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
 
+{% block head_stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+{% endblock %}
+
+{% block footscripts %}
+    <script src="{{ asset('bundles/customdatabase/static/database/script.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="main-content">
     <div class="database-content">
