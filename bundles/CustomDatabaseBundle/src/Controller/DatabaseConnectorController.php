@@ -44,7 +44,7 @@ public function testConnectionAction(Request $request, $id = null): JsonResponse
             }
             
             $conn = new \CustomDatabaseBundle\Model\DatabaseConn();
-            $result = $conn->testConnection();
+            $result = $conn->testConnection($connection);
             
             return new JsonResponse([
                 'success' => $result['success'],
@@ -244,6 +244,7 @@ public function testConnectionAction(Request $request, $id = null): JsonResponse
             $connection->setSslMode($data['sslMode'] ?? 'prefer');
             $connection->setDescription($data['description'] ?? '');
             $connection->setTags($data['tags'] ?? '');
+            $connection->setConnectionStatus('Active');
 
             // Save the connection
             $connection->save();
@@ -338,7 +339,7 @@ public function testConnectionAction(Request $request, $id = null): JsonResponse
 
             return new JsonResponse([
                 'success' => true,
-                'connection' => \CustomDatabaseBundle\Model\DatabaseConn::getConnectionInfo()
+                'connection' => $this->getConnectionInfo($connection)
             ]);
 
         } catch (\Exception $e) {
@@ -458,7 +459,7 @@ public function testConnectionAction(Request $request, $id = null): JsonResponse
 
             // Test the connection
             $conn = new \CustomDatabaseBundle\Model\DatabaseConn();
-            $result = $conn->testConnection();
+            $result = $conn->testConnection($tempConnection);
 
             return new JsonResponse($result);
 
@@ -522,7 +523,7 @@ public function testConnectionAction(Request $request, $id = null): JsonResponse
                 $connection = DatabaseConn::getById($connectionId);
                 if ($connection) {
                     $conn = new \CustomDatabaseBundle\Model\DatabaseConn();
-                    $result = $conn->testConnection();
+                    $result = $conn->testConnection($connection);
 
                     $results[] = [
                         'id' => $connectionId,

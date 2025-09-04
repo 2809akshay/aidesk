@@ -1,10 +1,5 @@
 {% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
 
-{% block head_stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database-connector/style.css') }}" crossorigin="anonymous" />
-{% endblock %}
-
 {% block headscripts %}
     {{ parent() }}
     <script>
@@ -79,13 +74,11 @@
 {% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database-connector/style.css') }}" crossorigin="anonymous" />
 <div class="main-content">
     <div class="database-connector-content">
         <div class="database-header">
             <div class="header-actions">
-                <a href="{{ path('home') }}" class="btn-back">
-                    <i class="fas fa-arrow-left"></i> Back to Dashboard
-                </a>
                 <button class="btn-new-connection" onclick="showNewConnectionForm()">
                     <i class="fas fa-plus"></i> New Connection
                 </button>
@@ -1081,6 +1074,42 @@
 
 {% block footscripts %}
 <script src="{{ asset('bundles/customdatabase/static/database-connector/script.js') }}"></script>
+<script>
+// Debug CSS loading (without page reload)
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Database Connector CSS Debug:');
+
+    // Check if CSS file is loaded
+    const cssLinks = document.querySelectorAll('link[rel="stylesheet"]');
+    let cssLoaded = false;
+    cssLinks.forEach(link => {
+        if (link.href.includes('database-connector/style.css')) {
+            cssLoaded = true;
+            console.log('✅ CSS file found:', link.href);
+        }
+    });
+
+    if (!cssLoaded) {
+        console.warn('❌ CSS file not found in DOM - using inline fallback styles');
+    }
+
+    // Check if button styles are applied
+    const buttons = document.querySelectorAll('.btn-new-connection, .btn-quick-connect, .btn-bulk-test');
+    buttons.forEach(button => {
+        const computedStyle = window.getComputedStyle(button);
+        if (computedStyle.display === 'inline-flex') {
+            console.log('✅ Button styles applied:', button.className);
+        } else {
+            console.warn('❌ Button styles not applied:', button.className, '- using inline fallback');
+        }
+    });
+
+    // Log final status
+    console.log('🎯 Database Connector page loaded successfully');
+    console.log('📊 Total buttons found:', buttons.length);
+    console.log('🎨 Inline fallback styles are active');
+});
+</script>
 {% endblock %}
 
 {% endblock %}
