@@ -17,8 +17,8 @@
  * - charset [input]
  * - description [input]
  * - tags [input]
- * - connectionHistory [input]
- * - password [password]
+ * - connectionHistory [textarea]
+ * - password [input]
  */
 
 return \Pimcore\Model\DataObject\ClassDefinition::__set_state(array(
@@ -28,7 +28,7 @@ return \Pimcore\Model\DataObject\ClassDefinition::__set_state(array(
    'title' => '',
    'description' => '',
    'creationDate' => NULL,
-   'modificationDate' => 1756897539,
+   'modificationDate' => 1756982474,
    'userOwner' => 2,
    'userModification' => 2,
    'parentClass' => '',
@@ -432,9 +432,34 @@ return \Pimcore\Model\DataObject\ClassDefinition::__set_state(array(
              'defaultValueGenerator' => '',
           )),
           12 => 
-          \Pimcore\Model\DataObject\ClassDefinition\Data\Input::__set_state(array(
+          \Pimcore\Model\DataObject\ClassDefinition\Data\Textarea::__set_state(array(
              'name' => 'connectionHistory',
              'title' => 'Connection History',
+             'tooltip' => '',
+             'mandatory' => false,
+             'noteditable' => false,
+             'index' => false,
+             'locked' => false,
+             'style' => '',
+             'permissions' => NULL,
+             'fieldtype' => '',
+             'relationType' => false,
+             'invisible' => false,
+             'visibleGridView' => false,
+             'visibleSearch' => false,
+             'blockedVarsForExport' => 
+            array (
+            ),
+             'maxLength' => NULL,
+             'showCharCount' => false,
+             'excludeFromSearchIndex' => false,
+             'height' => '',
+             'width' => '',
+          )),
+          13 => 
+          \Pimcore\Model\DataObject\ClassDefinition\Data\Input::__set_state(array(
+             'name' => 'password',
+             'title' => 'Password',
              'tooltip' => '',
              'mandatory' => false,
              'noteditable' => false,
@@ -460,31 +485,6 @@ return \Pimcore\Model\DataObject\ClassDefinition::__set_state(array(
              'showCharCount' => false,
              'width' => '',
              'defaultValueGenerator' => '',
-          )),
-          13 => 
-          \Pimcore\Model\DataObject\ClassDefinition\Data\Password::__set_state(array(
-             'name' => 'password',
-             'title' => 'Password',
-             'tooltip' => '',
-             'mandatory' => false,
-             'noteditable' => false,
-             'index' => false,
-             'locked' => false,
-             'style' => '',
-             'permissions' => NULL,
-             'fieldtype' => '',
-             'relationType' => false,
-             'invisible' => false,
-             'visibleGridView' => false,
-             'visibleSearch' => false,
-             'blockedVarsForExport' => 
-            array (
-            ),
-             'algorithm' => 'password_hash',
-             'salt' => '',
-             'saltlocation' => 'back',
-             'minimumLength' => NULL,
-             'width' => '',
           )),
         ),
          'locked' => false,

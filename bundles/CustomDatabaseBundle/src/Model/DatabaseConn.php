@@ -400,7 +400,7 @@ class DatabaseConn extends DataObject\Concrete
      * Test database connection
      * @return array
      */
-    public function testConnection()
+    public function testConnection($object = null): array
     {
         $result = [
             'success' => false,
@@ -412,11 +412,11 @@ class DatabaseConn extends DataObject\Concrete
         $startTime = microtime(true);
 
         try {
-            switch (strtolower($this->databaseType)) {
+            switch (strtolower($object->getDatabaseType())) {
                 case 'mysql':
                 case 'mariadb':
-                    $dsn = "mysql:host={$this->host};port={$this->port};dbname={$this->databaseName};charset={$this->charset}";
-                    $pdo = new \PDO($dsn, $this->username, $this->password, [
+                    $dsn = "mysql:host={$object->gethost()};port={$object->getport()};dbname={$object->getdatabaseName()};charset={$object->getcharset()}";
+                    $pdo = new \PDO($dsn, $object->getusername(), $object->getpassword(), [
                         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                         \PDO::ATTR_EMULATE_PREPARES => false,
@@ -432,8 +432,8 @@ class DatabaseConn extends DataObject\Concrete
 
                 case 'postgresql':
                 case 'postgres':
-                    $dsn = "pgsql:host={$this->host};port={$this->port};dbname={$this->databaseName}";
-                    $pdo = new \PDO($dsn, $this->username, $this->password, [
+                    $dsn = "pgsql:host={$object->gethost()};port={$object->getport()};dbname={$object->getdatabaseName()}";
+                    $pdo = new \PDO($dsn, $object->getusername(), $object->getpassword(), [
                         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                     ]);
@@ -447,7 +447,7 @@ class DatabaseConn extends DataObject\Concrete
                     break;
 
                 case 'sqlite':
-                    $dsn = "sqlite:{$this->databaseName}";
+                    $dsn = "sqlite:{$object->getdatabaseName()}";
                     $pdo = new \PDO($dsn, null, null, [
                         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
@@ -463,8 +463,8 @@ class DatabaseConn extends DataObject\Concrete
 
                 case 'sqlserver':
                 case 'mssql':
-                    $dsn = "sqlsrv:Server={$this->host},{$this->port};Database={$this->databaseName}";
-                    $pdo = new \PDO($dsn, $this->username, $this->password, [
+                $dsn = "sqlsrv:Server={$object->gethost()},{$object->getport()};Database={$object->getdatabaseName()}";
+                    $pdo = new \PDO($dsn, $object->getusername(), $object->getpassword(), [
                         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                     ]);
@@ -478,8 +478,8 @@ class DatabaseConn extends DataObject\Concrete
                     break;
 
                 case 'oracle':
-                    $dsn = "oci:dbname={$this->host}:{$this->port}/{$this->databaseName}";
-                    $pdo = new \PDO($dsn, $this->username, $this->password, [
+                    $dsn = "oci:dbname={$object->gethost()}:{$object->getport()}/{$object->getdatabaseName()}";
+                    $pdo = new \PDO($dsn, $object->getusername(), $object->getpassword(), [
                         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                     ]);
@@ -493,7 +493,7 @@ class DatabaseConn extends DataObject\Concrete
                     break;
 
                 default:
-                    $result['message'] = 'Unsupported database type: ' . $this->databaseType;
+                    $result['message'] = 'Unsupported database type: ' . $object->getdatabaseType();
                     break;
             }
 

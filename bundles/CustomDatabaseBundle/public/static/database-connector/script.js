@@ -773,6 +773,9 @@ function showConnectionDetails(connectionId) {
 function displayConnectionDetails(connection) {
     const statusClass = getStatusClass(connection.connectionStatus);
     const statusIcon = getStatusIcon(connection.connectionStatus);
+    const history = Array.isArray(connection.connectionHistory)
+    ? connection.connectionHistory
+    : [];
 
     const detailsHtml = `
         <div class="connection-details-grid">
@@ -841,16 +844,16 @@ function displayConnectionDetails(connection) {
 
         <div class="connection-history-section">
             <h6>Recent Test History</h6>
-            <div class="history-entries">
-                ${connection.connectionHistory && connection.connectionHistory.length > 0 ?
-                    connection.connectionHistory.slice(-5).reverse().map(entry => `
+            <div class="history-entries">   
+                ${history.length > 0
+                    ? history.slice(-5).reverse().map(entry => `
                         <div class="history-entry ${entry.status}">
                             <span class="history-time">${formatTimestamp(entry.timestamp)}</span>
                             <span class="history-status">${entry.status}</span>
                             <span class="history-response">${entry.response_time}ms</span>
                         </div>
-                    `).join('') :
-                    '<p class="no-history">No test history available</p>'
+                    `).join('')
+                    : '<p class="no-history">No test history available</p>'
                 }
             </div>
         </div>
