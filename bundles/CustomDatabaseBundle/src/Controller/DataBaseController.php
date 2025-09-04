@@ -38,13 +38,6 @@ class DataBaseController extends AbstractController
           return $this->render('@CustomDatabase/default/api-connections.html.twig');
       }
 
-      /**
-       * @Route("/database-conn", name="database_conn")
-       */
-      public function dataBaseConn(Request $request): Response
-      {
-          return $this->render('@CustomDatabase/default/database-connector.html.twig');
-      }
   
       /**
        * @Route("/data-mapping", name="data_mapping")

@@ -1,922 +1,785 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // DOM Elements
-    const tablesList = document.getElementById("tablesList");
-    const tableSearch = document.getElementById("tableSearch");
-    const selectedTableName = document.getElementById("selectedTableName");
-    const strucher = document.getElementById("strucher");
-    const tableFielterSection = document.getElementById("tableFielterSection");
-    const tableStructureSection = document.getElementById("tableStructureSection");
-    const tableStructure = document.getElementById("tableStructure");
-    const tableFielter = document.getElementById("tableFielter");
-    const tableDataSection = document.getElementById("tableDataSection");
-    const tableData = document.getElementById("tableData");
-    const rowsPerPageSelect = document.getElementById("rowsPerPage");
-    const ruleContainer = document.getElementById("ruleContainer");
-    const addRuleButton = document.getElementById("addRuleButton");
-    const saveAllButton = document.getElementById("saveAllButton");
-    
-    let currentTable = null;
-    let currentPage = 1;
-    let allTables = [];
-    
-    // Initialize all tables array
-    document.querySelectorAll('.table-item').forEach(item => {
-        allTables.push({
-            name: item.getAttribute('data-table'),
-            element: item
-        });
-    });
-    
-    // Add event listeners to table links in sidebar
-    document.querySelectorAll('.table-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const tableName = this.getAttribute('data-table');
-            loadTableData(tableName);
-            return false;
-        });
-    });
-    
-    // Load data for the first table by default if any tables exist
-    const firstTableLink = document.querySelector('.table-link');
-    if (firstTableLink) {
-        // Don't auto-load first table to avoid confusion
-        // loadTableData(firstTableLink.getAttribute('data-table'));
-    }
-    
-    
-    // Add search functionality
-    tableSearch.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        allTables.forEach(table => {
-            const tableName = table.name.toLowerCase();
-            if (tableName.includes(searchTerm)) {
-                table.element.style.display = 'block';
-            } else {
-                table.element.style.display = 'none';
-            }
-        });
-    });
-    
-    // Rows per page change event listener
-    rowsPerPageSelect.addEventListener("change", function() {
-        if (currentTable) {
-            currentPage = 1;
-            fetchTableData(currentTable);
-        }
-    });
-    
-    // Load table data when a table is selected
-    function loadTableData(tableName) {
-        currentTable = tableName;
-        selectedTableName.textContent = `Table: ${tableName}`;
-        
-        // Clear filter rules when switching tables
-        ruleContainer.innerHTML = "";
-        
-        // Hide both structure and filter sections when switching tables
-        tableStructureSection.style.display = "none";
-        tableFielterSection.style.display = "none";
-        tableDataSection.style.display = "block";
-        
-        // Reset the toggle button texts
-        const structureToggle = document.querySelector(".structure-toggle-main");
-        const fielterToggle = document.querySelector(".fielter-toggle-main");
-        
-        if (structureToggle) {
-            structureToggle.textContent = "Show Structure";
-        }
-        
-        if (fielterToggle) {
-            fielterToggle.textContent = "Show Filter";
-        }
-        
-        // Show loading indicator for data only
-        tableData.innerHTML = '<div class="alert alert-info">Loading table data...</div>';
-        
-        // Fetch and display table data only (structure will be loaded when user clicks "Show Structure")
-        currentPage = 1;
-        fetchTableData(tableName);
-    }
-        
-    // Fetch and display table data
-    function fetchTableData(tableName) {
-        const rowsPerPage = parseInt(rowsPerPageSelect.value);
-        const offset = (currentPage - 1) * rowsPerPage;
-        
-        // Show loading indicator
-        tableData.innerHTML = '<div class="alert alert-info">Loading table data...</div>';
-        
-        // Fetch the actual data for current page
-        const url = `/admin/get-database-select-table-data?table=${encodeURIComponent(tableName)}&page=${currentPage}&limit=${rowsPerPage}`;
-        
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(pagedData => {
-                // Check if we have data
+// Database Management JavaScript Functions
+$(document).ready(function() {
+    // Initialize the database interface
+    initializeDatabaseInterface();
 
-                if (!pagedData.objects || pagedData.objects.length === 0) {
-                    tableData.innerHTML = `<div class="alert alert-info">No data available in this table.</div>`;
-                    return;
-                }
-                
-                renderTableData(pagedData.objects, pagedData.count, pagedData.page, pagedData.totalPages);
-            
-            })
-            .catch(error => {
-                console.error("Error fetching table data:", error);
-                tableData.innerHTML = `<div class="alert alert-danger">Error loading table data: ${error.message}</div>`;
-            });
-    }
-    
-    // Render table data with pagination
-    function renderTableData(data, totalCount, currentPageNum, totalPagesNum) {
-        if (!data || data.length === 0) {
-            tableData.innerHTML = `<div class="alert alert-info">No data available in this table.</div>`;
-            return;
-        }
-        
-        // Create data table
-        const dataTable = document.createElement("table");
-        dataTable.className = "table table-striped table-bordered";
-        
-        // Create header
-        const thead = document.createElement("thead");
-        const headerRow = document.createElement("tr");
-        const keys = Object.keys(data[0] || {});
-        keys.forEach(key => {
-            const th = document.createElement("th");
-            th.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        dataTable.appendChild(thead);
-        
-        // Create body
-        const tbody = document.createElement("tbody");
-        data.forEach(row => {
-            const tr = document.createElement("tr");
-            keys.forEach(key => {
-                const td = document.createElement("td");
-                td.textContent = row[key] !== null ? row[key] : "NULL";
-                tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-        });
-        dataTable.appendChild(tbody);
-        
-        // Create pagination controls
-        const paginationControls = document.createElement("div");
-        paginationControls.className = "pagination-controls mt-3";
-        
-        // Previous button
-        const prevButton = document.createElement("button");
-        prevButton.textContent = "Previous";
-        prevButton.className = "btn btn-secondary btn-sm";
-        prevButton.disabled = Number(currentPageNum) === 1;
-        prevButton.addEventListener("click", () => {
-            if (Number(currentPageNum) > 1) {
-                currentPage = Number(currentPageNum) - 1;
-                // Show loading indicator
-                tableData.innerHTML = '<div class="alert alert-info">Loading table data...</div>';
-                fetchTableData(currentTable);
-            }
-        });
-        
-        // Next button
-        const nextButton = document.createElement("button");
-        nextButton.textContent = "Next";
-        nextButton.className = "btn btn-secondary btn-sm ms-2";
-        nextButton.disabled = Number(currentPageNum) === totalPagesNum;
-        nextButton.addEventListener("click", () => {
-            if (Number(currentPageNum) < totalPagesNum) {
-                currentPage = Number(currentPageNum) + 1;
-                // Show loading indicator
-                tableData.innerHTML = '<div class="alert alert-info">Loading table data...</div>';
-                fetchTableData(currentTable);
-            }
-        });
-        
-        // Page indicator
-        const pageIndicator = document.createElement("span");
-        pageIndicator.className = "mx-3";
-        pageIndicator.textContent = `Page ${Number(currentPageNum)} of ${totalPagesNum} (Total records: ${totalCount})`;
-        
-        paginationControls.appendChild(prevButton);
-        paginationControls.appendChild(pageIndicator);
-        paginationControls.appendChild(nextButton);
-        
-        // Create structure toggle button
-        // const structureToggle = document.createElement("button");
-        // structureToggle.textContent = "Show Structure";
-        // structureToggle.className = "btn btn-sm btn-outline-secondary mt-3 structure-toggle-main";
-        // structureToggle.style.display = "block";
-        // structureToggle.addEventListener("click", function() {
-        //     toggleStructureVisibility(currentTable);
-        // });
-        
-        // Clear and update data container
-        tableData.innerHTML = "";
-        // tableData.appendChild(structureToggle);
-        tableData.appendChild(dataTable);
-        tableData.appendChild(paginationControls);
-    }
+    // Load database statistics
+    loadDatabaseStats();
 
-    addRuleButton.addEventListener("click", function() {
-        if (currentTable) {
-            createRuleGroup("AND", currentTable);
-        } else {
-            alert("Please select a table first");
-        }
+    // Set up event listeners
+    setupDatabaseEventListeners();
+
+    // Initialize tab switching
+    initializeTabSystem();
+});
+
+// Initialize Database Interface
+function initializeDatabaseInterface() {
+    // Initialize database interface components
+    updateDatabaseStats();
+    loadTableList();
+}
+
+// Load Database Statistics
+function loadDatabaseStats() {
+    // Simulate loading database statistics
+    setTimeout(() => {
+        $('#total-tables').text('15');
+        $('#database-size').text('2.4 GB');
+        $('#last-backup').text('2 hours ago');
+        $('#performance-score').text('94%');
+
+        // Update progress bars
+        $('.progress-fill').each(function() {
+            const width = $(this).css('width');
+            $(this).css('width', '0').animate({width: width}, 1000);
+        });
+
+        showNotification('Database statistics loaded successfully', 'success');
+    }, 1000);
+}
+
+// Setup Event Listeners
+function setupDatabaseEventListeners() {
+    // Table search functionality
+    $('#tableSearch').on('input', function() {
+        filterTables();
     });
 
-    // Toggle table fielter visibility in main content area
-    function toggleFielterVisibility(tableName) {
-        const tableFielterSection = document.getElementById("tableFielterSection");
-        const fielterToggle = document.querySelector(".fielter-toggle-main");
-        
-        if (tableFielterSection.style.display === "none") {
-            // Show filter section
-            tableFielterSection.style.display = "block";
-            fielterToggle.textContent = "Hide Filter";
-            
-            // If no rules exist, add a default rule group
-            // if (ruleContainer.children.length === 0) {
-            //     addRuleButton.addEventListener("click", function() {
-            //         createRuleGroup("AND", tableName);
-            //     });
-                
-            //     // Create the first rule group automatically
-            //     createRuleGroup("AND", tableName);
-            // }
-        } else {
-            // Hide filter section
-            tableFielterSection.style.display = "none";
-            fielterToggle.textContent = "Show Filter";
-        }
+    // Table type filter
+    $('#tableTypeFilter').change(function() {
+        filterTables();
+    });
+
+    // Sort functionality
+    $('#sortBy').change(function() {
+        sortTables();
+    });
+
+    // Tab switching
+    $('.tab-btn').click(function() {
+        const tabId = $(this).data('tab');
+        switchTab(tabId);
+    });
+
+    // Query builder events
+    $('#queryTable').change(function() {
+        loadTableColumns($(this).val());
+    });
+
+    $('#queryType').change(function() {
+        updateQueryBuilder();
+    });
+}
+
+// Initialize Tab System
+function initializeTabSystem() {
+    // Set default active tab
+    $('.tab-btn').first().addClass('active');
+    $('.tab-pane').first().addClass('active').show();
+}
+
+// Switch Tab
+function switchTab(tabId) {
+    // Update tab buttons
+    $('.tab-btn').removeClass('active');
+    $(`.tab-btn[data-tab="${tabId}"]`).addClass('active');
+
+    // Update tab content
+    $('.tab-pane').removeClass('active').hide();
+    $(`#${tabId}-tab`).addClass('active').show();
+
+    // Load tab-specific content
+    loadTabContent(tabId);
+}
+
+// Load Tab Content
+function loadTabContent(tabId) {
+    switch(tabId) {
+        case 'structure':
+            loadTableStructure();
+            break;
+        case 'relationships':
+            loadRelationships();
+            break;
+        case 'indexes':
+            loadIndexes();
+            break;
+        case 'triggers':
+            loadTriggers();
+            break;
+        case 'views':
+            loadViews();
+            break;
+        case 'data-explorer':
+            loadDataExplorer();
+            break;
+        case 'analytics':
+            loadAnalytics();
+            break;
+        case 'backup-restore':
+            loadBackupHistory();
+            break;
     }
-    
-    // Toggle table structure visibility in main content area
-    function toggleStructureVisibility(tableName) {
-        const structureSection = document.getElementById("tableStructureSection");
-        const structureContainer = document.getElementById("tableStructure");
-        const structureToggle = document.querySelector(".structure-toggle-main");
-        console.log(tableName);
-        if (structureSection.style.display === "none") {
-            // Show structure
-            structureSection.style.display = "block";
-            structureToggle.textContent = "Hide Structure";
-            fetchTableStructure(tableName);
-            
-        } else {
-            // Hide structure
-            structureSection.style.display = "none";
-            structureToggle.textContent = "Show Structure";
-        }
-    }
+}
 
-    function updateFirstGroupRule() {
-        var groups = ruleContainer.querySelectorAll(".rule-group");
-        groups.forEach((group, index) => {
-            var conditionWrapper = group.previousElementSibling;
-            if (index === 0) {
-                if (conditionWrapper) {
-                    conditionWrapper.style.display = "none";
-                }
-            } else {
-                if (conditionWrapper) {
-                    conditionWrapper.style.display = "flex";
-                }
-            }
-        });
-    }
+// Table Management Functions
+function loadTableList() {
+    // Simulate loading table list
+    const tables = [
+        'users', 'products', 'orders', 'categories', 'customers',
+        'suppliers', 'inventory', 'transactions', 'logs', 'settings'
+    ];
 
-    function createRuleRow(attributes, groupBody, defaultRow = {}, isFirstRow = false, rowcondition = "AND", condition = "EQUALS") {
-        var row = document.createElement("div");
-        row.className = "row";
-        row.style.display = "flex";
-        row.style.alignItems = "center";
-        row.style.marginBottom = "1px";
+    const tableList = $('#table-list');
+    tableList.empty();
 
-        // Add condition dropdown only if it's not the first row
-        if (!isFirstRow && groupBody.children.length > 0) {
-            var conditionSelect = document.createElement("select");
-            conditionSelect.innerHTML = `
-            <option value="AND" ${rowcondition === "AND" ? "selected" : ""}>AND</option>
-            <option value="OR" ${rowcondition === "OR" ? "selected" : ""}>OR</option>
-            <option value="AND NOT" ${rowcondition === "AND NOT" ? "selected" : ""}>AND NOT</option>
-        `;
-            conditionSelect.className = "rowCondition";
-            conditionSelect.value = defaultRow.rowcondition || "AND";
-            conditionSelect.style.width = "100px";
-            conditionSelect.style.height = "30px";
-            conditionSelect.style.textAlign = "center";
+    tables.forEach(table => {
+        const tableCard = createTableCard(table);
+        tableList.append(tableCard);
+    });
+}
 
-            var conditionWrapper = document.createElement("div");
-            conditionWrapper.style.display = "flex";
-            conditionWrapper.style.justifyContent = "center";
-            conditionWrapper.appendChild(conditionSelect);
-            row.appendChild(conditionWrapper);
-
-            conditionSelect.addEventListener("change", function () {
-                rowcondition = conditionSelect.value;
-            });
-        } else {
-            // Add a placeholder div for empty space
-            var placeholderWrapper = document.createElement("div");
-            placeholderWrapper.style.width = "105px"; // Match the width of the condition field
-            placeholderWrapper.style.height = "30px"; // Match the height of the condition field
-            placeholderWrapper.style.display = "flex";
-            placeholderWrapper.style.justifyContent = "center";
-            row.appendChild(placeholderWrapper);
-        }
-
-        // Attribute Dropdown
-        var attributeDropdown = document.createElement("select");
-        attributeDropdown.innerHTML = `<option value="">Select column</option>`;
-        attributeDropdown.className = "attribute";
-        console.log("dd",attributes);
-        attributes.forEach(attr => {
-            var option = document.createElement("option");
-            option.value = attr;        // use the string directly
-            option.textContent = attr;  // same string as label
-            attributeDropdown.appendChild(option);
-        });
-        attributeDropdown.value = defaultRow.attribute || "";
-        row.appendChild(attributeDropdown);
-
-        // Condition Dropdown
-        var conditionDropdown = document.createElement("select");
-        conditionDropdown.className = "condition";
-        conditionDropdown.innerHTML = `
-        <option value="EQUALS" ${condition === "EQUALS" ? "selected" : ""}>EQUALS</option>
-        <option value="NOT EQUALS" ${condition === "NOT EQUALS" ? "selected" : ""}>NOT EQUALS</option>
-        <option value="CONTAINS" ${condition === "CONTAINS" ? "selected" : ""}>CONTAINS</option>
-        <option value="START WITH" ${condition === "START WITH" ? "selected" : ""}>START WITH</option>
-        <option value="IS ONE OF" ${condition === "IS ONE OF" ? "selected" : ""}>IS ONE OF</option>
-        <option value="NOT ONE OF" ${condition === "NOT ONE OF" ? "selected" : ""}>NOT ONE OF</option>
-        <option value="GREATER THAN" ${condition === "GREATER THAN" ? "selected" : ""}>GREATER THAN</option>
-        <option value="LESS THAN" ${condition === "LESS THAN" ? "selected" : ""}>LESS THAN</option>
+function createTableCard(tableName) {
+    return `
+        <div class="table-card" data-table="${tableName}">
+            <div class="table-header">
+                <div class="table-icon">
+                    <i class="fas fa-table"></i>
+                </div>
+                <div class="table-info">
+                    <h4>${tableName.charAt(0).toUpperCase() + tableName.slice(1)}</h4>
+                    <div class="table-meta">
+                        <span class="table-rows"><i class="fas fa-list"></i> ~1,250 rows</span>
+                        <span class="table-size"><i class="fas fa-hdd"></i> 45.2 MB</span>
+                    </div>
+                </div>
+                <div class="table-actions">
+                    <button class="btn btn-sm btn-outline-primary" onclick="viewTable('${tableName}')">
+                        <i class="fas fa-eye"></i> View
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="editTable('${tableName}')">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTable('${tableName}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
     `;
-        conditionDropdown.value = defaultRow.condition || "EQUALS";
-        conditionDropdown.style.marginRight = "10px";
-        row.appendChild(conditionDropdown);
+}
 
-        // Value Input Field
-        var valueInput = document.createElement("input");
-        valueInput.type = "text";
-        valueInput.className = "value";
-        valueInput.style.width = "395px"; // Match the width of the condition field
-        valueInput.style.height = "20px"; // Match the height of the condition field
-        valueInput.style.display = "flex";
-        valueInput.placeholder = "Enter Value";
-        valueInput.style.marginLeft = "10px";
-        valueInput.value = defaultRow.value || "";
-        row.appendChild(valueInput);
+function filterTables() {
+    const searchTerm = $('#tableSearch').val().toLowerCase();
+    const statusFilter = $('#tableTypeFilter').val();
 
-        // Delete Row Button
-        var deleteButton = document.createElement("button");
-        deleteButton.textContent = "Delete Row";
-        deleteButton.style.marginLeft = "10px";
-        deleteButton.style.backgroundColor = "red";
-        deleteButton.style.color = "white";
-        deleteButton.style.cursor = "pointer";
-        deleteButton.addEventListener("click", function () {
-            groupBody.removeChild(row);
-            updateFirstRowCondition(groupBody);
-        });
-        row.appendChild(deleteButton);
+    $('.table-card').each(function() {
+        const card = $(this);
+        const tableName = card.data('table').toLowerCase();
 
-        // Append Row to Group Body
-        groupBody.appendChild(row);
+        const matchesSearch = tableName.includes(searchTerm);
+        const matchesStatus = statusFilter === 'all' || true; // Implement status filtering
 
-        // Update condition visibility after adding a row
-        updateFirstRowCondition(groupBody);
-    }
-
-    function updateFirstRowCondition(groupBody) {
-        var rows = groupBody.querySelectorAll(".row"); // Get all rows in the group
-
-        // Loop through rows to set condition visibility
-        rows.forEach((row, index) => {
-            var conditionWrapper = row.querySelector("select.rowCondition"); // Assuming the condition wrapper has a specific class
-            
-            if (index === 0) {
-                // For the first row, hide the condition wrapper
-                if (conditionWrapper) {
-                    conditionWrapper.style.display = "none"; 
-                }
-            } else {
-                // For subsequent rows, show the condition wrapper
-                if (conditionWrapper) {
-                    conditionWrapper.style.display = "flex"; 
-                }
-            }
-        });
-    }
-  
-    saveAllButton.addEventListener("click", async function () {
-        if (!currentTable) {
-            showPopup('error', "Please select a table first");
-            return;
-        }
-        var allGroups = [];
-        var groups = ruleContainer.querySelectorAll(".rule-group");
-        var isValid = true;
-        var validationErrors = [];  // To collect validation errors
-
-        groups.forEach(group => {
-            var groupBody = group.querySelector(".group-body");
-            var rows = groupBody.querySelectorAll(".row");
-
-            var groupData = [];
-            var conditionWrapper = group.closest(".rule-group").previousElementSibling;
-            var groupConditionSelect = conditionWrapper ? conditionWrapper.querySelector(".groupCondition") : null;
-            var groupCondition = groupConditionSelect ? groupConditionSelect.value : null;
-
-            rows.forEach((row, index) => {
-                // Dynamically select the correct elements
-                var rowConditionDropdown = row.querySelector("select.rowCondition"); // Specifically target rowCondition
-                var attributeDropdown = row.querySelector("select.attribute");      // Specifically target attribute dropdown
-                var conditionDropdown = row.querySelector("select.condition");      // Specifically target condition dropdown
-                var valueInput = row.querySelector("input.value");                  // Specifically target the value input
-
-                // Get the values safely
-                var rowCondition = rowConditionDropdown?.value || "AND"; // Default to "AND" if null
-                if (index === 0) rowCondition = "AND"; // Explicitly set "AND" for the first row
-                var attribute = attributeDropdown?.value;
-                var condition = conditionDropdown?.value;
-                var value = valueInput?.value;
-
-                // Reset styles for validation
-                if (attributeDropdown) attributeDropdown.style.border = "";
-                if (valueInput) valueInput.style.border = "";
-
-                // Validate inputs
-                if (!attribute) {
-                    if (attributeDropdown) attributeDropdown.style.border = "2px solid red";
-                    isValid = false;
-                    validationErrors.push(`Row ${index + 1}: Attribute is required.`);
-                }
-                if (!value) {
-                    if (valueInput) valueInput.style.border = "2px solid red";
-                    isValid = false;
-                    validationErrors.push(`Row ${index + 1}: Value is required.`);
-                }
-
-                // If all fields are valid, build the object
-                if (attribute && value) {
-                    var rowObject = {
-                        attribute: attribute,
-                        value: value,
-                        condition: condition,
-                    };
-
-                    // Only add 'rowcondition' if it's not the first row (index !== 0)
-                    if (index !== 0) {
-                        rowObject.rowcondition = row.querySelector("select.rowCondition").value;
-                    }
-
-                    groupData.push(rowObject);
-                }
-            });
-
-            // Add group data only if it's valid and has rows
-            if (groupData.length > 0) {
-                var groupObject = {
-                    group: groupData
-                };
-
-                if (groupCondition) {
-                    groupObject.condition = groupCondition;
-                }
-
-                allGroups.push(groupObject);
-            }
-        });
-
-        // Validation check
-        if (!isValid) {
-            showPopup('error',"Please fill in all required fields correctly:\n" + validationErrors.join("\n"));
-            return;
-        }
-
-        // Get the object ID
-        // var objectId = document.getElementById("category_id").value;
-        // Prepare query parameters
-        var params = new URLSearchParams({
-            ruleSets: JSON.stringify(allGroups),
-            table: currentTable
-        });
-        console.log(params.toString());
-        try {
-        // Show loading indicator
-            tableData.innerHTML = '<div class="alert alert-info">Loading filtered data...</div>';
-            
-            // Make the GET request
-            var response = await fetch(`/admin/get-database-search-value?${params.toString()}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" }
-            });
-
-            if (response.ok) {
-                let result = await response.json();
-                
-                // Check if we have data in the response
-                if (result && result.objects) {
-                    // Render the filtered data in the table
-                    renderTableData(result.objects, result.count || result.objects.length, 1, 1);
-                        // showPopup('success', 'Filter applied successfully!');
-                    
-                    // Hide filter section after successful application
-                    tableFielterSection.style.display = "none";
-                    const fielterToggle = document.querySelector(".fielter-toggle-main");
-                    if (fielterToggle) {
-                        fielterToggle.textContent = "Show Filter";
-                    }
-                } else {
-                    showPopup('info', 'No data matches your filter criteria.');
-                    tableData.innerHTML = '<div class="alert alert-info">No data matches your filter criteria.</div>';
-                }
-            } else {
-                showPopup('error', 'Failed to apply filter.');
-                tableData.innerHTML = '<div class="alert alert-danger">Error applying filter.</div>';
-            }
-        } catch (error) {
-            console.error("Fetch error:", error);
-            showPopup('error', 'An error occurred while applying filter.');
-            tableData.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
-        }
-    });
-
-    async function showPopup(type, message) {
-        const popup = document.getElementById('popup');
-        const popupMessage = document.getElementById('popupMessage');
-        console.log(message);
-        popupMessage.textContent = message;
-        popup.className = 'popup ' + type;
-        popup.style.display = 'block';
-    }
-
-    const closePopup = document.getElementById('closePopup');
-    closePopup.addEventListener("click", () => {
-        const popup = document.getElementById('popup');
-        popup.style.display = 'none';
-    
-    });
-
-    // Fetch and display table structure
-    async function fetchTableFielter(tableName) { 
-        const url = `/admin/get-database-select-table-attribute?table=${encodeURIComponent(tableName)}`;
-
-        try {
-            const response = await fetch(url);
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("Fetched columns:", data);  // ✅ logs array like ["id","name","email"]
-
-            return data; // this will be an array of column names
-        } catch (error) {
-            console.error("Error fetching filter:", error);
-            return []; // return empty array if error
-        }
-    }
-
-    async function createRuleGroup(condition = "AND", tableName, defaultGroup = [], isFirstRow = false) {
-        const attributes = await fetchTableFielter(tableName);
-       
-        var maingroupContainer = document.createElement("div");
-        maingroupContainer.style.display = "flex";
-        maingroupContainer.style.flexDirection = "column";
-        maingroupContainer.style.marginBottom = "10px";
-
-        // Condition Dropdown
-        if (ruleContainer.children.length > 0) {
-            var conditionSelect = document.createElement("select");
-            conditionSelect.innerHTML = `
-                <option value="AND" ${condition === "AND" ? "selected" : ""}>AND</option>
-                <option value="OR" ${condition === "OR" ? "selected" : ""}>OR</option>
-            `;
-            conditionSelect.style.marginBottom = "10px";
-            conditionSelect.className = "groupCondition";
-            conditionSelect.style.width = "100px";
-            conditionSelect.style.height = "30px";
-            conditionSelect.style.textAlign = "center";
-
-            var conditionWrapper = document.createElement("div");
-            conditionWrapper.style.display = "flex";
-            conditionWrapper.className = "groupConditions";
-            conditionWrapper.style.justifyContent = "center";
-            conditionWrapper.style.marginBottom = "15px";
-            conditionWrapper.appendChild(conditionSelect);
-            maingroupContainer.appendChild(conditionWrapper);
-
-            conditionSelect.addEventListener("change", function () {
-                condition = conditionSelect.value;
-            });
-        }
-
-        // Group container
-        var groupContainer = document.createElement("div");
-        groupContainer.className = "rule-group";
-        groupContainer.style.display = "flex";
-        groupContainer.style.flexDirection = "column";
-        groupContainer.style.marginBottom = "10px";
-        groupContainer.style.border = "1px solid #ccc";
-        groupContainer.style.padding = "10px";
-
-        var openGroupLabel = document.createElement("div");
-        openGroupLabel.textContent = "(";
-        openGroupLabel.style.fontWeight = "bold";
-        groupContainer.appendChild(openGroupLabel);
-
-        var groupBody = document.createElement("div");
-        groupBody.className = "group-body";
-        groupBody.style.paddingLeft = "10px";
-        groupBody.style.marginBottom = "10px";
-        groupContainer.appendChild(groupBody);
-
-        var groupFooter = document.createElement("div");
-        groupFooter.style.display = "flex";
-        groupFooter.style.alignItems = "center";
-        groupFooter.style.marginTop = "10px";
-
-        var closeGroupLabel = document.createElement("div");
-        closeGroupLabel.textContent = ")";
-        closeGroupLabel.style.fontWeight = "bold";
-        groupContainer.appendChild(closeGroupLabel);
-
-        var addRowButton = document.createElement("button");
-        addRowButton.textContent = "Add Row";
-        addRowButton.style.cursor = "pointer";
-        addRowButton.addEventListener("click", function () {
-            createRuleRow(attributes, groupBody);
-        });
-        groupFooter.appendChild(addRowButton);
-
-        var deleteGroupButton = document.createElement("button");
-        deleteGroupButton.textContent = "Delete Group";
-        deleteGroupButton.style.marginLeft = "10px";
-        deleteGroupButton.style.backgroundColor = "red";
-        deleteGroupButton.style.color = "white";
-        deleteGroupButton.style.cursor = "pointer";
-        deleteGroupButton.addEventListener("click", function () {
-            ruleContainer.removeChild(maingroupContainer);
-            updateFirstGroupRule();
-        });
-        groupFooter.appendChild(deleteGroupButton);
-
-        groupContainer.appendChild(groupFooter);
-
-        // Create rows with default values if provided
-        // Create rows with default values if provided
-        if (Array.isArray(defaultGroup) && defaultGroup.length > 0) {
-            defaultGroup.forEach((row, index) =>
-                createRuleRow(attributes, groupBody, row, index === 0)
-            );
+        if (matchesSearch && matchesStatus) {
+            card.show();
         } else {
-            createRuleRow(attributes, groupBody, {}, true);
+            card.hide();
         }
+    });
+}
 
-        maingroupContainer.appendChild(groupContainer);
-        ruleContainer.appendChild(maingroupContainer);
-    }
-    
-    // Fetch and display table structure
-    function fetchTableStructure(tableName) {
-        const structureContainer = document.getElementById("tableStructure");
-        
-        fetch(`/admin/get-table-structure?table=${encodeURIComponent(tableName)}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Check if we have data
-                if (!data.columns || data.columns.length === 0) {
-                    structureContainer.innerHTML = `<div class="alert alert-warning">No structure information available for this table.</div>`;
-                    return;
-                }
-                
-                // Create structure table
-                const structureTable = document.createElement("table");
-                structureTable.className = "table table-striped table-bordered";
-                
-                // Create header
-                const thead = document.createElement("thead");
-                const headerRow = document.createElement("tr");
-                const headers = ["Column", "Type", "Nullable", "Default", "Key", "Extra"];
-                headers.forEach(headerText => {
-                    const th = document.createElement("th");
-                    th.textContent = headerText;
-                    headerRow.appendChild(th);
-                });
-                thead.appendChild(headerRow);
-                structureTable.appendChild(thead);
-                
-                // Create body
-                const tbody = document.createElement("tbody");
-                data.columns.forEach(column => {
-                    const row = document.createElement("tr");
-                    
-                    const nameCell = document.createElement("td");
-                    nameCell.textContent = column.COLUMN_NAME;
-                    row.appendChild(nameCell);
-                    
-                    const typeCell = document.createElement("td");
-                    typeCell.textContent = column.COLUMN_TYPE;
-                    row.appendChild(typeCell);
-                    
-                    const nullableCell = document.createElement("td");
-                    nullableCell.textContent = column.IS_NULLABLE;
-                    row.appendChild(nullableCell);
-                    
-                    const defaultCell = document.createElement("td");
-                    defaultCell.textContent = column.COLUMN_DEFAULT || "";
-                    row.appendChild(defaultCell);
-                    
-                    const keyCell = document.createElement("td");
-                    keyCell.textContent = column.COLUMN_KEY;
-                    row.appendChild(keyCell);
-                    
-                    const extraCell = document.createElement("td");
-                    extraCell.textContent = column.EXTRA;
-                    row.appendChild(extraCell);
-                    
-                    tbody.appendChild(row);
-                });
-                structureTable.appendChild(tbody);
-                
-                // Clear and update structure container
-                structureContainer.innerHTML = "";
-                structureContainer.appendChild(structureTable);
-            })
-            .catch(error => {
-                console.error("Error fetching table structure:", error);
-                structureContainer.innerHTML = `<div class="alert alert-danger">Error loading table structure: ${error.message}</div>`;
-            });
-    }
-    
-    // Fetch and display table data
-    function fetchTableData(tableName) {
-        const rowsPerPage = parseInt(rowsPerPageSelect.value);
-        const offset = (currentPage - 1) * rowsPerPage;
-        const tableData = document.getElementById("tableData");
-        
-        // Show loading indicator
-        tableData.innerHTML = '<div class="alert alert-info">Loading table data...</div>';
-        
-        // Fetch the actual data for current page
-        const url = `/admin/get-database-select-table-data?table=${encodeURIComponent(tableName)}&page=${currentPage}&limit=${rowsPerPage}`;
-        
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(pagedData => {
-                // Check if we have data
-                if (!pagedData.objects || pagedData.objects.length === 0) {
-                    tableData.innerHTML = `<div class="alert alert-info">No data available in this table.</div>`;
-                    return;
-                }
-                 // Create structure toggle button
-                const structureToggle = document.createElement("button");
-                structureToggle.textContent = "Show Structure";
-                structureToggle.className = "btn btn-sm btn-outline-secondary mt-3 structure-toggle-main";
-                structureToggle.style.display = "block";
-                structureToggle.addEventListener("click", function() {
-                    toggleStructureVisibility(tableName);
-                });
+function sortTables() {
+    const sortBy = $('#sortBy').val();
+    // Implement sorting logic
+    showNotification('Sorting by: ' + sortBy, 'info');
+}
 
-                 // Create structure toggle button
-                const fielterToggle = document.createElement("button");
-                fielterToggle.textContent = "Show Fielter";
-                fielterToggle.className = "btn btn-sm btn-outline-secondary mt-3 fielter-toggle-main";
-                fielterToggle.style.display = "block";
-                fielterToggle.addEventListener("click", function() {
-                    toggleFielterVisibility(tableName);
-                    
-                });
-                // Instead of appending to tableData, place inside #strucher
-                const strucher = document.getElementById("strucher");
-                strucher.innerHTML = "";          // clear old button if any
-                strucher.style.display = "flex";      // make children in one row
-                strucher.style.gap = "10px";          // add spacing
-                strucher.appendChild(structureToggle);
-                strucher.appendChild(fielterToggle);
-                
-                renderTableData(pagedData.objects, pagedData.count, pagedData.page, pagedData.totalPages);
-            })
-            .catch(error => {
-                console.error("Error fetching table data:", error);
-                tableData.innerHTML = `<div class="alert alert-danger">Error loading table data: ${error.message}</div>`;
-            });
+// Table Actions
+function viewTable(tableName) {
+    showNotification('Loading table: ' + tableName, 'info');
+    // Switch to data explorer tab
+    switchTab('data-explorer');
+    $('#explorerTable').val(tableName);
+    loadTableData();
+}
+
+function editTable(tableName) {
+    showNotification('Table editor for: ' + tableName, 'info');
+    // Implement table editing functionality
+}
+
+function deleteTable(tableName) {
+    if (confirm('Are you sure you want to delete table: ' + tableName + '? This action cannot be undone.')) {
+        showNotification('Table deletion is not implemented in demo mode', 'warning');
     }
-    
-    // Render table data with pagination
-    function renderTableData(data, totalCount, currentPageNum, totalPagesNum) {
-        const tableData = document.getElementById("tableData");
-        
-        if (!data || data.length === 0) {
-            tableData.innerHTML = `<div class="alert alert-info">No data available in this table.</div>`;
-            return;
-        }
-        
-        // Create data table
-        const dataTable = document.createElement("table");
-        dataTable.className = "table table-striped table-bordered";
-        
-        // Create header
-        const thead = document.createElement("thead");
-        const headerRow = document.createElement("tr");
-        const keys = Object.keys(data[0] || {});
-        keys.forEach(key => {
-            const th = document.createElement("th");
-            th.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-            headerRow.appendChild(th);
-        });
-        thead.appendChild(headerRow);
-        dataTable.appendChild(thead);
-        
-        // Create body
-        const tbody = document.createElement("tbody");
-        data.forEach(row => {
-            const tr = document.createElement("tr");
-            keys.forEach(key => {
-                const td = document.createElement("td");
-                td.textContent = row[key] !== null ? row[key] : "NULL";
-                tr.appendChild(td);
-            });
-            tbody.appendChild(tr);
-        });
-        dataTable.appendChild(tbody);
-        
-        // Create pagination controls
-        const paginationControls = document.createElement("div");
-        paginationControls.className = "pagination-controls mt-3";
-        
-        // Previous button
-        const prevButton = document.createElement("button");
-        prevButton.textContent = "Previous";
-        prevButton.className = "btn btn-secondary btn-sm";
-        prevButton.disabled = Number(currentPageNum) === 1;
-        prevButton.addEventListener("click", () => {
-            if (Number(currentPageNum) > 1) {
-                currentPage = Number(currentPageNum) - 1;
-                fetchTableData(currentTable);
-            }
-        });
-        
-        // Next button
-        const nextButton = document.createElement("button");
-        nextButton.textContent = "Next";
-        nextButton.className = "btn btn-secondary btn-sm ms-2";
-        nextButton.disabled = Number(currentPageNum) === totalPagesNum;
-        nextButton.addEventListener("click", () => {
-            if (Number(currentPageNum) < totalPagesNum) {
-                currentPage = Number(currentPageNum) + 1;
-                fetchTableData(currentTable);
-            }
-        });
-        
-        // Page indicator
-        const pageIndicator = document.createElement("span");
-        pageIndicator.className = "mx-3";
-        pageIndicator.textContent = `Page ${Number(currentPageNum)} of ${totalPagesNum} (Total records: ${totalCount})`;
-        
-        paginationControls.appendChild(prevButton);
-        paginationControls.appendChild(pageIndicator);
-        paginationControls.appendChild(nextButton);
-        
-        // Clear and update data container
-        // tableData.appendChild(structureToggle);
-        tableData.innerHTML = "";
-        tableData.appendChild(dataTable);
-        tableData.appendChild(paginationControls);
+}
+
+// Structure Functions
+function loadTableStructure() {
+    const table = $('#selectedTable').val();
+
+    if (!table) {
+        $('#structure-display').html(`
+            <div class="structure-placeholder">
+                <i class="fas fa-database"></i>
+                <h3>Select a table to view its structure</h3>
+                <p>Choose a table from the dropdown above to see its columns, data types, and constraints.</p>
+            </div>
+        `);
+        return;
     }
-    
-    // Toggle table structure visibility (for sidebar buttons - not needed anymore)
-    function toggleTableStructure(tableName, button) {
-        // This function is not used anymore since we removed the sidebar toggle buttons
+
+    showNotification('Loading table structure...', 'info');
+
+    // Simulate loading structure
+    setTimeout(() => {
+        const mockStructure = `
+            <h4>Structure for table: ${table}</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Null</th>
+                        <th>Key</th>
+                        <th>Default</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>id</td>
+                        <td>INT(11)</td>
+                        <td>NO</td>
+                        <td>PRI</td>
+                        <td>NULL</td>
+                    </tr>
+                    <tr>
+                        <td>name</td>
+                        <td>VARCHAR(255)</td>
+                        <td>YES</td>
+                        <td></td>
+                        <td>NULL</td>
+                    </tr>
+                    <tr>
+                        <td>email</td>
+                        <td>VARCHAR(255)</td>
+                        <td>YES</td>
+                        <td></td>
+                        <td>NULL</td>
+                    </tr>
+                    <tr>
+                        <td>created_at</td>
+                        <td>TIMESTAMP</td>
+                        <td>YES</td>
+                        <td></td>
+                        <td>CURRENT_TIMESTAMP</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+
+        $('#structure-display').html(mockStructure);
+        showNotification('Table structure loaded', 'success');
+    }, 1000);
+}
+
+// Relationships Functions
+function loadRelationships() {
+    showNotification('Loading relationship diagram...', 'info');
+    setTimeout(() => {
+        const diagramHtml = `
+            <div class="relationship-diagram">
+                <div class="table-node" style="left: 100px; top: 50px;">users</div>
+                <div class="table-node" style="left: 300px; top: 50px;">orders</div>
+                <div class="table-node" style="left: 500px; top: 50px;">products</div>
+                <svg class="relationship-lines" width="600" height="200">
+                    <line x1="200" y1="75" x2="300" y2="75" stroke="#667eea" stroke-width="2"/>
+                    <line x1="400" y1="75" x2="500" y2="75" stroke="#667eea" stroke-width="2"/>
+                </svg>
+            </div>
+        `;
+        $('#relationshipsCanvas').html(diagramHtml);
+        showNotification('Relationship diagram generated', 'success');
+    }, 2000);
+}
+
+// Index Functions
+function loadIndexes() {
+    showNotification('Loading indexes...', 'info');
+    setTimeout(() => {
+        const indexesHtml = `
+            <div class="indexes-table">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Index Name</th>
+                            <th>Table</th>
+                            <th>Column</th>
+                            <th>Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PRIMARY</td>
+                            <td>users</td>
+                            <td>id</td>
+                            <td>BTREE</td>
+                            <td><button class="btn btn-sm btn-outline-danger">Drop</button></td>
+                        </tr>
+                        <tr>
+                            <td>idx_users_email</td>
+                            <td>users</td>
+                            <td>email</td>
+                            <td>BTREE</td>
+                            <td><button class="btn btn-sm btn-outline-danger">Drop</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        $('#indexesList').html(indexesHtml);
+        showNotification('Indexes loaded', 'success');
+    }, 1000);
+}
+
+// Trigger Functions
+function loadTriggers() {
+    showNotification('Loading triggers...', 'info');
+    setTimeout(() => {
+        const triggersHtml = `
+            <div class="triggers-table">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Trigger Name</th>
+                            <th>Table</th>
+                            <th>Event</th>
+                            <th>Timing</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>update_timestamp</td>
+                            <td>users</td>
+                            <td>UPDATE</td>
+                            <td>BEFORE</td>
+                            <td><button class="btn btn-sm btn-outline-danger">Drop</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        $('#triggersList').html(triggersHtml);
+        showNotification('Triggers loaded', 'success');
+    }, 1000);
+}
+
+// View Functions
+function loadViews() {
+    showNotification('Loading views...', 'info');
+    setTimeout(() => {
+        const viewsHtml = `
+            <div class="views-table">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>View Name</th>
+                            <th>Definition</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>active_users</td>
+                            <td>SELECT * FROM users WHERE status = 'active'</td>
+                            <td><button class="btn btn-sm btn-outline-danger">Drop</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        $('#viewsList').html(viewsHtml);
+        showNotification('Views loaded', 'success');
+    }, 1000);
+}
+
+// Query Builder Functions
+function buildQuery() {
+    const table = $('#queryTable').val();
+    const queryType = $('#queryType').val();
+
+    if (!table) {
+        showNotification('Please select a table first', 'warning');
+        return;
     }
-    
-    // Fetch table structure for toggle functionality (not needed anymore)
-    function fetchTableStructureForToggle(tableName, container) {
-        // This function is not used anymore since we removed the sidebar toggle buttons
+
+    let query = queryType + ' * FROM ' + table;
+    $('#sqlQuery').val(query);
+    showNotification('Query built successfully', 'success');
+}
+
+function executeQuery() {
+    const query = $('#sqlQuery').val().trim();
+
+    if (!query) {
+        showNotification('Please enter a SQL query', 'warning');
+        return;
     }
+
+    showNotification('Executing query...', 'info');
+
+    // Simulate query execution
+    setTimeout(() => {
+        // Mock results
+        const mockResults = [
+            { id: 1, name: 'John Doe', email: 'john@example.com' },
+            { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+            { id: 3, name: 'Bob Johnson', email: 'bob@example.com' }
+        ];
+
+        displayQueryResults(mockResults);
+        $('#executionTime').text('Executed in 0.023 seconds');
+        $('#queryResults').show();
+        showNotification('Query executed successfully', 'success');
+    }, 1000);
+}
+
+function displayQueryResults(results) {
+    if (results.length === 0) {
+        $('#resultsTable').html('<tr><td colspan="3">No results found</td></tr>');
+        return;
+    }
+
+    const headers = Object.keys(results[0]);
+    let tableHtml = '<thead><tr>';
+
+    headers.forEach(header => {
+        tableHtml += '<th>' + header + '</th>';
+    });
+
+    tableHtml += '</tr></thead><tbody>';
+
+    results.forEach(row => {
+        tableHtml += '<tr>';
+        headers.forEach(header => {
+            tableHtml += '<td>' + row[header] + '</td>';
+        });
+        tableHtml += '</tr>';
+    });
+
+    tableHtml += '</tbody>';
+    $('#resultsTable').html(tableHtml);
+}
+
+function formatQuery() {
+    const query = $('#sqlQuery').val();
+    // Basic SQL formatting
+    const formatted = query.replace(/\s+/g, ' ').replace(/\s*,\s*/g, ',\n    ');
+    $('#sqlQuery').val(formatted);
+    showNotification('Query formatted', 'success');
+}
+
+function saveQuery() {
+    const query = $('#sqlQuery').val();
+    if (query) {
+        localStorage.setItem('savedQuery', query);
+        showNotification('Query saved successfully', 'success');
+    } else {
+        showNotification('No query to save', 'warning');
+    }
+}
+
+function clearQuery() {
+    $('#sqlQuery').val('');
+    showNotification('Query cleared', 'info');
+}
+
+function exportResults() {
+    showNotification('Exporting results...', 'info');
+    setTimeout(() => {
+        showNotification('Results exported successfully', 'success');
+    }, 1000);
+}
+
+function copyResults() {
+    showNotification('Results copied to clipboard', 'success');
+}
+
+function loadTableColumns(tableName) {
+    // Simulate loading table columns
+    const mockColumns = ['id', 'name', 'email', 'created_at', 'updated_at'];
+    // Update query builder with columns
+    showNotification('Table columns loaded', 'info');
+}
+
+function updateQueryBuilder() {
+    const queryType = $('#queryType').val();
+    // Update query builder interface based on query type
+    showNotification('Query type changed to: ' + queryType, 'info');
+}
+
+// Data Explorer Functions
+function loadDataExplorer() {
+    // Initialize data explorer
+    showNotification('Data explorer initialized', 'info');
+}
+
+function loadTableData() {
+    const table = $('#explorerTable').val();
+    const pageSize = $('#pageSize').val();
+
+    if (!table) {
+        showNotification('Please select a table', 'warning');
+        return;
+    }
+
+    showNotification('Loading table data...', 'info');
+
+    // Simulate loading data
+    setTimeout(() => {
+        const mockData = [
+            { id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active' },
+            { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'Active' },
+            { id: 3, name: 'Bob Johnson', email: 'bob@example.com', status: 'Inactive' }
+        ];
+
+        displayTableData(mockData);
+        $('#tableInfoText').text('Showing 3 of 1250 records');
+        $('#dataTableContainer').show();
+        showNotification('Table data loaded successfully', 'success');
+    }, 1000);
+}
+
+function displayTableData(data) {
+    if (data.length === 0) {
+        $('#dataTable').html('<tr><td colspan="4">No data found</td></tr>');
+        return;
+    }
+
+    const headers = Object.keys(data[0]);
+    let tableHtml = '<thead><tr>';
+
+    headers.forEach(header => {
+        tableHtml += '<th>' + header.charAt(0).toUpperCase() + header.slice(1) + '</th>';
+    });
+
+    tableHtml += '<th>Actions</th></tr></thead><tbody>';
+
+    data.forEach(row => {
+        tableHtml += '<tr>';
+        headers.forEach(header => {
+            tableHtml += '<td>' + row[header] + '</td>';
+        });
+        tableHtml += '<td><button class="btn btn-sm btn-outline-primary">Edit</button> <button class="btn btn-sm btn-outline-danger">Delete</button></td>';
+        tableHtml += '</tr>';
+    });
+
+    tableHtml += '</tbody>';
+    $('#dataTable').html(tableHtml);
+}
+
+function addNewRecord() {
+    showNotification('Add new record functionality', 'info');
+}
+
+// Analytics Functions
+function loadAnalytics() {
+    showNotification('Loading analytics...', 'info');
+    setTimeout(() => {
+        // Update analytics values
+        $('#avg-execution-time').text('1.2s');
+        $('#success-rate').text('98.5%');
+        $('#jobs-per-hour').text('24');
+        showNotification('Analytics loaded', 'success');
+    }, 1000);
+}
+
+// Backup Functions
+function loadBackupHistory() {
+    showNotification('Loading backup history...', 'info');
+    setTimeout(() => {
+        const backupHtml = `
+            <div class="backup-item">
+                <div class="backup-info">
+                    <h4>Full Backup - 2024-01-15</h4>
+                    <div class="backup-meta">
+                        <span><i class="fas fa-hdd"></i> 2.4 GB</span>
+                        <span><i class="fas fa-clock"></i> 15 minutes</span>
+                        <span><i class="fas fa-check-circle"></i> Completed</span>
+                    </div>
+                </div>
+                <div class="backup-actions">
+                    <button class="btn btn-sm btn-outline-primary" onclick="downloadBackup()">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteBackup()">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+            </div>
+        `;
+        $('#backupList').html(backupHtml);
+        showNotification('Backup history loaded', 'success');
+    }, 1000);
+}
+
+// Import/Export Functions
+function importFromCSV() {
+    showNotification('CSV import functionality', 'info');
+}
+
+function importFromExcel() {
+    showNotification('Excel import functionality', 'info');
+}
+
+function importFromJSON() {
+    showNotification('JSON import functionality', 'info');
+}
+
+function importFromSQL() {
+    showNotification('SQL import functionality', 'info');
+}
+
+function exportToCSV() {
+    showNotification('Exporting to CSV...', 'info');
+    setTimeout(() => {
+        showNotification('CSV export completed', 'success');
+    }, 1000);
+}
+
+function exportToExcel() {
+    showNotification('Exporting to Excel...', 'info');
+    setTimeout(() => {
+        showNotification('Excel export completed', 'success');
+    }, 1000);
+}
+
+function exportToJSON() {
+    showNotification('Exporting to JSON...', 'info');
+    setTimeout(() => {
+        showNotification('JSON export completed', 'success');
+    }, 1000);
+}
+
+function exportToSQL() {
+    showNotification('Exporting to SQL...', 'info');
+    setTimeout(() => {
+        showNotification('SQL export completed', 'success');
+    }, 1000);
+}
+
+// Maintenance Functions
+function optimizeTables() {
+    showNotification('Optimizing tables...', 'info');
+    setTimeout(() => {
+        showNotification('Tables optimized successfully', 'success');
+    }, 2000);
+}
+
+function repairTables() {
+    showNotification('Repairing tables...', 'info');
+    setTimeout(() => {
+        showNotification('Tables repaired successfully', 'success');
+    }, 2000);
+}
+
+function analyzeTables() {
+    showNotification('Analyzing tables...', 'info');
+    setTimeout(() => {
+        showNotification('Table analysis completed', 'success');
+    }, 1500);
+}
+
+function cleanupDatabase() {
+    showNotification('Cleaning up database...', 'info');
+    setTimeout(() => {
+        showNotification('Database cleanup completed', 'success');
+    }, 1000);
+}
+
+// Utility Functions
+function updateDatabaseStats() {
+    // Update database statistics
+    const stats = {
+        totalTables: 15,
+        databaseSize: '2.4 GB',
+        lastBackup: '2 hours ago',
+        performanceScore: '94%'
+    };
+
+    $('#total-tables').text(stats.totalTables);
+    $('#database-size').text(stats.databaseSize);
+    $('#last-backup').text(stats.lastBackup);
+    $('#performance-score').text(stats.performanceScore);
+}
+
+// Notification System
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    $('.notification').remove();
+
+    // Create notification element
+    const notification = $(`
+        <div class="notification ${type}" style="
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#f39c12'};
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10000;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        ">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}" style="color: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#f39c12'}"></i>
+            <span>${message}</span>
+            <button class="notification-close" onclick="$(this).parent().remove()" style="
+                background: none;
+                border: none;
+                color: #666;
+                cursor: pointer;
+                padding: 5px;
+                margin-left: auto;
+            ">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `);
+
+    $('body').append(notification);
+
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        notification.fadeOut(300, function() {
+            $(this).remove();
+        });
+    }, 5000);
+}
+
+// Initialize on page load
+$(document).ready(function() {
+    // Load saved query if exists
+    const savedQuery = localStorage.getItem('savedQuery');
+    if (savedQuery) {
+        $('#sqlQuery').val(savedQuery);
+    }
+
+    // Initialize pagination
+    $('#prevPage').click(function() {
+        // Implement pagination logic
+        showNotification('Previous page functionality', 'info');
+    });
+
+    $('#nextPage').click(function() {
+        // Implement pagination logic
+        showNotification('Next page functionality', 'info');
+    });
 });

@@ -9,15 +9,15 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AuthController extends AbstractController
 {
-    /**
-     * @Route("/logins", name="aidesk_logins")
-     */
-    public function loginAction(Request $request)
-    {
-        return $this->render('@AideskAuth/auth/login.html.twig', [
-            'title' => 'Ext JS Login',
-        ]);
-    }
+    // /**
+    //  * @Route("/logins", name="aidesk_logins")
+    //  */
+    // public function loginAction(Request $request)
+    // {
+    //     return $this->render('@AideskAuth/auth/login.html.twig', [
+    //         'title' => 'Ext JS Login',
+    //     ]);
+    // }
     
     /**
      * @Route("/login/process", name="aidesk_login_process")

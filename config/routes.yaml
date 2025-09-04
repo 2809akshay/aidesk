@@ -1,6 +1,10 @@
 _pimcore:
     resource: "@PimcoreCoreBundle/config/routing.yaml"
 
+# Custom Database Bundle Routes
+custom_database_bundle:
+    resource: "@CustomDatabaseBundle/config/pimcore/routing.yaml"
+
 app_localized:
     resource: "../src/Controller/"
     type:     annotation

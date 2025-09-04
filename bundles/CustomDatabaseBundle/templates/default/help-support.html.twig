@@ -2,13 +2,16 @@
 
 {% block head_stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}" crossorigin="anonymous" />
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/help-support/style.css') }}" crossorigin="anonymous" />
 {% endblock %}
 
 {% block headscripts %}
     {{ parent() }}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+
+{% block footscripts %}
     <script src="{{ asset('bundles/customdatabase/static/help-support/script.js') }}"></script>
 {% endblock %}
 
