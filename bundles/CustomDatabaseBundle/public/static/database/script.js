@@ -508,6 +508,211 @@ function showNotification(message, type = 'info') {
     }, 5000);
 }
 
+// Database Connections Functions
+function onDatabaseSelectionChange() {
+    const connectionId = $('#database-connections-dropdown').val();
+    const tablesDropdown = $('#database-tables-dropdown');
+
+    if (!connectionId) {
+        // Reset tables dropdown
+        tablesDropdown.html('<option value="">Select a database first...</option>');
+        tablesDropdown.prop('disabled', true);
+        $('#table-details').hide();
+        return;
+    }
+
+    // Enable tables dropdown and show loading
+    tablesDropdown.prop('disabled', false);
+    tablesDropdown.html('<option value="">Loading tables...</option>');
+    $('#table-details').hide();
+
+    showNotification('Loading database tables...', 'info');
+
+    // Make AJAX call to get tables
+    $.ajax({
+        url: '/database/api/get-external-tables/' + connectionId,
+        method: 'GET',
+        success: function(response) {
+            if (response.success) {
+                populateTablesDropdown(response.tables);
+                showNotification('Tables loaded successfully', 'success');
+            } else {
+                showNotification('Failed to load tables: ' + response.message, 'error');
+                tablesDropdown.html('<option value="">Failed to load tables</option>');
+            }
+        },
+        error: function(xhr, status, error) {
+            showNotification('Error loading tables: ' + error, 'error');
+            tablesDropdown.html('<option value="">Error loading tables</option>');
+        }
+    });
+}
+
+function onTableSelectionChange() {
+    const tableName = $('#database-tables-dropdown').val();
+
+    if (!tableName) {
+        $('#table-details').hide();
+        return;
+    }
+
+    showTableDetails(tableName);
+}
+
+function populateTablesDropdown(tables) {
+    const dropdown = $('#database-tables-dropdown');
+    dropdown.empty();
+    dropdown.append('<option value="">Select a table...</option>');
+
+    tables.forEach(function(table) {
+        dropdown.append('<option value="' + table + '">' + table + '</option>');
+    });
+}
+
+function showTableDetails(tableName) {
+    if (!tableName) {
+        $('#table-details').hide();
+        return;
+    }
+
+    showNotification('Loading table data...', 'info');
+
+    // Get selected database info
+    const connectionId = $('#database-connections-dropdown').val();
+    const selectedOption = $('#database-connections-dropdown option:selected');
+    const dbType = selectedOption.data('type');
+    const dbHost = selectedOption.data('host');
+    const dbPort = selectedOption.data('port');
+
+    // Fetch table data
+    $.ajax({
+        url: '/database/api/get-external-table-data/' + connectionId + '/' + encodeURIComponent(tableName),
+        method: 'GET',
+        success: function(response) {
+            if (response.success) {
+                displayTableData(tableName, response.data, dbType, dbHost, dbPort, response.total_rows);
+                showNotification('Table data loaded successfully', 'success');
+            } else {
+                showNotification('Failed to load table data: ' + response.message, 'error');
+            }
+        },
+        error: function(xhr, status, error) {
+            showNotification('Error loading table data: ' + error, 'error');
+        }
+    });
+}
+
+function displayTableData(tableName, data, dbType, dbHost, dbPort, totalRows) {
+    let detailsHtml = `
+        <div class="table-info-card">
+            <h5>📊 Table: ${tableName}</h5>
+            <div class="table-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Table Name:</span>
+                    <span class="stat-value">${tableName}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Database Type:</span>
+                    <span class="stat-value">${dbType.toUpperCase()}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Host:</span>
+                    <span class="stat-value">${dbHost}:${dbPort}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Rows:</span>
+                    <span class="stat-value">${totalRows}</span>
+                </div>
+            </div>
+            <div class="table-actions">
+                <button class="btn btn-sm btn-outline-primary" onclick="viewTableStructure('${tableName}')">
+                    <i class="fas fa-eye"></i> View Structure
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="exportTable('${tableName}')">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+                <button class="btn btn-sm btn-outline-success" onclick="queryTable('${tableName}')">
+                    <i class="fas fa-search"></i> Query Data
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Add data preview if available
+    if (data && data.length > 0) {
+        const headers = Object.keys(data[0]);
+        let tableHtml = `
+            <div class="table-data-preview">
+                <h6>Data Preview (First ${Math.min(data.length, 100)} rows)</h6>
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+        `;
+
+        headers.forEach(header => {
+            tableHtml += `<th>${header}</th>`;
+        });
+
+        tableHtml += `
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+
+        data.forEach(row => {
+            tableHtml += '<tr>';
+            headers.forEach(header => {
+                const value = row[header] !== null ? String(row[header]) : 'NULL';
+                const truncatedValue = value.length > 50 ? value.substring(0, 50) + '...' : value;
+                tableHtml += `<td title="${value}">${truncatedValue}</td>`;
+            });
+            tableHtml += '</tr>';
+        });
+
+        tableHtml += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+
+        detailsHtml += tableHtml;
+    } else {
+        detailsHtml += `
+            <div class="no-data-message">
+                <i class="fas fa-info-circle"></i>
+                <p>No data available in this table or table is empty.</p>
+            </div>
+        `;
+    }
+
+    $('#table-details').html(detailsHtml).slideDown();
+}
+
+function viewTableStructure(tableName) {
+    showNotification('Table structure for: ' + tableName, 'info');
+    // Implement table structure viewing
+}
+
+function exportTable(tableName) {
+    showNotification('Exporting table: ' + tableName, 'info');
+    // Implement table export
+}
+
+function queryTable(tableName) {
+    showNotification('Opening query interface for: ' + tableName, 'info');
+    // Switch to query builder tab and set the table
+    $('.tab-btn').removeClass('active');
+    $('.tab-btn[data-tab="query-builder"]').addClass('active');
+
+    $('.tab-pane').removeClass('active').hide();
+    $('#query-builder-tab').addClass('active').show();
+
+    // Set the table in the query builder
+    $('#queryTable').val(tableName);
+}
+
 // Initialize on page load
 $(document).ready(function() {
     // Load saved query if exists

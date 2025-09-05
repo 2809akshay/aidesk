@@ -1,5 +1,9 @@
 {% extends '@CustomDatabase/sidebar/sidebar.html.twig' %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/database/style.css') }}">
+{% endblock %}
+
 {% block footscripts %}
     <script src="{{ asset('bundles/customdatabase/static/database/script.js') }}"></script>
 {% endblock %}
@@ -15,62 +19,32 @@
         <p>Comprehensive database exploration, management, and analytics with advanced query capabilities</p>
     </div>
 
-    {# Top Section: Database Overview & Quick Stats #}
-    <div class="top-section">
-        <div class="database-overview-section">
-            <h2><i class="fas fa-chart-line"></i> Database Overview</h2>
-            <div class="overview-grid">
-                <div class="overview-card">
-                    <div class="card-icon">
-                        <i class="fas fa-server"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3 id="total-tables">{{ tables|length }}</h3>
-                        <p>Total Tables</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 85%"></div>
-                        </div>
-                    </div>
+    {# Database Connections Section #}
+    <div class="database-connections-section">
+        <div class="connections-panel">
+            <div class="dropdown-controls">
+                <div class="control-group">
+                    <label for="database-connections-dropdown">Select Database:</label>
+                    <select id="database-connections-dropdown" class="form-control" onchange="onDatabaseSelectionChange()">
+                        <option value="">Choose a database...</option>
+                        {% for connection in connections %}
+                        <option value="{{ connection.getId() }}" data-type="{{ connection.getDatabaseType() }}" data-host="{{ connection.getHost() }}" data-port="{{ connection.getPort() }}" data-status="{{ connection.getConnectionStatus() }}">
+                            {{ connection.getConnectionName() }} ({{ connection.getDatabaseType()|upper }})
+                        </option>
+                        {% endfor %}
+                    </select>
                 </div>
 
-                <div class="overview-card">
-                    <div class="card-icon">
-                        <i class="fas fa-database"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3 id="database-size">2.4 GB</h3>
-                        <p>Database Size</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 65%"></div>
-                        </div>
-                    </div>
+                <div class="control-group">
+                    <label for="database-tables-dropdown">Select Table:</label>
+                    <select id="database-tables-dropdown" class="form-control" onchange="onTableSelectionChange()" disabled>
+                        <option value="">Select a database first...</option>
+                    </select>
                 </div>
+            </div>
 
-                <div class="overview-card">
-                    <div class="card-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3 id="last-backup">2 hours ago</h3>
-                        <p>Last Backup</p>
-                        <div class="status-indicator success">
-                            <i class="fas fa-check"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="overview-card">
-                    <div class="card-icon">
-                        <i class="fas fa-tachometer-alt"></i>
-                    </div>
-                    <div class="card-content">
-                        <h3 id="performance-score">94%</h3>
-                        <p>Performance Score</p>
-                        <div class="progress-bar">
-                            <div class="progress-fill performance" style="width: 94%"></div>
-                        </div>
-                    </div>
-                </div>
+            <div id="table-details" class="table-details-section" style="display: none;">
+                <!-- Table details will be loaded here -->
             </div>
         </div>
     </div>
