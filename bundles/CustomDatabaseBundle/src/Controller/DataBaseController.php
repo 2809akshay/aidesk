@@ -4,6 +4,7 @@ namespace CustomDatabaseBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Pimcore\Model\DataObject\DatabaseConn;
 use Pimcore\Db\ConnectionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -17,19 +18,23 @@ class DataBaseController extends AbstractController
     protected $db;
 
      /**
-     * @Route("/database", name="database")
-     */
-    public function summaryAction(Request $request): Response
-    {
-        $this->db = \Pimcore\Db::get();
-        $sql = "SHOW TABLES";
-        $tables = $this->db->fetchAllAssociative($sql);
+      * @Route("/database", name="database")
+      */
+     public function summaryAction(Request $request): Response
+     {
+         $this->db = \Pimcore\Db::get();
+         $sql = "SHOW TABLES";
+         $tables = $this->db->fetchAllAssociative($sql);
 
-        return $this->render('@CustomDatabase/default/database.html.twig', [
-            'tables' => $tables,
-            'columns' => null,
-        ]);
-    }
+         // Get database connections
+         $connections = DatabaseConn::getList()->load();
+
+         return $this->render('@CustomDatabase/default/database.html.twig', [
+             'tables' => $tables,
+             'connections' => $connections,
+             'columns' => null,
+         ]);
+     }
       /**
        * @Route("/api-conn", name="api_conn")
        */
@@ -466,5 +471,267 @@ class DataBaseController extends AbstractController
     public function dataProtection(Request $request): Response
     {
         return $this->render('@CustomDatabase/default/data-protection.html.twig');
+    }
+
+    /**
+     * @Route("/database/api/get-external-tables/{connectionId}", name="get_external_tables", methods={"GET"})
+     */
+    public function getExternalTablesAction($connectionId): JsonResponse
+    {
+        try {
+            $connection = DatabaseConn::getById($connectionId);
+
+            if (!$connection) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Connection not found'
+                ], 404);
+            }
+
+            // Test the connection first
+            $conn = new \CustomDatabaseBundle\Model\DatabaseConn();
+            $testResult = $conn->testConnection($connection);
+
+            if (!$testResult['success']) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Connection failed: ' . $testResult['message']
+                ], 500);
+            }
+
+            // Get tables from the external database
+            $tables = $this->getTablesFromConnection($connection);
+
+            return new JsonResponse([
+                'success' => true,
+                'tables' => $tables,
+                'connection_name' => $connection->getConnectionName()
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Failed to fetch tables: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @Route("/database/api/get-external-table-data/{connectionId}/{tableName}", name="get_external_table_data", methods={"GET"})
+     */
+    public function getExternalTableDataAction($connectionId, $tableName): JsonResponse
+    {
+        try {
+            $connection = DatabaseConn::getById($connectionId);
+
+            if (!$connection) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Connection not found'
+                ], 404);
+            }
+
+            // Get table data from the external database
+            $data = $this->getTableDataFromConnection($connection, $tableName);
+
+            return new JsonResponse([
+                'success' => true,
+                'data' => $data,
+                'table_name' => $tableName,
+                'total_rows' => count($data)
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Failed to fetch table data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get tables from external database connection
+     */
+    private function getTablesFromConnection($connection): array
+    {
+        $tables = [];
+
+        try {
+            switch (strtolower($connection->getDatabaseType())) {
+                case 'mysql':
+                case 'mariadb':
+                    $dsn = "mysql:host={$connection->getHost()};port={$connection->getPort()};dbname={$connection->getDatabaseName()};charset={$connection->getCharset()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->query("SHOW TABLES");
+                    $result = $stmt->fetchAll();
+
+                    foreach ($result as $row) {
+                        $tables[] = array_values($row)[0];
+                    }
+                    break;
+
+                case 'postgresql':
+                case 'postgres':
+                    $dsn = "pgsql:host={$connection->getHost()};port={$connection->getPort()};dbname={$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->query("SELECT tablename FROM pg_tables WHERE schemaname = 'public'");
+                    $result = $stmt->fetchAll();
+
+                    foreach ($result as $row) {
+                        $tables[] = $row['tablename'];
+                    }
+                    break;
+
+                case 'sqlite':
+                    $dsn = "sqlite:{$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, null, null, [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'");
+                    $result = $stmt->fetchAll();
+
+                    foreach ($result as $row) {
+                        $tables[] = $row['name'];
+                    }
+                    break;
+
+                case 'sqlserver':
+                case 'mssql':
+                    $dsn = "sqlsrv:Server={$connection->getHost()},{$connection->getPort()};Database={$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'");
+                    $result = $stmt->fetchAll();
+
+                    foreach ($result as $row) {
+                        $tables[] = $row['TABLE_NAME'];
+                    }
+                    break;
+
+                case 'oracle':
+                    $dsn = "oci:dbname={$connection->getHost()}:{$connection->getPort()}/{$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->query("SELECT table_name FROM all_tables WHERE owner = UPPER('{$connection->getUsername()}')");
+                    $result = $stmt->fetchAll();
+
+                    foreach ($result as $row) {
+                        $tables[] = $row['table_name'];
+                    }
+                    break;
+
+                default:
+                    throw new \Exception('Unsupported database type: ' . $connection->getDatabaseType());
+            }
+
+        } catch (\PDOException $e) {
+            throw new \Exception('Database query failed: ' . $e->getMessage());
+        }
+
+        return $tables;
+    }
+
+    /**
+     * Get table data from external database connection
+     */
+    private function getTableDataFromConnection($connection, $tableName): array
+    {
+        $data = [];
+
+        try {
+            switch (strtolower($connection->getDatabaseType())) {
+                case 'mysql':
+                case 'mariadb':
+                    $dsn = "mysql:host={$connection->getHost()};port={$connection->getPort()};dbname={$connection->getDatabaseName()};charset={$connection->getCharset()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    // Get first 100 rows for preview
+                    $stmt = $pdo->prepare("SELECT * FROM `{$tableName}` LIMIT 100");
+                    $stmt->execute();
+                    $data = $stmt->fetchAll();
+                    break;
+
+                case 'postgresql':
+                case 'postgres':
+                    $dsn = "pgsql:host={$connection->getHost()};port={$connection->getPort()};dbname={$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    // Get first 100 rows for preview
+                    $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" LIMIT 100");
+                    $stmt->execute();
+                    $data = $stmt->fetchAll();
+                    break;
+
+                case 'sqlite':
+                    $dsn = "sqlite:{$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, null, null, [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    // Get first 100 rows for preview
+                    $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" LIMIT 100");
+                    $stmt->execute();
+                    $data = $stmt->fetchAll();
+                    break;
+
+                case 'sqlserver':
+                case 'mssql':
+                    $dsn = "sqlsrv:Server={$connection->getHost()},{$connection->getPort()};Database={$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    // Get first 100 rows for preview
+                    $stmt = $pdo->prepare("SELECT TOP 100 * FROM [{$tableName}]");
+                    $stmt->execute();
+                    $data = $stmt->fetchAll();
+                    break;
+
+                case 'oracle':
+                    $dsn = "oci:dbname={$connection->getHost()}:{$connection->getPort()}/{$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    // Get first 100 rows for preview
+                    $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" WHERE ROWNUM <= 100");
+                    $stmt->execute();
+                    $data = $stmt->fetchAll();
+                    break;
+
+                default:
+                    throw new \Exception('Unsupported database type: ' . $connection->getDatabaseType());
+            }
+
+        } catch (\PDOException $e) {
+            throw new \Exception('Database query failed: ' . $e->getMessage());
+        }
+
+        return $data;
     }
 }
