@@ -35,6 +35,16 @@ class DataBaseController extends AbstractController
              'columns' => null,
          ]);
      }
+
+      /**
+       * @Route("/ai", name="ai")
+       */
+      public function ai(Request $request): Response
+      {
+          return $this->render('@CustomDatabase/default/bot-widget.html.twig');
+      }
+
+      
       /**
        * @Route("/api-conn", name="api_conn")
        */
@@ -519,7 +529,7 @@ class DataBaseController extends AbstractController
     /**
      * @Route("/database/api/get-external-table-data/{connectionId}/{tableName}", name="get_external_table_data", methods={"GET"})
      */
-    public function getExternalTableDataAction($connectionId, $tableName): JsonResponse
+    public function getExternalTableDataAction($connectionId, $tableName, Request $request): JsonResponse
     {
         try {
             $connection = DatabaseConn::getById($connectionId);
@@ -531,14 +541,18 @@ class DataBaseController extends AbstractController
                 ], 404);
             }
 
+            $searchTerm = $request->query->get('search', '');
+            $limit = (int) $request->query->get('limit', 100);
+
             // Get table data from the external database
-            $data = $this->getTableDataFromConnection($connection, $tableName);
+            $data = $this->getTableDataFromConnection($connection, $tableName, $searchTerm, $limit);
 
             return new JsonResponse([
                 'success' => true,
                 'data' => $data,
                 'table_name' => $tableName,
-                'total_rows' => count($data)
+                'total_rows' => count($data),
+                'search_term' => $searchTerm
             ]);
 
         } catch (\Exception $e) {
@@ -650,7 +664,7 @@ class DataBaseController extends AbstractController
     /**
      * Get table data from external database connection
      */
-    private function getTableDataFromConnection($connection, $tableName): array
+    private function getTableDataFromConnection($connection, $tableName, $searchTerm = '', $limit = 100): array
     {
         $data = [];
 
@@ -664,9 +678,26 @@ class DataBaseController extends AbstractController
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                     ]);
 
-                    // Get first 100 rows for preview
-                    $stmt = $pdo->prepare("SELECT * FROM `{$tableName}` LIMIT 100");
-                    $stmt->execute();
+                    if ($searchTerm) {
+                        // Get column names first
+                        $columnsStmt = $pdo->prepare("DESCRIBE `{$tableName}`");
+                        $columnsStmt->execute();
+                        $columns = $columnsStmt->fetchAll();
+
+                        // Build search query
+                        $searchConditions = [];
+                        foreach ($columns as $column) {
+                            $searchConditions[] = "`{$column['Field']}` LIKE ?";
+                        }
+                        $whereClause = implode(' OR ', $searchConditions);
+                        $searchValues = array_fill(0, count($columns), "%{$searchTerm}%");
+
+                        $stmt = $pdo->prepare("SELECT * FROM `{$tableName}` WHERE {$whereClause} LIMIT {$limit}");
+                        $stmt->execute($searchValues);
+                    } else {
+                        $stmt = $pdo->prepare("SELECT * FROM `{$tableName}` LIMIT {$limit}");
+                        $stmt->execute();
+                    }
                     $data = $stmt->fetchAll();
                     break;
 
@@ -678,9 +709,26 @@ class DataBaseController extends AbstractController
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                     ]);
 
-                    // Get first 100 rows for preview
-                    $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" LIMIT 100");
-                    $stmt->execute();
+                    if ($searchTerm) {
+                        // Get column names first
+                        $columnsStmt = $pdo->prepare("SELECT column_name FROM information_schema.columns WHERE table_name = ? AND table_schema = 'public'");
+                        $columnsStmt->execute([$tableName]);
+                        $columns = $columnsStmt->fetchAll();
+
+                        // Build search query
+                        $searchConditions = [];
+                        foreach ($columns as $column) {
+                            $searchConditions[] = "\"{$column['column_name']}\" ILIKE ?";
+                        }
+                        $whereClause = implode(' OR ', $searchConditions);
+                        $searchValues = array_fill(0, count($columns), "%{$searchTerm}%");
+
+                        $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" WHERE {$whereClause} LIMIT {$limit}");
+                        $stmt->execute($searchValues);
+                    } else {
+                        $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" LIMIT {$limit}");
+                        $stmt->execute();
+                    }
                     $data = $stmt->fetchAll();
                     break;
 
@@ -691,9 +739,26 @@ class DataBaseController extends AbstractController
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                     ]);
 
-                    // Get first 100 rows for preview
-                    $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" LIMIT 100");
-                    $stmt->execute();
+                    if ($searchTerm) {
+                        // Get column names first
+                        $columnsStmt = $pdo->prepare("PRAGMA table_info(\"{$tableName}\")");
+                        $columnsStmt->execute();
+                        $columns = $columnsStmt->fetchAll();
+
+                        // Build search query
+                        $searchConditions = [];
+                        foreach ($columns as $column) {
+                            $searchConditions[] = "\"{$column['name']}\" LIKE ?";
+                        }
+                        $whereClause = implode(' OR ', $searchConditions);
+                        $searchValues = array_fill(0, count($columns), "%{$searchTerm}%");
+
+                        $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" WHERE {$whereClause} LIMIT {$limit}");
+                        $stmt->execute($searchValues);
+                    } else {
+                        $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" LIMIT {$limit}");
+                        $stmt->execute();
+                    }
                     $data = $stmt->fetchAll();
                     break;
 
@@ -705,9 +770,26 @@ class DataBaseController extends AbstractController
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                     ]);
 
-                    // Get first 100 rows for preview
-                    $stmt = $pdo->prepare("SELECT TOP 100 * FROM [{$tableName}]");
-                    $stmt->execute();
+                    if ($searchTerm) {
+                        // Get column names first
+                        $columnsStmt = $pdo->prepare("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ?");
+                        $columnsStmt->execute([$tableName]);
+                        $columns = $columnsStmt->fetchAll();
+
+                        // Build search query
+                        $searchConditions = [];
+                        foreach ($columns as $column) {
+                            $searchConditions[] = "[{$column['COLUMN_NAME']}] LIKE ?";
+                        }
+                        $whereClause = implode(' OR ', $searchConditions);
+                        $searchValues = array_fill(0, count($columns), "%{$searchTerm}%");
+
+                        $stmt = $pdo->prepare("SELECT TOP {$limit} * FROM [{$tableName}] WHERE {$whereClause}");
+                        $stmt->execute($searchValues);
+                    } else {
+                        $stmt = $pdo->prepare("SELECT TOP {$limit} * FROM [{$tableName}]");
+                        $stmt->execute();
+                    }
                     $data = $stmt->fetchAll();
                     break;
 
@@ -718,9 +800,26 @@ class DataBaseController extends AbstractController
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
                     ]);
 
-                    // Get first 100 rows for preview
-                    $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" WHERE ROWNUM <= 100");
-                    $stmt->execute();
+                    if ($searchTerm) {
+                        // Get column names first
+                        $columnsStmt = $pdo->prepare("SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = UPPER(?)");
+                        $columnsStmt->execute([$tableName]);
+                        $columns = $columnsStmt->fetchAll();
+
+                        // Build search query
+                        $searchConditions = [];
+                        foreach ($columns as $column) {
+                            $searchConditions[] = "\"{$column['COLUMN_NAME']}\" LIKE ?";
+                        }
+                        $whereClause = implode(' OR ', $searchConditions);
+                        $searchValues = array_fill(0, count($columns), "%{$searchTerm}%");
+
+                        $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" WHERE {$whereClause} AND ROWNUM <= {$limit}");
+                        $stmt->execute($searchValues);
+                    } else {
+                        $stmt = $pdo->prepare("SELECT * FROM \"{$tableName}\" WHERE ROWNUM <= {$limit}");
+                        $stmt->execute();
+                    }
                     $data = $stmt->fetchAll();
                     break;
 

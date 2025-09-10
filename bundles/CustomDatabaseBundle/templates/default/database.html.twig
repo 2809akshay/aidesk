@@ -21,25 +21,98 @@
 
     {# Database Connections Section #}
     <div class="database-connections-section">
+        <h2><i class="fas fa-plug"></i> Advanced Database Connections & Tables</h2>
         <div class="connections-panel">
+            <div class="search-and-filters">
+                <div class="search-group">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="table-data-search" placeholder="Search table data..." class="search-input" disabled>
+                    <small class="search-hint">Select a table first</small>
+                </div>
+                <div class="filter-group">
+                    <select id="db-type-filter" class="filter-select">
+                        <option value="">All Database Types</option>
+                        <option value="mysql">MySQL</option>
+                        <option value="postgresql">PostgreSQL</option>
+                        <option value="sqlite">SQLite</option>
+                        <option value="sqlserver">SQL Server</option>
+                        <option value="oracle">Oracle</option>
+                    </select>
+                    <select id="status-filter" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="connected">Connected</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="dropdown-controls">
                 <div class="control-group">
-                    <label for="database-connections-dropdown">Select Database:</label>
-                    <select id="database-connections-dropdown" class="form-control" onchange="onDatabaseSelectionChange()">
-                        <option value="">Choose a database...</option>
-                        {% for connection in connections %}
-                        <option value="{{ connection.getId() }}" data-type="{{ connection.getDatabaseType() }}" data-host="{{ connection.getHost() }}" data-port="{{ connection.getPort() }}" data-status="{{ connection.getConnectionStatus() }}">
-                            {{ connection.getConnectionName() }} ({{ connection.getDatabaseType()|upper }})
-                        </option>
-                        {% endfor %}
-                    </select>
+                    <label for="database-connections-dropdown">
+                        <i class="fas fa-database"></i> Select Database:
+                    </label>
+                    <div class="dropdown-with-search">
+                        <select id="database-connections-dropdown" class="form-control" onchange="onDatabaseSelectionChange()">
+                            <option value="">Choose a database...</option>
+                            {% for connection in connections %}
+                            <option value="{{ connection.getId() }}" data-type="{{ connection.getDatabaseType() }}" data-host="{{ connection.getHost() }}" data-port="{{ connection.getPort() }}" data-status="{{ connection.getConnectionStatus() }}">
+                                {{ connection.getConnectionName() }} ({{ connection.getDatabaseType()|upper }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" id="db-search" placeholder="Search databases..." class="dropdown-search">
+                    </div>
                 </div>
 
                 <div class="control-group">
-                    <label for="database-tables-dropdown">Select Table:</label>
-                    <select id="database-tables-dropdown" class="form-control" onchange="onTableSelectionChange()" disabled>
-                        <option value="">Select a database first...</option>
-                    </select>
+                    <label for="database-tables-dropdown">
+                        <i class="fas fa-table"></i> Select Table:
+                    </label>
+                    <div class="dropdown-with-search">
+                        <select id="database-tables-dropdown" class="form-control" onchange="onTableSelectionChange()" disabled>
+                            <option value="">Select a database first...</option>
+                        </select>
+                        <input type="text" id="table-search" placeholder="Search tables..." class="dropdown-search" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <div class="advanced-options">
+                <button class="btn btn-outline-primary" onclick="toggleAdvancedOptions()">
+                    <i class="fas fa-cogs"></i> Advanced Options
+                </button>
+                <div id="advanced-options-panel" class="advanced-options-panel" style="display: none;">
+                    <div class="option-group">
+                        <h5><i class="fas fa-filter"></i> Filtering Options</h5>
+                        <div class="option-controls">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show-system-tables"> Show System Tables
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show-views"> Show Views
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="case-sensitive-search"> Case Sensitive Search
+                            </label>
+                        </div>
+                    </div>
+                    <div class="option-group">
+                        <h5><i class="fas fa-sort"></i> Sorting Options</h5>
+                        <div class="option-controls">
+                            <select id="table-sort" class="filter-select">
+                                <option value="name">Sort by Name</option>
+                                <option value="rows">Sort by Row Count</option>
+                                <option value="size">Sort by Size</option>
+                                <option value="modified">Sort by Modified Date</option>
+                            </select>
+                            <label class="radio-label">
+                                <input type="radio" name="sort-order" value="asc" checked> Ascending
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="sort-order" value="desc"> Descending
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -298,7 +371,9 @@
                             <div class="query-controls">
                                 <div class="control-row">
                                     <div class="control-group">
-                                        <label for="queryTable">Table:</label>
+                                        <label for="queryTable">
+                                            <i class="fas fa-table"></i> Table:
+                                        </label>
                                         <select id="queryTable" class="form-control">
                                             <option value="">Select table...</option>
                                             {% for table in tables %}
@@ -308,13 +383,24 @@
                                         </select>
                                     </div>
                                     <div class="control-group">
-                                        <label for="queryType">Query Type:</label>
+                                        <label for="queryType">
+                                            <i class="fas fa-code"></i> Query Type:
+                                        </label>
                                         <select id="queryType" class="form-control">
                                             <option value="SELECT">SELECT</option>
                                             <option value="INSERT">INSERT</option>
                                             <option value="UPDATE">UPDATE</option>
                                             <option value="DELETE">DELETE</option>
+                                            <option value="CREATE">CREATE</option>
+                                            <option value="ALTER">ALTER</option>
+                                            <option value="DROP">DROP</option>
                                         </select>
+                                    </div>
+                                    <div class="control-group">
+                                        <label for="queryLimit">
+                                            <i class="fas fa-list"></i> Limit:
+                                        </label>
+                                        <input type="number" id="queryLimit" class="form-control" placeholder="100" min="1" max="10000">
                                     </div>
                                     <div class="control-actions">
                                         <button class="btn btn-primary" onclick="buildQuery()">
@@ -323,13 +409,52 @@
                                         <button class="btn btn-success" onclick="executeQuery()">
                                             <i class="fas fa-play"></i> Execute
                                         </button>
+                                        <button class="btn btn-outline-info" onclick="toggleAdvancedQuery()">
+                                            <i class="fas fa-sliders-h"></i> Advanced
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div id="advanced-query-panel" class="advanced-query-panel" style="display: none;">
+                                    <div class="advanced-query-controls">
+                                        <div class="control-row">
+                                            <div class="control-group">
+                                                <label for="queryColumns">
+                                                    <i class="fas fa-columns"></i> Columns:
+                                                </label>
+                                                <input type="text" id="queryColumns" class="form-control" placeholder="column1, column2, *" value="*">
+                                            </div>
+                                            <div class="control-group">
+                                                <label for="queryWhere">
+                                                    <i class="fas fa-filter"></i> WHERE:
+                                                </label>
+                                                <input type="text" id="queryWhere" class="form-control" placeholder="column = 'value'">
+                                            </div>
+                                            <div class="control-group">
+                                                <label for="queryOrderBy">
+                                                    <i class="fas fa-sort"></i> ORDER BY:
+                                                </label>
+                                                <input type="text" id="queryOrderBy" class="form-control" placeholder="column ASC/DESC">
+                                            </div>
+                                        </div>
+                                        <div class="query-options">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="queryDistinct"> DISTINCT
+                                            </label>
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="queryCount"> COUNT only
+                                            </label>
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="queryExplain"> EXPLAIN query
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="query-editor">
                                 <div class="editor-header">
-                                    <h4>SQL Query</h4>
+                                    <h4><i class="fas fa-terminal"></i> SQL Query Editor</h4>
                                     <div class="editor-actions">
                                         <button class="btn btn-sm btn-outline-secondary" onclick="formatQuery()">
                                             <i class="fas fa-magic"></i> Format
@@ -337,24 +462,39 @@
                                         <button class="btn btn-sm btn-outline-secondary" onclick="saveQuery()">
                                             <i class="fas fa-save"></i> Save
                                         </button>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="loadQuery()">
+                                            <i class="fas fa-folder-open"></i> Load
+                                        </button>
                                         <button class="btn btn-sm btn-outline-secondary" onclick="clearQuery()">
                                             <i class="fas fa-trash"></i> Clear
                                         </button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="validateQuery()">
+                                            <i class="fas fa-check-circle"></i> Validate
+                                        </button>
                                     </div>
                                 </div>
-                                <textarea id="sqlQuery" class="sql-editor" placeholder="Enter your SQL query here..."></textarea>
+                                <textarea id="sqlQuery" class="sql-editor" placeholder="Enter your SQL query here... or use the builder above"></textarea>
+                                <div class="query-hints">
+                                    <small class="text-muted">
+                                        <i class="fas fa-lightbulb"></i> Tip: Use Ctrl+Space for autocomplete, Ctrl+Enter to execute
+                                    </small>
+                                </div>
                             </div>
 
                             <div class="query-results" id="queryResults" style="display: none;">
                                 <div class="results-header">
-                                    <h4>Query Results</h4>
+                                    <h4><i class="fas fa-table"></i> Query Results</h4>
                                     <div class="results-actions">
                                         <span id="executionTime"></span>
+                                        <span id="resultCount" class="result-count"></span>
                                         <button class="btn btn-sm btn-outline-primary" onclick="exportResults()">
                                             <i class="fas fa-download"></i> Export
                                         </button>
                                         <button class="btn btn-sm btn-outline-secondary" onclick="copyResults()">
                                             <i class="fas fa-copy"></i> Copy
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="viewQueryPlan()">
+                                            <i class="fas fa-sitemap"></i> Query Plan
                                         </button>
                                     </div>
                                 </div>

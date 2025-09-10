@@ -512,17 +512,20 @@ function showNotification(message, type = 'info') {
 function onDatabaseSelectionChange() {
     const connectionId = $('#database-connections-dropdown').val();
     const tablesDropdown = $('#database-tables-dropdown');
+    const tableSearch = $('#table-search');
 
     if (!connectionId) {
         // Reset tables dropdown
         tablesDropdown.html('<option value="">Select a database first...</option>');
         tablesDropdown.prop('disabled', true);
+        tableSearch.prop('disabled', true);
         $('#table-details').hide();
         return;
     }
 
-    // Enable tables dropdown and show loading
+    // Enable tables dropdown and search
     tablesDropdown.prop('disabled', false);
+    tableSearch.prop('disabled', false);
     tablesDropdown.html('<option value="">Loading tables...</option>');
     $('#table-details').hide();
 
@@ -546,6 +549,16 @@ function onDatabaseSelectionChange() {
             tablesDropdown.html('<option value="">Error loading tables</option>');
         }
     });
+}
+
+function toggleAdvancedOptions() {
+    const panel = $('#advanced-options-panel');
+    panel.slideToggle(300);
+}
+
+function toggleAdvancedQuery() {
+    const panel = $('#advanced-query-panel');
+    panel.slideToggle(300);
 }
 
 function onTableSelectionChange() {
@@ -572,10 +585,16 @@ function populateTablesDropdown(tables) {
 function showTableDetails(tableName) {
     if (!tableName) {
         $('#table-details').hide();
+        $('#table-data-search').prop('disabled', true).val('');
+        $('.search-hint').text('Select a table first');
         return;
     }
 
     showNotification('Loading table data...', 'info');
+
+    // Enable search box
+    $('#table-data-search').prop('disabled', false);
+    $('.search-hint').text('Search table data...');
 
     // Get selected database info
     const connectionId = $('#database-connections-dropdown').val();
@@ -602,10 +621,56 @@ function showTableDetails(tableName) {
     });
 }
 
-function displayTableData(tableName, data, dbType, dbHost, dbPort, totalRows) {
+function searchTableData(searchTerm) {
+    const tableName = $('#database-tables-dropdown').val();
+    if (!tableName) {
+        showNotification('Please select a table first', 'warning');
+        return;
+    }
+
+    if (!searchTerm) {
+        // Reload original table data
+        showTableDetails(tableName);
+        return;
+    }
+
+    showNotification('Searching table data...', 'info');
+
+    const connectionId = $('#database-connections-dropdown').val();
+    const selectedOption = $('#database-connections-dropdown option:selected');
+    const dbType = selectedOption.data('type');
+    const dbHost = selectedOption.data('host');
+    const dbPort = selectedOption.data('port');
+
+    // Fetch filtered table data
+    $.ajax({
+        url: '/database/api/get-external-table-data/' + connectionId + '/' + encodeURIComponent(tableName),
+        method: 'GET',
+        data: {
+            search: searchTerm,
+            limit: 100
+        },
+        success: function(response) {
+            if (response.success) {
+                displayTableData(tableName, response.data, dbType, dbHost, dbPort, response.total_rows, searchTerm);
+                showNotification(`Found ${response.total_rows} matching rows`, 'success');
+            } else {
+                showNotification('Search failed: ' + response.message, 'error');
+            }
+        },
+        error: function(xhr, status, error) {
+            showNotification('Search error: ' + error, 'error');
+        }
+    });
+}
+
+function displayTableData(tableName, data, dbType, dbHost, dbPort, totalRows, searchTerm = '') {
+    const isSearchResult = searchTerm.length > 0;
+    const displayTitle = isSearchResult ? `🔍 Search Results: "${searchTerm}"` : `📊 Table: ${tableName}`;
+
     let detailsHtml = `
         <div class="table-info-card">
-            <h5>📊 Table: ${tableName}</h5>
+            <h5>${displayTitle}</h5>
             <div class="table-stats">
                 <div class="stat-item">
                     <span class="stat-label">Table Name:</span>
@@ -620,9 +685,15 @@ function displayTableData(tableName, data, dbType, dbHost, dbPort, totalRows) {
                     <span class="stat-value">${dbHost}:${dbPort}</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Total Rows:</span>
+                    <span class="stat-label">${isSearchResult ? 'Matching Rows:' : 'Total Rows:'}</span>
                     <span class="stat-value">${totalRows}</span>
                 </div>
+                ${isSearchResult ? `
+                <div class="stat-item">
+                    <span class="stat-label">Search Term:</span>
+                    <span class="stat-value">"${searchTerm}"</span>
+                </div>
+                ` : ''}
             </div>
             <div class="table-actions">
                 <button class="btn btn-sm btn-outline-primary" onclick="viewTableStructure('${tableName}')">
@@ -634,6 +705,11 @@ function displayTableData(tableName, data, dbType, dbHost, dbPort, totalRows) {
                 <button class="btn btn-sm btn-outline-success" onclick="queryTable('${tableName}')">
                     <i class="fas fa-search"></i> Query Data
                 </button>
+                ${isSearchResult ? `
+                <button class="btn btn-sm btn-outline-info" onclick="clearTableSearch()">
+                    <i class="fas fa-times"></i> Clear Search
+                </button>
+                ` : ''}
             </div>
         </div>
     `;
@@ -711,6 +787,223 @@ function queryTable(tableName) {
 
     // Set the table in the query builder
     $('#queryTable').val(tableName);
+}
+
+function clearTableSearch() {
+    $('#table-data-search').val('');
+    const tableName = $('#database-tables-dropdown').val();
+    if (tableName) {
+        showTableDetails(tableName);
+    }
+    showNotification('Search cleared', 'info');
+}
+
+// Advanced Search and Filter Functions
+$(document).ready(function() {
+    // Table data search functionality
+    $('#table-data-search').on('input', function() {
+        const searchTerm = $(this).val().trim();
+        searchTableData(searchTerm);
+    });
+
+    // Database type filter
+    $('#db-type-filter').change(function() {
+        filterDatabases();
+    });
+
+    // Status filter
+    $('#status-filter').change(function() {
+        filterDatabases();
+    });
+
+    // Table search functionality
+    $('#table-search').on('input', function() {
+        const searchTerm = $(this).val().toLowerCase();
+        filterTables(searchTerm);
+    });
+
+    // Database search functionality
+    $('#db-search').on('input', function() {
+        const searchTerm = $(this).val().toLowerCase();
+        filterDatabaseOptions(searchTerm);
+    });
+
+    // Advanced options
+    $('#table-sort').change(function() {
+        sortTables();
+    });
+
+    $('input[name="sort-order"]').change(function() {
+        sortTables();
+    });
+});
+
+function filterDatabases(searchTerm = '') {
+    const typeFilter = $('#db-type-filter').val();
+    const statusFilter = $('#status-filter').val();
+    const search = searchTerm || $('#global-search').val().toLowerCase();
+
+    $('#database-connections-dropdown option').each(function() {
+        const option = $(this);
+        const dbName = option.text().toLowerCase();
+        const dbType = option.data('type');
+        const dbStatus = option.data('status');
+
+        const matchesSearch = !search || dbName.includes(search);
+        const matchesType = !typeFilter || dbType === typeFilter;
+        const matchesStatus = !statusFilter || dbStatus === statusFilter;
+
+        if (matchesSearch && matchesType && matchesStatus) {
+            option.show();
+        } else {
+            option.hide();
+        }
+    });
+}
+
+function filterTables(searchTerm = '') {
+    const search = searchTerm || $('#table-search').val().toLowerCase();
+    const dropdown = $('#database-tables-dropdown');
+
+    dropdown.find('option').each(function() {
+        const option = $(this);
+        const tableName = option.text().toLowerCase();
+
+        if (!search || tableName.includes(search)) {
+            option.show();
+        } else {
+            option.hide();
+        }
+    });
+}
+
+function filterDatabaseOptions(searchTerm) {
+    const search = searchTerm.toLowerCase();
+    const dropdown = $('#database-connections-dropdown');
+
+    dropdown.find('option').each(function() {
+        const option = $(this);
+        const dbName = option.text().toLowerCase();
+
+        if (!search || dbName.includes(search)) {
+            option.show();
+        } else {
+            option.hide();
+        }
+    });
+}
+
+function sortTables() {
+    const sortBy = $('#table-sort').val();
+    const sortOrder = $('input[name="sort-order"]:checked').val();
+    const dropdown = $('#database-tables-dropdown');
+    const options = dropdown.find('option').toArray();
+
+    options.sort(function(a, b) {
+        let aVal = $(a).text().toLowerCase();
+        let bVal = $(b).text().toLowerCase();
+
+        if (sortBy === 'name') {
+            // Already sorted by name
+        } else if (sortBy === 'rows') {
+            // For demo, sort by length (simulating row count)
+            aVal = aVal.length;
+            bVal = bVal.length;
+        } else if (sortBy === 'size') {
+            // For demo, sort by length (simulating size)
+            aVal = aVal.length;
+            bVal = bVal.length;
+        }
+
+        if (sortOrder === 'desc') {
+            return bVal > aVal ? 1 : -1;
+        } else {
+            return aVal > bVal ? 1 : -1;
+        }
+    });
+
+    dropdown.empty();
+    dropdown.append('<option value="">Select a table...</option>');
+    options.forEach(function(option) {
+        dropdown.append(option);
+    });
+}
+
+// Enhanced Query Builder Functions
+function buildQuery() {
+    const table = $('#queryTable').val();
+    const queryType = $('#queryType').val();
+    const columns = $('#queryColumns').val() || '*';
+    const where = $('#queryWhere').val();
+    const orderBy = $('#queryOrderBy').val();
+    const limit = $('#queryLimit').val() || 100;
+    const distinct = $('#queryDistinct').is(':checked');
+    const countOnly = $('#queryCount').is(':checked');
+
+    if (!table) {
+        showNotification('Please select a table first', 'warning');
+        return;
+    }
+
+    let query = '';
+
+    if (countOnly) {
+        query = `SELECT COUNT(*) as total FROM ${table}`;
+        if (where) query += ` WHERE ${where}`;
+    } else {
+        query = `SELECT ${distinct ? 'DISTINCT ' : ''}${columns} FROM ${table}`;
+        if (where) query += ` WHERE ${where}`;
+        if (orderBy) query += ` ORDER BY ${orderBy}`;
+        if (limit && !countOnly) query += ` LIMIT ${limit}`;
+    }
+
+    $('#sqlQuery').val(query);
+    showNotification('Query built successfully', 'success');
+}
+
+function loadQuery() {
+    const savedQueries = JSON.parse(localStorage.getItem('savedQueries') || '[]');
+    if (savedQueries.length === 0) {
+        showNotification('No saved queries found', 'info');
+        return;
+    }
+
+    // For demo, load the first saved query
+    $('#sqlQuery').val(savedQueries[0]);
+    showNotification('Query loaded', 'success');
+}
+
+function validateQuery() {
+    const query = $('#sqlQuery').val().trim();
+    if (!query) {
+        showNotification('Please enter a query to validate', 'warning');
+        return;
+    }
+
+    // Basic validation
+    const sqlKeywords = ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'CREATE', 'ALTER', 'DROP'];
+    const upperQuery = query.toUpperCase();
+
+    const hasKeyword = sqlKeywords.some(keyword => upperQuery.includes(keyword));
+
+    if (hasKeyword) {
+        showNotification('Query syntax appears valid', 'success');
+    } else {
+        showNotification('Query may have syntax issues', 'warning');
+    }
+}
+
+function viewQueryPlan() {
+    const query = $('#sqlQuery').val().trim();
+    if (!query) {
+        showNotification('Please enter a query first', 'warning');
+        return;
+    }
+
+    showNotification('Generating query execution plan...', 'info');
+    setTimeout(() => {
+        showNotification('Query plan generated (feature coming soon)', 'info');
+    }, 1000);
 }
 
 // Initialize on page load

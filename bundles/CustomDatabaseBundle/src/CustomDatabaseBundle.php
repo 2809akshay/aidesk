@@ -10,16 +10,16 @@ class CustomDatabaseBundle extends AbstractPimcoreBundle implements PimcoreBundl
 {
     use BundleAdminClassicTrait;
 
-    public function getPath(): string
-    {
-        return \dirname(__DIR__);
-    }
+        public function getPath(): string
+        {
+            return \dirname(__DIR__);
+        }
 
-    public function getJsPaths(): array
-    {
-        return [
-            // '/bundles/imageimport/js/pimcore/startup.js'
-        ];
-    }
+        public function getJsPaths(): array
+        {
+            return [
+                // '/bundles/imageimport/js/pimcore/startup.js'
+            ];
+        }
 
 }
