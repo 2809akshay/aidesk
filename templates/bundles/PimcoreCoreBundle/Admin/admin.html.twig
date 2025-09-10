@@ -1,0 +1,8 @@
+{# extend the original vendor template #}
+{% extends '@!PimcoreCoreBundle/Admin/admin.html.twig' %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>console.log("✅ Twig override loaded");</script>
+    {% include '@CustomDatabase/default/bot-widget.html.twig' %}
+{% endblock %}

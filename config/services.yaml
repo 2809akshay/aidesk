@@ -236,3 +236,9 @@ services:
         arguments:
             - !service { class: PDO, factory: [ '@database_connection', 'getNativeConnection' ] }
             - { lock_mode: 0 }
+
+    # Override PimcoreCoreBundle service
+    Pimcore\CoreBundle\Controller\AdminController:
+        class: CustomDatabaseBundle\Controller\AdminController   
+        public: true
+        # optionally inject same arguments as original service

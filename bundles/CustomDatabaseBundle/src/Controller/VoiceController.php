@@ -11,7 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class VoiceController extends FrontendController
 {
     /**
-     * @Route("/admin/voice-studio", name="voice_studio")
+     * @Route("/voice-studio", name="voice_studio")
      */
     public function indexAction(Request $request): Response
     {

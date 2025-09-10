@@ -35,15 +35,6 @@ class DataBaseController extends AbstractController
              'columns' => null,
          ]);
      }
-
-      /**
-       * @Route("/ai", name="ai")
-       */
-      public function ai(Request $request): Response
-      {
-          return $this->render('@CustomDatabase/default/bot-widget.html.twig');
-      }
-
       
       /**
        * @Route("/api-conn", name="api_conn")
