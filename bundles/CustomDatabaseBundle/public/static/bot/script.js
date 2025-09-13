@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const aiOrbContainer = document.getElementById('ai-orb-container');
-    const aiOrb = document.getElementById('ai-orb');
+    const bot = document.getElementById('bot');
     const aiStructure = document.getElementById('ai-structure');
     const closeBtn = document.querySelector('.close-btn');
     const transcriptText = document.getElementById('transcriptText');
@@ -35,19 +35,19 @@ document.addEventListener('DOMContentLoaded', function() {
         recognition.onend = function() {
             isRecording = false;
             aiOrbContainer.disabled = false;
-            aiOrb.classList.remove('listening');
+            bot.classList.remove('listening');
         };
         
         recognition.onerror = function(event) {
             console.error('Speech recognition error:', event.error);
             isRecording = false;
             aiOrbContainer.disabled = false;
-            aiOrb.classList.remove('listening');
+            bot.classList.remove('listening');
         };
     }
     
-    // Toggle AI structure on orb click
-    aiOrb.addEventListener('click', function(e) {
+    // Toggle AI structure on bot click
+    bot.addEventListener('click', function(e) {
         if (!isDragging) {
             aiStructure.style.display = aiStructure.style.display === 'block' ? 'none' : 'block';
             if (aiStructure.style.display === 'block') {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Add double-click event for text-to-speech
-    aiOrb.addEventListener('dblclick', function(e) {
+    bot.addEventListener('dblclick', function(e) {
         e.stopPropagation();
         const text = transcriptText.value;
         
@@ -73,19 +73,19 @@ document.addEventListener('DOMContentLoaded', function() {
         aiStructure.style.display = 'none';
     });
     
-    // Make AI orb draggable
+    // Make bot draggable
     aiOrbContainer.addEventListener('mousedown', function(e) {
         e.preventDefault();
         initialX = e.clientX - xOffset;
         initialY = e.clientY - yOffset;
         
-        if (e.target === aiOrb || aiOrb.contains(e.target)) {
+        if (e.target === bot || bot.contains(e.target)) {
             isDragging = true;
             aiOrbContainer.classList.add('dragging');
         }
     });
 
-    aiOrbContainer.addEventListener('click', startRecording);
+    bot.addEventListener('click', startRecording);
     
     document.addEventListener('mouseup', function() {
         if (isDragging) {
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
             recognition.start();
             isRecording = true;
             aiOrbContainer.disabled = true;
-            aiOrb.classList.add('listening');
+            bot.classList.add('listening');
         } catch (error) {
             console.error('Recognition start error:', error);
         }

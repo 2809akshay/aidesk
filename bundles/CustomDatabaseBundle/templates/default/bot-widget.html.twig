@@ -2,55 +2,16 @@
 <script src="{{ asset('bundles/customdatabase/static/bot/script.js') }}"></script>
 <link rel="stylesheet" href="{{ asset('bundles/customdatabase/static/bot/style.css') }}">
 <div id="ai-orb-container">
-     
-    <div id="ai-orb">
-        <div class="pulse"></div>
-        <div class="wave"></div>
-        <div class="neural-node node-1"></div>
-        <div class="neural-node node-2"></div>
-        <div class="neural-node node-3"></div>
-        <div class="neural-node node-4"></div>
-    </div>
-    <div class="pulse">
-       <div style="position: relative; width: 1900px; height: 1900px;">
+    <div class="pulse" id="bot">
         <iframe 
-            src="https://my.spline.design/genkubgreetingrobot-613xRNoVbLK7UPkYSzJSF9hA/" 
-            frameborder="0"
-            width="40%"
-            height="40%"
-            style="border-radius: 50%; overflow: hidden;"
-        ></iframe>
-        </div>
+        src="https://my.spline.design/genkubgreetingrobot-613xRNoVbLK7UPkYSzJSF9hA/" 
+        frameborder="0" allowtransparency="true" scrolling="no" style="background: transparent;">
+        </iframe>
     </div>
-
-    <div id="ai-structure">
-        <div class="structure-header">
-            <i class="fas fa-brain"></i>
-            <h3>Neural Network Active</h3>
-            <div class="close-btn">&times;</div>
-        </div>
-        <div class="structure-content">
-            <div class="neural-layer">
-                <div class="layer-name">Input Layer</div>
-                <div class="neurons">
-                    <textarea id="transcriptText" placeholder="Your speech will appear here..."></textarea>
-                </div>
-            </div>
-            <div class="neural-connectors"></div>
-            <div class="neural-layer">
-                <div class="layer-name">Output Layer</div>
-                <div class="neurons">
-                    <div class="neuron"></div>
-                </div>
-            </div>
-        </div>
-        <div class="structure-footer">
-            <div class="processing-animation">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <div class="status-text">Processing neural patterns...</div>
-        </div>
+</div>
+<div id="ai-structure">
+    <div class="close-btn">&times;</div>
+    <div class="structure-content">
+        <textarea id="transcriptText" placeholder="Your speech will appear here..."></textarea>
     </div>
 </div>
