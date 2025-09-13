@@ -53,15 +53,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Add double-click event for text-to-speech
+    // Add double-click event to call anlashis-data API with transcriptText and speak the response
     bot.addEventListener('dblclick', function(e) {
         e.stopPropagation();
-        const text = transcriptText.value;
-        
-        if (text && 'speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            speechSynthesis.speak(utterance);
-        }
+        const formData = new FormData();
+        formData.append('transcriptText', transcriptText.value);
+
+        fetch('/anlashis-data', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Display the message from API response
+                // alert(data.message);
+                // Update transcriptText input
+                transcriptText.value = data.message;
+                // Speak the message using TTS
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(data.message);
+                    speechSynthesis.speak(utterance);
+                }
+            })
+            .catch(error => {
+                console.error('Error calling anlashis-data API:', error);
+            });
     });
     
     // Close structure
