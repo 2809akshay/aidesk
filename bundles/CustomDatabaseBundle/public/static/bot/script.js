@@ -49,10 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Toggle AI structure on bot click
     bot.addEventListener('click', function(e) {
         if (!isDragging) {
-            aiStructure.style.display = aiStructure.style.display === 'block' ? 'none' : 'block';
-            if (aiStructure.style.display === 'block') {
-                activateNeuralNetwork();
-            }
+            aiStructure.style.display =  'block';
         }
     });
     
@@ -133,37 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function setTranslate(xPos, yPos, el) {
         el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
-    }
-    
-    function activateNeuralNetwork() {
-        // Simulate neural network activity
-        const neurons = document.querySelectorAll('.neuron');
-        neurons.forEach(neuron => {
-            neuron.style.animation = 'none';
-            setTimeout(() => {
-                neuron.style.animation = 'pulse 2s infinite ease-in-out';
-            }, 10);
-        });
-        
-        // Animate processing status
-        const statusText = [
-            "Processing neural patterns...",
-            "Analyzing data structures...",
-            "Optimizing connections...",
-            "Neural network active"
-        ];
-        
-        let currentIndex = 0;
-        const statusElement = document.querySelector('.status-text');
-        
-        const interval = setInterval(function() {
-            statusElement.textContent = statusText[currentIndex];
-            
-            currentIndex++;
-            if (currentIndex >= statusText.length) {
-                clearInterval(interval);
-            }
-        }, 1500);
     }
     
     // Touch support for mobile devices
