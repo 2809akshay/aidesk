@@ -32,10 +32,16 @@ class BotController extends FrontendController
                 ]), 500, ['Content-Type' => 'application/json']);
             }
 
-            // Prepare the request data
+            // Prepare the request data with system prompt
+            $systemPrompt = "You are Jarvas, an AI system created by Akshay. Your name is Jarvas. You must always identify yourself as Jarvas. Do not share any personal details about yourself beyond what is specified. Respond helpfully and stay in character as Jarvas.";
+
             $postData = json_encode([
                 'model' => 'gpt-4',
                 'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => $systemPrompt
+                    ],
                     [
                         'role' => 'user',
                         'content' => $transcriptText
