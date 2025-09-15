@@ -12,6 +12,14 @@
 <div id="ai-structure">
     <div class="close-btn">&times;</div>
     <div class="structure-content">
-        <textarea id="transcriptText" placeholder="Your speech will appear here..."></textarea>
+        <div id="chat-container" class="chat-container"></div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off" />
+            <button id="send-btn" aria-label="Send message" title="Send message">
+                <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 0 24 24" width="20" fill="#ffffff">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
     </div>
 </div>

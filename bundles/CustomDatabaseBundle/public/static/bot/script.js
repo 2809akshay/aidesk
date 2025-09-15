@@ -3,13 +3,32 @@ document.addEventListener('DOMContentLoaded', function() {
     const bot = document.getElementById('bot');
     const aiStructure = document.getElementById('ai-structure');
     const closeBtn = document.querySelector('.close-btn');
-    const transcriptText = document.getElementById('transcriptText');
+    const chatContainer = document.getElementById('chat-container');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
     
     let isDragging = false;
     let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
     let recognition;
     let isRecording = false;
     let finalTranscript = '';
+
+    // Function to append message to chat
+    function appendMessage(message, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', sender);
+        messageDiv.textContent = message;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight; // Auto scroll to bottom
+    }
+
+    // Function to send message
+    function sendMessage(message) {
+        if (message.trim() === '') return;
+        appendMessage(message, 'user');
+        callAnlashisAPI(message);
+        chatInput.value = '';
+    }
     
     // Initialize speech recognition
     if ('webkitSpeechRecognition' in window) {
@@ -23,15 +42,23 @@ document.addEventListener('DOMContentLoaded', function() {
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 if (event.results[i].isFinal) {
                     finalTranscript += event.results[i][0].transcript;
-                    // Call API when final transcript is available
+                    // If chat not open, open it
+                    if (aiStructure.style.display !== 'block') {
+                        aiStructure.style.display = 'block';
+                    }
+                    // Append user message and call API
+                    appendMessage(finalTranscript, 'user');
                     callAnlashisAPI(finalTranscript);
+                    finalTranscript = ''; // Reset for next
                 } else {
                     interimTranscript += event.results[i][0].transcript;
                 }
             }
 
-            // Show speech in input layer
-            transcriptText.value = finalTranscript + interimTranscript;
+            // Show interim speech in input only if chat is open
+            if (aiStructure.style.display === 'block') {
+                chatInput.value = interimTranscript;
+            }
         };
         
         recognition.onend = function() {
@@ -48,11 +75,11 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Auto-start AI structure on page load
-    aiStructure.style.display = 'block';
+    // Initially hide AI structure
+    aiStructure.style.display = 'none';
 
-    // Auto-start speech recognition on page load
-    startRecording();
+    let clickCount = 0;
+    let clickTimer;
 
     // Function to call anlashis-data API and speak response
     function callAnlashisAPI(transcript) {
@@ -65,8 +92,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
             .then(response => response.json())
             .then(data => {
-                // Update transcriptText input
-                transcriptText.value = data.message;
+                // Append bot message to chat
+                appendMessage(data.message, 'bot');
 
                 // Speak the message using TTS
                 if ('speechSynthesis' in window) {
@@ -100,6 +127,25 @@ document.addEventListener('DOMContentLoaded', function() {
     closeBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         aiStructure.style.display = 'none';
+    });
+
+    // Click bot orb: open chat and start recording
+    bot.addEventListener('click', function(e) {
+        e.preventDefault();
+        aiStructure.style.display = 'block';
+        startRecording();
+    });
+
+    // Send message on button click
+    sendBtn.addEventListener('click', function() {
+        sendMessage(chatInput.value);
+    });
+
+    // Send message on Enter key
+    chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage(chatInput.value);
+        }
     });
     
     // Make bot draggable
