@@ -19,15 +19,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         recognition.onresult = function(event) {
             let interimTranscript = '';
-            
+
             for (let i = event.resultIndex; i < event.results.length; i++) {
                 if (event.results[i].isFinal) {
                     finalTranscript += event.results[i][0].transcript;
+                    // Call API when final transcript is available
+                    callAnlashisAPI(finalTranscript);
                 } else {
                     interimTranscript += event.results[i][0].transcript;
                 }
             }
-            
+
             // Show speech in input layer
             transcriptText.value = finalTranscript + interimTranscript;
         };
@@ -46,18 +48,16 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Toggle AI structure on bot click
-    bot.addEventListener('click', function(e) {
-        if (!isDragging) {
-            aiStructure.style.display =  'block';
-        }
-    });
-    
-    // Add double-click event to call anlashis-data API with transcriptText and speak the response
-    bot.addEventListener('dblclick', function(e) {
-        e.stopPropagation();
+    // Auto-start AI structure on page load
+    aiStructure.style.display = 'block';
+
+    // Auto-start speech recognition on page load
+    startRecording();
+
+    // Function to call anlashis-data API and speak response
+    function callAnlashisAPI(transcript) {
         const formData = new FormData();
-        formData.append('transcriptText', transcriptText.value);
+        formData.append('transcriptText', transcript);
 
         fetch('/anlashis-data', {
             method: 'POST',
@@ -65,20 +65,36 @@ document.addEventListener('DOMContentLoaded', function() {
         })
             .then(response => response.json())
             .then(data => {
-                // Display the message from API response
-                // alert(data.message);
                 // Update transcriptText input
                 transcriptText.value = data.message;
+
                 // Speak the message using TTS
                 if ('speechSynthesis' in window) {
                     const utterance = new SpeechSynthesisUtterance(data.message);
+
+                    // Get available voices
+                    const voices = speechSynthesis.getVoices();
+                    const indianVoice = voices.find(voice => voice.lang === "en-IN");
+
+                    // Assign Indian English voice if available
+                    if (indianVoice) {
+                        utterance.voice = indianVoice;
+                    } else {
+                        console.warn("Indian English voice not found, using default voice.");
+                    }
+
+                    // Optional tweaks for natural sound
+                    utterance.pitch = 1;
+                    utterance.rate = 1;
+
+                    // Speak it
                     speechSynthesis.speak(utterance);
                 }
             })
             .catch(error => {
                 console.error('Error calling anlashis-data API:', error);
             });
-    });
+    }
     
     // Close structure
     closeBtn.addEventListener('click', function(e) {

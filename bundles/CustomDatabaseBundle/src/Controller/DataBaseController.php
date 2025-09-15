@@ -824,4 +824,488 @@ class DataBaseController extends AbstractController
 
         return $data;
     }
+
+    /**
+     * @Route("/database/api/get-table-columns/{connectionId}/{tableName}", name="get_table_columns", methods={"GET"})
+     */
+    public function getTableColumnsAction($connectionId, $tableName): JsonResponse
+    {
+        try {
+            $connection = DatabaseConn::getById($connectionId);
+
+            if (!$connection) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Connection not found'
+                ], 404);
+            }
+
+            // Get table columns from the database
+            $columns = $this->getTableColumnsFromConnection($connection, $tableName);
+
+            return new JsonResponse([
+                'success' => true,
+                'columns' => $columns,
+                'table_name' => $tableName
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Failed to fetch table columns: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @Route("/database/api/execute-data-transfer", name="execute_data_transfer", methods={"POST"})
+     */
+    public function executeDataTransferAction(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            if (!$data) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Invalid JSON data'
+                ], 400);
+            }
+
+            $sourceConnectionId = $data['sourceConnectionId'] ?? null;
+            $targetConnectionId = $data['targetConnectionId'] ?? null;
+            $sourceTable = $data['sourceTable'] ?? null;
+            $targetTable = $data['targetTable'] ?? null;
+            $columnMappings = $data['columnMappings'] ?? [];
+            $transformations = $data['transformations'] ?? [];
+            $batchSize = $data['batchSize'] ?? 100;
+            $errorHandling = $data['errorHandling'] ?? 'stop';
+
+            if (!$sourceConnectionId || !$targetConnectionId || !$sourceTable || !$targetTable) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Missing required parameters'
+                ], 400);
+            }
+
+            // Get connections
+            $sourceConnection = DatabaseConn::getById($sourceConnectionId);
+            $targetConnection = DatabaseConn::getById($targetConnectionId);
+
+            if (!$sourceConnection || !$targetConnection) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Connection not found'
+                ], 404);
+            }
+
+            // Execute data transfer
+            $result = $this->executeDataTransfer(
+                $sourceConnection,
+                $targetConnection,
+                $sourceTable,
+                $targetTable,
+                $columnMappings,
+                $transformations,
+                $batchSize,
+                $errorHandling
+            );
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Data transfer completed successfully',
+                'result' => $result
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Data transfer failed: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @Route("/database/api/save-mapping", name="save_mapping", methods={"POST"})
+     */
+    public function saveMappingAction(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            if (!$data) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Invalid JSON data'
+                ], 400);
+            }
+
+            $mappingName = $data['name'] ?? 'Untitled Mapping';
+            $mappingData = $data['mapping'] ?? [];
+
+            // Save to database or file system
+            $mappingId = $this->saveMappingToStorage($mappingName, $mappingData);
+
+            return new JsonResponse([
+                'success' => true,
+                'message' => 'Mapping saved successfully',
+                'mappingId' => $mappingId
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Failed to save mapping: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * @Route("/database/api/load-mapping/{mappingId}", name="load_mapping", methods={"GET"})
+     */
+    public function loadMappingAction($mappingId): JsonResponse
+    {
+        try {
+            $mapping = $this->loadMappingFromStorage($mappingId);
+
+            if (!$mapping) {
+                return new JsonResponse([
+                    'success' => false,
+                    'message' => 'Mapping not found'
+                ], 404);
+            }
+
+            return new JsonResponse([
+                'success' => true,
+                'mapping' => $mapping
+            ]);
+
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Failed to load mapping: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get table columns from database connection
+     */
+    private function getTableColumnsFromConnection($connection, $tableName): array
+    {
+        $columns = [];
+
+        try {
+            switch (strtolower($connection->getDatabaseType())) {
+                case 'mysql':
+                case 'mariadb':
+                    $dsn = "mysql:host={$connection->getHost()};port={$connection->getPort()};dbname={$connection->getDatabaseName()};charset={$connection->getCharset()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->prepare("DESCRIBE `{$tableName}`");
+                    $stmt->execute();
+                    $columns = $stmt->fetchAll();
+                    break;
+
+                case 'postgresql':
+                case 'postgres':
+                    $dsn = "pgsql:host={$connection->getHost()};port={$connection->getPort()};dbname={$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->prepare("SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_name = ? AND table_schema = 'public' ORDER BY ordinal_position");
+                    $stmt->execute([$tableName]);
+                    $columns = $stmt->fetchAll();
+                    break;
+
+                case 'sqlite':
+                    $dsn = "sqlite:{$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, null, null, [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->prepare("PRAGMA table_info(\"{$tableName}\")");
+                    $stmt->execute();
+                    $columns = $stmt->fetchAll();
+                    break;
+
+                case 'sqlserver':
+                case 'mssql':
+                    $dsn = "sqlsrv:Server={$connection->getHost()},{$connection->getPort()};Database={$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->prepare("SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE, COLUMN_DEFAULT FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? ORDER BY ORDINAL_POSITION");
+                    $stmt->execute([$tableName]);
+                    $columns = $stmt->fetchAll();
+                    break;
+
+                case 'oracle':
+                    $dsn = "oci:dbname={$connection->getHost()}:{$connection->getPort()}/{$connection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $connection->getUsername(), $connection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    $stmt = $pdo->prepare("SELECT COLUMN_NAME, DATA_TYPE, NULLABLE, DATA_DEFAULT FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = UPPER(?) ORDER BY COLUMN_ID");
+                    $stmt->execute([$tableName]);
+                    $columns = $stmt->fetchAll();
+                    break;
+
+                default:
+                    throw new \Exception('Unsupported database type: ' . $connection->getDatabaseType());
+            }
+
+        } catch (\PDOException $e) {
+            throw new \Exception('Database query failed: ' . $e->getMessage());
+        }
+
+        return $columns;
+    }
+
+    /**
+     * Execute data transfer between databases
+     */
+    private function executeDataTransfer($sourceConnection, $targetConnection, $sourceTable, $targetTable, $columnMappings, $transformations, $batchSize, $errorHandling)
+    {
+        $result = [
+            'totalRecords' => 0,
+            'transferredRecords' => 0,
+            'failedRecords' => 0,
+            'errors' => []
+        ];
+
+        try {
+            // Get source data
+            $sourceData = $this->getTableDataFromConnection($sourceConnection, $sourceTable, '', 10000); // Limit for demo
+            $result['totalRecords'] = count($sourceData);
+
+            if (empty($sourceData)) {
+                return $result;
+            }
+
+            // Process data in batches
+            $batches = array_chunk($sourceData, $batchSize);
+
+            foreach ($batches as $batch) {
+                $processedBatch = $this->processBatchData($batch, $columnMappings, $transformations);
+
+                try {
+                    $inserted = $this->insertBatchToTarget($targetConnection, $targetTable, $processedBatch);
+                    $result['transferredRecords'] += $inserted;
+                } catch (\Exception $e) {
+                    $result['failedRecords'] += count($processedBatch);
+                    $result['errors'][] = 'Batch insert failed: ' . $e->getMessage();
+
+                    if ($errorHandling === 'stop') {
+                        break;
+                    }
+                }
+            }
+
+        } catch (\Exception $e) {
+            $result['errors'][] = 'Data transfer failed: ' . $e->getMessage();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Process batch data with mappings and transformations
+     */
+    private function processBatchData($batch, $columnMappings, $transformations)
+    {
+        $processedData = [];
+
+        foreach ($batch as $row) {
+            $processedRow = [];
+
+            foreach ($columnMappings as $mapping) {
+                $sourceColumn = $mapping['source'];
+                $targetColumn = $mapping['target'];
+
+                if (isset($row[$sourceColumn])) {
+                    $value = $row[$sourceColumn];
+
+                    // Apply transformations
+                    if (isset($transformations[$sourceColumn])) {
+                        $value = $this->applyTransformations($value, $transformations[$sourceColumn]);
+                    }
+
+                    $processedRow[$targetColumn] = $value;
+                }
+            }
+
+            if (!empty($processedRow)) {
+                $processedData[] = $processedRow;
+            }
+        }
+
+        return $processedData;
+    }
+
+    /**
+     * Apply transformations to a value
+     */
+    private function applyTransformations($value, $transformations)
+    {
+        foreach ($transformations as $transformation) {
+            $type = $transformation['type'] ?? '';
+            $params = $transformation['params'] ?? [];
+
+            switch ($type) {
+                case 'uppercase':
+                    $value = strtoupper($value);
+                    break;
+                case 'lowercase':
+                    $value = strtolower($value);
+                    break;
+                case 'trim':
+                    $value = trim($value);
+                    break;
+                case 'substring':
+                    $start = $params['start'] ?? 0;
+                    $length = $params['length'] ?? null;
+                    $value = $length ? substr($value, $start, $length) : substr($value, $start);
+                    break;
+                case 'replace':
+                    $search = $params['search'] ?? '';
+                    $replace = $params['replace'] ?? '';
+                    $value = str_replace($search, $replace, $value);
+                    break;
+                case 'date_format':
+                    if ($value) {
+                        $fromFormat = $params['from_format'] ?? 'Y-m-d H:i:s';
+                        $toFormat = $params['to_format'] ?? 'Y-m-d';
+                        $date = \DateTime::createFromFormat($fromFormat, $value);
+                        $value = $date ? $date->format($toFormat) : $value;
+                    }
+                    break;
+                // Add more transformation types as needed
+            }
+        }
+
+        return $value;
+    }
+
+    /**
+     * Insert batch data to target database
+     */
+    private function insertBatchToTarget($targetConnection, $targetTable, $data)
+    {
+        if (empty($data)) {
+            return 0;
+        }
+
+        $inserted = 0;
+
+        try {
+            switch (strtolower($targetConnection->getDatabaseType())) {
+                case 'mysql':
+                case 'mariadb':
+                    $dsn = "mysql:host={$targetConnection->getHost()};port={$targetConnection->getPort()};dbname={$targetConnection->getDatabaseName()};charset={$targetConnection->getCharset()}";
+                    $pdo = new \PDO($dsn, $targetConnection->getUsername(), $targetConnection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    // Prepare insert statement
+                    $columns = array_keys($data[0]);
+                    $placeholders = str_repeat('?,', count($columns) - 1) . '?';
+                    $columnsStr = '`' . implode('`,`', $columns) . '`';
+
+                    $stmt = $pdo->prepare("INSERT INTO `{$targetTable}` ({$columnsStr}) VALUES ({$placeholders})");
+
+                    // Insert each row
+                    foreach ($data as $row) {
+                        $values = array_values($row);
+                        $stmt->execute($values);
+                        $inserted++;
+                    }
+                    break;
+
+                case 'postgresql':
+                case 'postgres':
+                    $dsn = "pgsql:host={$targetConnection->getHost()};port={$targetConnection->getPort()};dbname={$targetConnection->getDatabaseName()}";
+                    $pdo = new \PDO($dsn, $targetConnection->getUsername(), $targetConnection->getPassword(), [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                    ]);
+
+                    // Prepare insert statement
+                    $columns = array_keys($data[0]);
+                    $placeholders = str_repeat('?,', count($columns) - 1) . '?';
+                    $columnsStr = '"' . implode('","', $columns) . '"';
+
+                    $stmt = $pdo->prepare("INSERT INTO \"{$targetTable}\" ({$columnsStr}) VALUES ({$placeholders})");
+
+                    // Insert each row
+                    foreach ($data as $row) {
+                        $values = array_values($row);
+                        $stmt->execute($values);
+                        $inserted++;
+                    }
+                    break;
+
+                // Add other database types as needed
+                default:
+                    throw new \Exception('Batch insert not implemented for: ' . $targetConnection->getDatabaseType());
+            }
+
+        } catch (\PDOException $e) {
+            throw new \Exception('Batch insert failed: ' . $e->getMessage());
+        }
+
+        return $inserted;
+    }
+
+    /**
+     * Save mapping to storage
+     */
+    private function saveMappingToStorage($name, $data)
+    {
+        // For now, save to local file system
+        $mappingId = uniqid('mapping_', true);
+        $filePath = PIMCORE_PRIVATE_VAR . '/data-mappings/' . $mappingId . '.json';
+
+        // Ensure directory exists
+        $dir = dirname($filePath);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $mappingData = [
+            'id' => $mappingId,
+            'name' => $name,
+            'data' => $data,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        file_put_contents($filePath, json_encode($mappingData, JSON_PRETTY_PRINT));
+
+        return $mappingId;
+    }
+
+    /**
+     * Load mapping from storage
+     */
+    private function loadMappingFromStorage($mappingId)
+    {
+        $filePath = PIMCORE_PRIVATE_VAR . '/data-mappings/' . $mappingId . '.json';
+
+        if (!file_exists($filePath)) {
+            return null;
+        }
+
+        $content = file_get_contents($filePath);
+        return json_decode($content, true);
+    }
 }
