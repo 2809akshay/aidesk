@@ -1,12 +1,9 @@
-# Bot Double-Click ChatGPT Integration
+# TODO: Modify object-selector.html.twig to Prefill Add Form with Selected Object Data
 
-## Completed Tasks
-- [x] Create BotController.php with /anlashis-data endpoint that sends transcriptText to ChatGPT API
-- [x] Configure OpenAI API key in .env file
-- [x] Update script.js double-click event to send transcriptText to API, display ChatGPT response, and speak it using TTS
-
-## Summary
-- Added new API endpoint `/anlashis-data` in `BotController.php` that accepts POST data with transcriptText, sends it to OpenAI's GPT-4 model, and returns the AI response as JSON
-- Configured OpenAI API key in .env file for secure access
-- Modified the bot's double-click event listener to send the current transcriptText value to the API, display the ChatGPT response in an alert, update the transcript text input, and speak the AI-generated message using text-to-speech
-- The bot now provides intelligent responses to user input when double-clicked, both visually and audibly
+## Steps to Complete
+- [x] Add global variable `selectedObject = null` in script initialization
+- [x] Update `selectCurrentItem()` function to store full selected object data in `selectedObject`
+- [x] Update empty button handler to clear `selectedObject`
+- [x] Modify `populateDynamicFields(className)` to accept optional `data` parameter
+- [x] Modify `renderDynamicFields(fieldDefinitions)` to accept `data` and prefill input values
+- [x] Update add button click handler to prefill form fields (Class, Path, Key) and call `populateDynamicFields` with `selectedObject` data
