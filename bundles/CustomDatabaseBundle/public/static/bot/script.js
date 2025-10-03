@@ -2,10 +2,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const aiOrbContainer = document.getElementById('ai-orb-container');
     const bot = document.getElementById('bot');
     const aiStructure = document.getElementById('ai-structure');
-    const closeBtn = document.querySelector('.close-btn');
     const chatContainer = document.getElementById('chat-container');
     const chatInput = document.getElementById('chat-input');
     const sendBtn = document.getElementById('send-btn');
+    const micBtn = document.getElementById('mic-btn');
     
     let isDragging = false;
     let currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
@@ -65,13 +65,15 @@ document.addEventListener('DOMContentLoaded', function() {
             isRecording = false;
             aiOrbContainer.disabled = false;
             bot.classList.remove('listening');
+            micBtn.classList.remove('listening');
         };
-        
+
         recognition.onerror = function(event) {
             console.error('Speech recognition error:', event.error);
             isRecording = false;
             aiOrbContainer.disabled = false;
             bot.classList.remove('listening');
+            micBtn.classList.remove('listening');
         };
     }
     
@@ -123,12 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Close structure
-    closeBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        aiStructure.style.display = 'none';
-    });
-
     // Click bot orb: open chat and start recording
     bot.addEventListener('click', function(e) {
         e.preventDefault();
@@ -145,6 +141,15 @@ document.addEventListener('DOMContentLoaded', function() {
     chatInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             sendMessage(chatInput.value);
+        }
+    });
+
+    // Mic button to start/stop recording
+    micBtn.addEventListener('click', function() {
+        if (isRecording) {
+            recognition.stop();
+        } else {
+            startRecording();
         }
     });
     
@@ -201,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isRecording = true;
             aiOrbContainer.disabled = true;
             bot.classList.add('listening');
+            micBtn.classList.add('listening');
         } catch (error) {
             console.error('Recognition start error:', error);
         }

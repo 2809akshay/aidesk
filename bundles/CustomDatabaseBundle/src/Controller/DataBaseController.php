@@ -474,6 +474,42 @@ class DataBaseController extends AbstractController
         return $this->render('@CustomDatabase/default/data-protection.html.twig');
     }
 
+   
+    /**
+     * @Route("/api/get-pimcore-objects", name="get_pimcore_objects", methods={"GET"})
+     */
+    public function getPimcoreObjects(Request $request): JsonResponse
+    {
+        $className = 'Product'; // Hardcoded Pimcore class name, adjust as needed
+        $searchTerm = $request->query->get('search', '');
+        $limit = (int) $request->query->get('limit', 50);
+
+        $listClass = "\\Pimcore\\Model\\DataObject\\$className\\Listing";
+        if (!class_exists($listClass)) {
+            return $this->json(['success' => false, 'message' => "Class $className does not exist"], 400);
+        }
+
+        $list = new $listClass();
+        if ($searchTerm) {
+            $list->setCondition("o_key LIKE ?", ["%$searchTerm%"]);
+        }
+        $list->setLimit($limit);
+
+        $objects = [];
+        foreach ($list as $object) {
+            $objects[] = [
+                'id' => $object->getId(),
+                'key' => $object->getKey(),
+                'path' => $object->getFullPath()
+            ];
+        }
+
+        return $this->json([
+            'success' => true,
+            'objects' => $objects
+        ]);
+    }
+
     /**
      * @Route("/database/api/get-external-tables/{connectionId}", name="get_external_tables", methods={"GET"})
      */

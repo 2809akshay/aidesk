@@ -1,0 +1,1016 @@
+{% block body %}
+<h1>Select Products</h1>
+
+<form method="post" action="{{ path('object_selector') }}">
+    <div class="relation-field">
+        <div class="relation-display" id="relation-display">
+            <span id="no-relation-text">No relations selected</span>
+            <div id="selected-items-container" class="selected-items-container"></div>
+            <input type="hidden" id="products" name="products" value="">
+        </div>
+
+        <!-- Buttons -->
+        <div class="relation-buttons">
+            <button type="button" class="relation-btn open" title="Open">🔗</button>
+            <button type="button" class="relation-btn empty" title="Empty">❌</button>
+            <button type="button" class="relation-btn search" title="Search">🔍</button>
+            <button type="button" class="relation-btn add" title="Add New">➕</button>
+        </div>
+    </div>
+</form>
+
+<!-- Search Dialog Container -->
+<div id="search-dialog-container" class="dialog-container">
+    <div id="search-dialog" class="dialog">
+        <div class="dialog-header">
+            <h3>Search Objects</h3>
+            <button id="close-dialog" class="close-btn">×</button>
+        </div>
+        
+        <div class="dialog-content">
+            <!-- Search Filters -->
+            <div class="search-filters">
+                <div class="filter-group">
+                    <input type="text" id="search-query" placeholder="Search query">
+                </div>
+                {# <div class="filter-group">
+                    <select id="class-filter">
+                        <option value="all">All Classes</option>
+                        {% for class in classes %}
+                            <option value="{{ class }}">{{ class }}</option>
+                        {% endfor %}
+                    </select>
+                </div> #}
+                <button id="execute-search" class="btn-primary">Search</button>
+                <button id="grid-options-btn" class="btn-secondary">Grid Options</button>
+            </div>
+            
+            <!-- Grid Options Panel -->
+            <div id="grid-options-panel" class="options-panel">
+                <h4>Select Fields to Display</h4>
+                <div id="field-selector" class="field-selector">
+                    <!-- Field checkboxes will be populated here -->
+                </div>
+                <div class="options-actions">
+                    <button id="apply-grid-options" class="btn-primary">Apply</button>
+                    <button id="reset-grid-options" class="btn-secondary">Reset to Default</button>
+                </div>
+            </div>
+            
+            <!-- Results Grid -->
+            <div class="results-grid">
+                <table>
+                    <thead>
+                        <tr id="grid-headers">
+                            <th style="width: 30px;">
+                                <input type="checkbox" id="select-all-checkbox">
+                            </th>
+                            <!-- Headers will be populated dynamically -->
+                        </tr>
+                    </thead>
+                    <tbody id="search-results">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination">
+                <div class="page-info">
+                    <span id="page-info">0 - 0 / 0</span>
+                </div>
+                <div class="page-controls">
+                    <button id="prev-page" class="btn-secondary" disabled>Previous</button>
+                    <button id="next-page" class="btn-secondary" disabled>Next</button>
+                </div>
+                <div class="items-per-page">
+                    <span>Items per page</span>
+                    <select id="items-per-page">
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dialog Footer -->
+        <div class="dialog-footer">
+            <button id="select-items" class="btn-primary">Select Items</button>
+            <button id="cancel-dialog" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add New Object Dialog Container -->
+<div id="add-dialog-container" class="dialog-container">
+    <div id="add-dialog" class="dialog">
+        <div class="dialog-header">
+            <h3>Add New Object</h3>
+            <button id="close-add-dialog" class="close-btn">×</button>
+        </div>
+        
+        <div class="dialog-content">
+            <form id="add-object-form">
+                <div class="form-group">
+                    <label for="object-class">Class:</label>
+                    <select id="object-class" name="class">
+                        {% for class in classes %}
+                            <option value="{{ class }}">{{ class }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="object-path">Path:</label>
+                    <input type="text" id="object-path" name="path" placeholder="/">
+                </div>
+                
+                <div class="form-group">
+                    <label for="object-key">Key:</label>
+                    <input type="text" id="object-key" name="key" placeholder="object-key">
+                </div>
+                
+                <div id="dynamic-fields">
+                    <!-- Dynamic fields will be populated here based on selected class -->
+                </div>
+            </form>
+        </div>
+        
+        <div class="dialog-footer">
+            <button id="create-object" class="btn-primary">Create Object</button>
+            <button id="cancel-add-dialog" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<style>
+.relation-field {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+    max-width: 600px;
+    font-family: 'Open Sans', 'Helvetica Neue', helvetica, arial, verdana, sans-serif;
+    font-size: 13px;
+    color: #404040;
+}
+
+.relation-display {
+    flex: 1;
+    min-height: 34px;
+    border: 1px solid #ccc;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background: #fff;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+
+.selected-items-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.selected-item {
+    display: flex;
+    align-items: center;
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 12px;
+    max-width: 200px;
+}
+
+.selected-item-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 5px;
+}
+
+.remove-item {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.remove-item:hover {
+    background: #dc3545;
+    color: white;
+}
+
+#no-relation-text {
+    color: #999;
+    font-style: italic;
+}
+
+.relation-buttons {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.relation-btn {
+    padding: 6px 10px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background: #f8f8f8;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.relation-btn:hover {
+    background: #e0e0e0;
+}
+
+.dialog-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 10000;
+}
+
+.dialog {
+    position: absolute;
+    width: 1000px;
+    height: 550px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ccc;
+    background: #f5f5f5;
+    border-radius: 4px 4px 0 0;
+}
+
+.dialog-header h3 {
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.dialog-content {
+    height: calc(100% - 50px);
+    overflow: auto;
+    padding: 15px;
+}
+
+.dialog-footer {
+    padding: 10px 15px;
+    border-top: 1px solid #ccc;
+    text-align: right;
+}
+
+.search-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 200px;
+}
+
+.btn-primary {
+    padding: 8px 15px;
+    background: #4a86e8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    padding: 8px 15px;
+    background: #f5f5f5;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.options-panel {
+    display: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+}
+
+.field-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.field-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.field-checkbox input {
+    margin: 0;
+}
+
+.options-actions {
+    margin-top: 10px;
+}
+
+.results-grid {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.results-grid table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.results-grid thead {
+    background: #f5f5f5;
+}
+
+.results-grid th,
+.results-grid td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+}
+
+.results-grid th {
+    cursor: pointer;
+}
+
+.results-grid tbody tr {
+    cursor: pointer;
+}
+
+.results-grid tbody tr:hover {
+    background-color: #f0f0f0;
+}
+
+.results-grid tbody tr.selected {
+    background-color: #e0e0e0;
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.page-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.items-per-page select {
+    margin-left: 5px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.field-description {
+    font-size: 12px;
+    color: #666;
+    margin-top: 3px;
+}
+
+#add-dialog {
+    width: 800px;
+    height: 600px;
+}
+
+#add-dialog .dialog-content {
+    height: calc(100% - 120px);
+}
+
+.selected-items-count {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function () {
+    let relationValues = [];
+    let selectedItems = [];
+    let currentData = [];
+    let availableFields = [];
+    let selectedFields = [];
+    let defaultFields = ['id', 'path', 'published', 'creationDate', 'modificationDate'];
+
+    // Sample data from controller
+    const sampleData = {{ products|json_encode|raw }};
+    console.log('Sample data:', sampleData);
+
+    // Class field definitions
+    const classFieldDefinitions = {
+        'DatabaseConn': [
+            { name: 'hostname', type: 'text', label: 'Hostname', required: true },
+            { name: 'username', type: 'text', label: 'Username', required: true },
+            { name: 'password', type: 'password', label: 'Password', required: true },
+            { name: 'database', type: 'text', label: 'Database', required: true },
+            { name: 'port', type: 'number', label: 'Port', required: false, default: 3306 },
+            { name: 'description', type: 'textarea', label: 'Description', required: false }
+        ]
+    };
+
+    // Initialize with default fields
+    selectedFields = [...defaultFields];
+    
+    // Extract all available fields from sample data
+    function extractAvailableFields(data) {
+        if (!data || data.length === 0) {
+            console.log('No data available for field extraction');
+            return defaultFields;
+        }
+        
+        const fields = new Set();
+        data.forEach(item => {
+            if (item && typeof item === 'object') {
+                Object.keys(item).forEach(key => {
+                    fields.add(key);
+                });
+            }
+        });
+        return Array.from(fields);
+    }
+
+    // Initialize available fields
+    availableFields = extractAvailableFields(sampleData);
+    console.log('Available fields:', availableFields);
+    
+    // Populate field selector checkboxes
+    function populateFieldSelector() {
+        const fieldSelector = $("#field-selector");
+        fieldSelector.empty();
+        
+        availableFields.forEach(field => {
+            const isChecked = selectedFields.includes(field);
+            const checkbox = $(`
+                <div class="field-checkbox">
+                    <input type="checkbox" id="field-${field}" value="${field}" ${isChecked ? 'checked' : ''}>
+                    <label for="field-${field}">${field}</label>
+                </div>
+            `);
+            fieldSelector.append(checkbox);
+        });
+    }
+    
+    // Update grid headers based on selected fields
+    function updateGridHeaders() {
+        const headersContainer = $("#grid-headers");
+        headersContainer.empty();
+        
+        // Add checkbox column header
+        headersContainer.append('<th style="width: 30px;"><input type="checkbox" id="select-all-checkbox"></th>');
+        
+        selectedFields.forEach(field => {
+            const header = $(`
+                <th>
+                    ${field}
+                    <span class="sort-indicator" style="margin-left: 5px; font-size: 12px;">↕</span>
+                </th>
+            `);
+            
+            // Add sorting functionality
+            header.on("click", function() {
+                sortData(field);
+            });
+            
+            headersContainer.append(header);
+        });
+    }
+    
+    // Sort data by field
+    function sortData(field) {
+        if (!currentData || currentData.length === 0) return;
+        
+        currentData.sort((a, b) => {
+            const valA = a[field] || '';
+            const valB = b[field] || '';
+            
+            if (valA < valB) return -1;
+            if (valA > valB) return 1;
+            return 0;
+        });
+        populateResults(currentData);
+    }
+    
+    // Populate results in the grid
+    function populateResults(data) {
+        currentData = data || [];
+        const resultsContainer = $("#search-results");
+        resultsContainer.empty();
+
+        if (!data || data.length === 0) {
+            resultsContainer.append('<tr><td colspan="' + (selectedFields.length + 1) + '" style="padding: 20px; text-align: center; color: #999;">No results found</td></tr>');
+            $("#page-info").text(`0 - 0 / 0`);
+            return;
+        }
+
+        data.forEach((item, index) => {
+            const isSelected = selectedItems.some(selected => selected.id === item.id);
+            const row = $("<tr>").data("item", item);
+            
+            // Add checkbox column
+            row.append(`<td><input type="checkbox" class="item-checkbox" value="${item.id}" ${isSelected ? 'checked' : ''}></td>`);
+            
+            selectedFields.forEach(field => {
+                let value = item[field];
+                
+                // Handle undefined/null values
+                if (value === undefined || value === null) {
+                    value = '';
+                }
+                
+                // Format boolean values
+                if (typeof value === 'boolean') {
+                    value = value ? '✓' : '✗';
+                }
+                
+                // Format date values
+                if ((field.includes('Date') || field.includes('date')) && value) {
+                    try {
+                        let date;
+                        if (typeof value === 'number') {
+                            date = new Date(value * 1000);
+                        } else if (typeof value === 'string') {
+                            date = new Date(value);
+                        }
+                        if (date && !isNaN(date.getTime())) {
+                            value = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                        }
+                    } catch (e) {
+                        console.log('Date formatting error:', e);
+                    }
+                }
+                
+                // Special styling for published field
+                const style = field === 'published' ? 'text-align: center;' : '';
+                const title = typeof value === 'string' && value.length > 50 ? `title="${value}"` : '';
+                const displayValue = typeof value === 'string' && value.length > 50 ? value.substring(0, 50) + '...' : value;
+                    
+                row.append(`<td style="${style}" ${title}>${displayValue}</td>`);
+            });
+            
+            resultsContainer.append(row);
+        });
+
+        $("#page-info").text(`1 - ${data.length} / ${data.length}`);
+        updateSelectAllCheckbox();
+    }
+
+    // Update select all checkbox state
+    function updateSelectAllCheckbox() {
+        const allCheckboxes = $(".item-checkbox");
+        const checkedCheckboxes = $(".item-checkbox:checked");
+        
+        if (allCheckboxes.length === 0) {
+            $("#select-all-checkbox").prop("checked", false);
+            return;
+        }
+        
+        $("#select-all-checkbox").prop("checked", allCheckboxes.length === checkedCheckboxes.length);
+    }
+
+    // Enhanced search function
+    function performSearch() {
+        const query = $("#search-query").val().toLowerCase().trim();
+        const classFilter = $("#class-filter").val();
+        
+        console.log('Searching for:', query, 'Class filter:', classFilter);
+
+        if (!sampleData || sampleData.length === 0) {
+            console.log('No sample data available');
+            populateResults([]);
+            return;
+        }
+
+        let filtered = sampleData;
+
+        // Apply class filter if not "all"
+        if (classFilter !== 'all') {
+            filtered = filtered.filter(item => {
+                return item.class === classFilter || item.type === classFilter;
+            });
+        }
+
+        // Apply search query
+        if (query) {
+            filtered = filtered.filter(item => {
+                for (let key in item) {
+                    const value = item[key];
+                    
+                    if (value === null || value === undefined) {
+                        continue;
+                    }
+                    
+                    const stringValue = String(value).toLowerCase();
+                    
+                    if (stringValue.includes(query)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+        }
+
+        console.log('Search results:', filtered);
+        populateResults(filtered);
+    }
+
+    // Update relation display with individual items
+    function updateRelationDisplay() {
+        const container = $("#selected-items-container");
+        const noRelationText = $("#no-relation-text");
+        
+        container.empty();
+        
+        if (selectedItems.length === 0) {
+            noRelationText.show();
+            $("#products").val("");
+            return;
+        }
+        
+        noRelationText.hide();
+        
+        // Create individual item displays
+        selectedItems.forEach(item => {
+            const displayName = item.name || item.path || `Item #${item.id}`;
+            const itemElement = $(`
+                <div class="selected-item">
+                    <span class="selected-item-text" title="${displayName}">${displayName}</span>
+                    <button type="button" class="remove-item" data-id="${item.id}">×</button>
+                </div>
+            `);
+            container.append(itemElement);
+        });
+        
+        // Store IDs as comma-separated string
+        const productIds = selectedItems.map(item => item.id).join(',');
+        $("#products").val(productIds);
+        
+        // Add click handlers for remove buttons
+        $(".remove-item").on("click", function() {
+            const itemId = $(this).data("id");
+            removeSelectedItem(itemId);
+        });
+    }
+
+    // Remove individual item
+    function removeSelectedItem(itemId) {
+        selectedItems = selectedItems.filter(item => item.id != itemId);
+        relationValues = relationValues.filter(id => id != itemId);
+        updateRelationDisplay();
+        
+        // Also update checkboxes in search dialog if open
+        $(`.item-checkbox[value="${itemId}"]`).prop("checked", false);
+        updateSelectAllCheckbox();
+    }
+
+    // Populate dynamic fields based on selected class
+    function populateDynamicFields(className, data = null) {
+        const dynamicFields = $("#dynamic-fields");
+        dynamicFields.empty();
+
+        // Try to fetch fields from server first
+        fetch('{{ path("get_class_fields") }}?class=' + className)
+            .then(res => res.json())
+            .then(serverFields => {
+                if (serverFields && serverFields.length > 0) {
+                    renderDynamicFields(serverFields, data);
+                } else {
+                    // Fallback to client-side definitions
+                    const fieldDefinitions = classFieldDefinitions[className] || [];
+                    renderDynamicFields(fieldDefinitions, data);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching class fields:', error);
+                // Fallback to client-side definitions
+                const fieldDefinitions = classFieldDefinitions[className] || [];
+                renderDynamicFields(fieldDefinitions, data);
+            });
+    }
+
+    function renderDynamicFields(fieldDefinitions, data = null) {
+        const dynamicFields = $("#dynamic-fields");
+
+        if (fieldDefinitions.length === 0) {
+            dynamicFields.append('<p style="color: #666; font-style: italic;">No additional fields defined for this class.</p>');
+            return;
+        }
+
+        fieldDefinitions.forEach(field => {
+            const fieldGroup = $(`
+                <div class="form-group">
+                    <label for="field-${field.name}">${field.label}${field.required ? ' *' : ''}</label>
+                    ${field.description ? `<div class="field-description">${field.description}</div>` : ''}
+                </div>
+            `);
+
+            let inputField;
+            switch(field.type) {
+                case 'textarea':
+                    inputField = $(`<textarea id="field-${field.name}" name="${field.name}" ${field.required ? 'required' : ''}></textarea>`);
+                    break;
+                case 'number':
+                    inputField = $(`<input type="number" id="field-${field.name}" name="${field.name}" ${field.required ? 'required' : ''} value="${field.default || ''}">`);
+                    break;
+                case 'password':
+                    inputField = $(`<input type="password" id="field-${field.name}" name="${field.name}" ${field.required ? 'required' : ''}>`);
+                    break;
+                default:
+                    inputField = $(`<input type="text" id="field-${field.name}" name="${field.name}" ${field.required ? 'required' : ''} value="${field.default || ''}">`);
+            }
+
+            // Prefill value if data provided
+            if (data && data[field.name] !== undefined) {
+                inputField.val(data[field.name]);
+            }
+
+            fieldGroup.append(inputField);
+            dynamicFields.append(fieldGroup);
+        });
+    }
+
+    // Initialize the interface
+    function initializeInterface() {
+        populateFieldSelector();
+        updateGridHeaders();
+        
+        // Show initial data
+        if (sampleData && sampleData.length > 0) {
+            populateResults(sampleData);
+        } else {
+            populateResults([]);
+        }
+        
+        updateRelationDisplay();
+    }
+
+    // Initialize the interface
+    initializeInterface();
+
+    // Search button click handler - shows search dialog
+    $(".relation-btn.search").on("click", function () {
+        $("#search-dialog-container").show();
+        $("#search-query").val('');
+        $("#class-filter").val('all');
+        populateResults(sampleData);
+    });
+
+    // Add button click handler - shows add new object dialog
+    $(".relation-btn.add").on("click", function () {
+        $("#add-dialog-container").show();
+        $("#add-object-form")[0].reset();
+        populateDynamicFields($("#object-class").val());
+    });
+
+    // Class change handler
+    $("#object-class").on("change", function() {
+        populateDynamicFields($(this).val());
+    });
+
+    // Close add dialog
+    $("#close-add-dialog, #cancel-add-dialog").on("click", function() {
+        $("#add-dialog-container").hide();
+        $("#add-object-form")[0].reset();
+    });
+
+    // Create object handler
+    $("#create-object").on("click", function() {
+        const formData = new FormData($("#add-object-form")[0]);
+        const objectData = {};
+        
+        // Convert form data to object
+        for (let [key, value] of formData.entries()) {
+            objectData[key] = value;
+        }
+        
+        // Basic validation
+        if (!objectData.path || !objectData.key) {
+            alert("Please fill in all required fields (Path and Key)");
+            return;
+        }
+
+        console.log("Creating object with data:", objectData);
+        
+        // API call to create object
+       $.ajax({
+        url: '{{ path("create_object") }}',
+        type: 'GET',
+        data: objectData,
+        success: function(response) {
+            if (response.success) {
+                alert("Object created successfully!");
+                $("#add-dialog-container").hide();
+                $("#add-object-form")[0].reset();
+
+                if (response.object) {
+                    // Add the new object to the selected items
+                    selectedItems.push(response.object);
+                    relationValues.push(response.object.id);
+                    updateRelationDisplay();
+                }
+            } else {
+                alert("Error creating object: " + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            alert("Error creating object: " + error);
+        }
+    });
+
+    });
+
+    // Close search dialog
+    $("#close-dialog, #cancel-dialog").on("click", function() {
+        $("#search-dialog-container").hide();
+    });
+
+    // Execute search
+    $("#execute-search").on("click", function() {
+        performSearch();
+    });
+
+    // Grid options button
+    $("#grid-options-btn").on("click", function() {
+        $("#grid-options-panel").toggle();
+    });
+
+    // Apply grid options
+    $("#apply-grid-options").on("click", function() {
+        selectedFields = [];
+        $(".field-checkbox input:checked").each(function() {
+            selectedFields.push($(this).val());
+        });
+        
+        if (selectedFields.length === 0) {
+            selectedFields = [...defaultFields];
+            populateFieldSelector();
+        }
+        
+        updateGridHeaders();
+        populateResults(currentData);
+        $("#grid-options-panel").hide();
+    });
+
+    // Reset grid options to default
+    $("#reset-grid-options").on("click", function() {
+        selectedFields = [...defaultFields];
+        populateFieldSelector();
+        updateGridHeaders();
+        populateResults(currentData);
+    });
+
+    // Select all checkbox handler
+    $("#select-all-checkbox").on("change", function() {
+        const isChecked = $(this).prop("checked");
+        $(".item-checkbox").prop("checked", isChecked);
+        
+        // Update selected items
+        if (isChecked) {
+            currentData.forEach(item => {
+                if (!selectedItems.some(selected => selected.id === item.id)) {
+                    selectedItems.push(item);
+                }
+            });
+        } else {
+            // Remove all current data items from selected items
+            const currentIds = currentData.map(item => item.id);
+            selectedItems = selectedItems.filter(item => !currentIds.includes(item.id));
+        }
+    });
+
+    // Individual checkbox handler
+    $("#search-results").on("change", ".item-checkbox", function() {
+        const itemId = $(this).val();
+        const item = currentData.find(d => d.id == itemId);
+        
+        if ($(this).prop("checked")) {
+            if (!selectedItems.some(i => i.id == itemId)) {
+                selectedItems.push(item);
+            }
+        } else {
+            selectedItems = selectedItems.filter(i => i.id != itemId);
+        }
+        
+        updateSelectAllCheckbox();
+    });
+
+    // Select items button in search dialog
+    $("#select-items").on("click", function() {
+        if (selectedItems.length > 0) {
+            // Update relation values with selected item IDs
+            relationValues = selectedItems.map(item => item.id);
+            updateRelationDisplay();
+            $("#search-dialog-container").hide();
+        } else {
+            alert("Please select at least one item.");
+        }
+    });
+
+    // Other button handlers
+    $(".relation-btn.open").on("click", function () {
+        if (selectedItems.length > 0) {
+            const itemNames = selectedItems.map(item => item.name || item.path || `Item #${item.id}`).join(', ');
+            alert("Opening related items: " + itemNames);
+        } else {
+            alert("No relations set.");
+        }
+    });
+
+    $(".relation-btn.empty").on("click", function () {
+        selectedItems = [];
+        relationValues = [];
+        updateRelationDisplay();
+        
+        // Also uncheck all checkboxes in search dialog
+        $(".item-checkbox").prop("checked", false);
+        updateSelectAllCheckbox();
+    });
+
+    // Enter key for search
+    $("#search-query").on("keypress", function(e) {
+        if (e.which === 13) {
+            performSearch();
+        }
+    });
+
+    // Items per page change
+    $("#items-per-page").on("change", function() {
+        performSearch();
+    });
+
+    // Debug: Log initial state
+    console.log('Initial sample data:', sampleData);
+    console.log('Initial available fields:', availableFields);
+});
+</script>
+{% endblock %}

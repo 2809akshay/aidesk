@@ -1,0 +1,907 @@
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="fas fa-images me-2"></i>
+                            OEM Images Extractor
+                        </h4>
+                
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    {# Search Form #}
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <form id="searchForm" method="post" class="row g-3">
+                                <div class="col-md-8">
+                                    <label for="part_number" class="form-label fw-bold">OEM Part Number</label>
+                                    <input type="text" 
+                                           class="form-control form-control-lg" 
+                                           id="part_number" 
+                                           name="part_number" 
+                                           value="{{ part_number }}" 
+                                           placeholder="Enter OEM part number (e.g., BH-7101-01C)"
+                                           required>       
+                                    <button type="submit" class="btn btn-success btn-lg w-100" id="extractBtn">
+                                        <i class="fas fa-search me-2"></i>
+                                        Extract Images
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    {# Error Alert #}
+                    {% if error %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Error:</strong> {{ error }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
+
+                    {# Results Section #}
+                    <div id="resultsSection" class="{% if images is empty %}d-none{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>
+                                Extracted Images: 
+                                <span class="badge bg-success" id="imageCount">{{ total_images }}</span>
+                            </h5>
+                            <div>
+                                <a href="{{ path('download_image_urls', {part_number: part_number}) }}" 
+                                   class="btn btn-outline-primary btn-sm me-2" 
+                                   id="downloadBtn">
+                                    <i class="fas fa-download me-1"></i>
+                                    Download URLs
+                                </a>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="clearResults()">
+                                    <i class="fas fa-trash me-1"></i>
+                                    Clear
+                                </button>
+                            </div>
+                        </div>
+
+                        {# Images Grid #}
+                        <div id="imagesGrid" class="row g-3">
+                            {% for image in images %}
+                                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
+                                    <div class="card h-100 image-card">
+                                        <div class="card-img-top-container" style="height: 200px; overflow: hidden; background: #f8f9fa;">
+                                            <img src="{{ image.url }}" 
+                                                 class="card-img-top" 
+                                                 alt="Part {{ part_number }}"
+                                                 style="height: 100%; width: 100%; object-fit: contain;"
+                                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZThlOGU4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4='">
+                                        </div>
+                                        <div class="card-body">
+                                            <h6 class="card-title text-truncate" title="{{ image.url }}">
+                                                Image {{ loop.index }}
+                                            </h6>
+                                            <p class="card-text small text-muted mb-1">
+                                                <strong>Source:</strong> {{ image.source }}
+                                            </p>
+                                            <p class="card-text small text-muted mb-2 url-text" style="font-family: monospace; font-size: 0.75rem;">
+                                                {{ image.url|length > 50 ? image.url[:50] ~ '...' : image.url }}
+                                            </p>
+                                            <div class="d-grid">
+                                                <a href="{{ image.url }}" 
+                                                   target="_blank" 
+                                                   class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-external-link-alt me-1"></i>
+                                                    Open Original
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="col-12">
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                                        <h5 class="text-muted">No images extracted yet</h5>
+                                        <p class="text-muted">Enter an OEM part number and click "Extract Images" to get started.</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block head_styles %}
+{# {{ parent() }} #}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Modern OEM Images Extractor Design */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --accent-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    --shadow-light: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    --shadow-dark: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --blur: blur(4px);
+    --border-radius: 16px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    color: #ffffff;
+    overflow-x: hidden;
+}
+
+/* Animated Background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 226, 0.3) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+    z-index: -1;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    33% { transform: translateY(-20px) rotate(1deg); }
+    66% { transform: translateY(10px) rotate(-1deg); }
+}
+
+/* Glassmorphism Container */
+.container-fluid {
+    max-width: 1400px;
+    position: relative;
+}
+
+/* Main Card with Glass Effect */
+.card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    -webkit-backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-light);
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-dark);
+}
+
+/* Header with Gradient */
+.card-header {
+    background: var(--primary-gradient);
+    border: none;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.card-header h4 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+    position: relative;
+    z-index: 2;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.card-header .badge {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    z-index: 2;
+}
+
+/* Card Body */
+.card-body {
+    padding: 2.5rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Form Styling */
+.form-label {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-size: 1.1rem;
+    color: #ffffff;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #ffffff;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+.form-control.is-valid {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 0.875rem 2rem;
+    font-size: 1.1rem;
+    transition: var(--transition);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.6s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn-success {
+    background: var(--success-gradient);
+    color: white;
+    box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.6);
+}
+
+.btn-outline-primary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+.btn-outline-primary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: white;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-outline-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+}
+
+.btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Loading Spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3em;
+    border-color: rgba(255, 255, 255, 0.3);
+    border-right-color: white;
+}
+
+/* Image Cards */
+.image-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: var(--transition);
+    box-shadow: var(--shadow-light);
+    margin-bottom: 1rem;
+}
+
+.image-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-dark);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.card-img-top-container {
+    height: 220px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-img-top-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.card-img-top-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 12px 12px 0 0;
+    transition: var(--transition);
+    position: relative;
+    z-index: 2;
+}
+
+.card-img-top-container:hover img {
+    transform: scale(1.1) rotate(1deg);
+}
+
+.card-body {
+    padding: 1.25rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.card-title i {
+    color: #4facfe;
+}
+
+.url-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    word-break: break-all;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem;
+    border-radius: 8px;
+    margin: 0.75rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Badges */
+.badge {
+    background: var(--accent-gradient);
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 10px rgba(67, 233, 123, 0.3);
+}
+
+/* Alerts */
+.alert {
+    background: rgba(220, 53, 69, 0.2);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    border-radius: var(--border-radius);
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+}
+
+.alert-danger {
+    background: rgba(220, 53, 69, 0.2);
+    border-color: rgba(220, 53, 69, 0.3);
+}
+
+/* Example Buttons */
+.example-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-weight: 500;
+    transition: var(--transition);
+    backdrop-filter: blur(10px);
+    margin-bottom: 0.75rem;
+}
+
+.example-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Results Section */
+#resultsSection {
+    margin-top: 2.5rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#imageCount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4facfe;
+    text-shadow: 0 2px 4px rgba(79, 172, 254, 0.3);
+}
+
+/* No Results */
+.text-center {
+    color: white;
+}
+
+.text-center i {
+    font-size: 5rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 1.5rem;
+    animation: pulse 2s infinite;
+}
+
+.text-center h5 {
+    color: #ffffff;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.text-center p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.2rem;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .card-header {
+        padding: 1.5rem;
+    }
+
+    .card-header h4 {
+        font-size: 1.5rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .form-control {
+        font-size: 1rem;
+        padding: 0.875rem 1rem;
+    }
+
+    .col-xl-3, .col-lg-4 {
+        margin-bottom: 1.5rem;
+    }
+
+    .card-img-top-container {
+        height: 180px;
+    }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-gradient);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-gradient);
+}
+
+/* Loading State */
+.loading {
+    animation: pulse 1.5s infinite;
+}
+
+/* Toast Notifications */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow-dark);
+    z-index: 9999;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+{# {{ parent() }} #}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('searchForm');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const resultsSection = document.getElementById('resultsSection');
+    const imagesGrid = document.getElementById('imagesGrid');
+    const noResults = document.getElementById('noResults');
+    const imageCount = document.getElementById('imageCount');
+    const extractBtn = document.getElementById('extractBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const partNumberInput = document.getElementById('part_number');
+
+    // Add fade-in animation to cards
+    function addFadeInAnimation(element) {
+        element.classList.add('fade-in');
+    }
+
+    // Example part number buttons with animation
+    document.querySelectorAll('.example-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            partNumberInput.value = this.dataset.part;
+            // Add visual feedback
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+                searchForm.dispatchEvent(new Event('submit'));
+            }, 150);
+        });
+    });
+
+    // Input validation and enhancement
+    partNumberInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        if (value.length > 0) {
+            this.classList.add('is-valid');
+            this.classList.remove('is-invalid');
+        } else {
+            this.classList.remove('is-valid', 'is-invalid');
+        }
+    });
+
+    // Form submission with enhanced UX
+    searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const partNumber = partNumberInput.value.trim();
+        if (!partNumber) {
+            showError('Please enter an OEM part number');
+            partNumberInput.classList.add('is-invalid');
+            partNumberInput.focus();
+            return;
+        }
+
+        partNumberInput.classList.remove('is-invalid');
+        partNumberInput.classList.add('is-valid');
+
+        // Enhanced loading state
+        loadingSpinner.classList.remove('d-none');
+        resultsSection.classList.add('d-none');
+        extractBtn.disabled = true;
+        extractBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Extracting...';
+
+        // Clear previous results
+        clearResults();
+
+        // AJAX request with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+        fetch('{{ path("extract_images_ajax") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams({
+                'part_number': partNumber
+            }),
+            signal: controller.signal
+        })
+        .then(response => {
+            clearTimeout(timeoutId);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            loadingSpinner.classList.add('d-none');
+            extractBtn.disabled = false;
+            extractBtn.innerHTML = '<i class="fas fa-search me-2"></i>Extract Images';
+
+            if (data.success) {
+                updateResults(data.images, data.total, partNumber);
+            } else {
+                showError(data.error || 'Failed to extract images');
+            }
+        })
+        .catch(error => {
+            clearTimeout(timeoutId);
+            loadingSpinner.classList.add('d-none');
+            extractBtn.disabled = false;
+            extractBtn.innerHTML = '<i class="fas fa-search me-2"></i>Extract Images';
+
+            if (error.name === 'AbortError') {
+                showError('Request timed out. Please try again.');
+            } else {
+                showError('Network error: ' + error.message);
+            }
+        });
+    });
+
+    function updateResults(images, total, partNumber) {
+        // Animate counter
+        animateCounter(imageCount, 0, total, 1000);
+
+        if (total > 0) {
+            // Update images grid with staggered animation
+            imagesGrid.innerHTML = '';
+            images.forEach((image, index) => {
+                const col = document.createElement('div');
+                col.className = 'col-xl-3 col-lg-4 col-md-6 col-sm-12';
+                col.style.animationDelay = `${index * 0.1}s`;
+
+                col.innerHTML = `
+                    <div class="card h-100 image-card fade-in">
+                        <div class="card-img-top-container">
+                            <img src="${image.url}"
+                                 class="card-img-top"
+                                 alt="Part ${partNumber}"
+                                 loading="lazy"
+                                 onerror="handleImageError(this)">
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate" title="${image.url}">
+                                <i class="fas fa-image me-1"></i>Image ${index + 1}
+                            </h6>
+                            <p class="card-text small text-muted mb-1">
+                                <strong>Source:</strong> <span class="badge bg-light text-dark">${image.source}</span>
+                            </p>
+                            <p class="card-text small text-muted mb-2 url-text">
+                                ${image.url.length > 50 ? image.url.substring(0, 50) + '...' : image.url}
+                            </p>
+                            <div class="d-grid gap-1">
+                                <a href="${image.url}"
+                                   target="_blank"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-external-link-alt me-1"></i>
+                                    Open Original
+                                </a>
+                                <button class="btn btn-outline-secondary btn-sm"
+                                        onclick="copyToClipboard('${image.url}')">
+                                    <i class="fas fa-copy me-1"></i>
+                                    Copy URL
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                imagesGrid.appendChild(col);
+            });
+
+            // Update download link
+            downloadBtn.href = `{{ path('download_image_urls') }}?part_number=${encodeURIComponent(partNumber)}`;
+
+            noResults.classList.add('d-none');
+            resultsSection.classList.remove('d-none');
+            addFadeInAnimation(resultsSection);
+        } else {
+            imagesGrid.innerHTML = '';
+            noResults.classList.remove('d-none');
+            resultsSection.classList.remove('d-none');
+            addFadeInAnimation(resultsSection);
+        }
+    }
+
+    function animateCounter(element, start, end, duration) {
+        const startTime = performance.now();
+        const updateCounter = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const current = Math.floor(start + (end - start) * progress);
+            element.textContent = current;
+
+            if (progress < 1) {
+                requestAnimationFrame(updateCounter);
+            }
+        };
+        requestAnimationFrame(updateCounter);
+    }
+
+    function handleImageError(img) {
+        img.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZThlOGU4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4=';
+        img.alt = 'Image not available';
+    }
+
+    function showError(message) {
+        // Create a modern toast notification
+        const toast = document.createElement('div');
+        toast.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Error:</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(toast);
+
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+
+    window.clearResults = function() {
+        imagesGrid.innerHTML = '';
+        resultsSection.classList.add('d-none');
+        imageCount.textContent = '0';
+    };
+
+    window.copyToClipboard = function(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            // Show temporary success feedback
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-success position-fixed';
+            notification.style.cssText = 'top: 20px; left: 20px; z-index: 9999;';
+            notification.innerHTML = '<i class="fas fa-check me-2"></i>URL copied to clipboard!';
+
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 2000);
+        }).catch(() => {
+            showError('Failed to copy URL');
+        });
+    };
+
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl/Cmd + Enter to submit form
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            searchForm.dispatchEvent(new Event('submit'));
+        }
+
+        // Escape to clear results
+        if (e.key === 'Escape') {
+            clearResults();
+        }
+    });
+
+    // Add loading animation to body when extracting
+    let loadingClassAdded = false;
+    const observer = new MutationObserver(() => {
+        const isLoading = !loadingSpinner.classList.contains('d-none');
+        if (isLoading && !loadingClassAdded) {
+            document.body.classList.add('loading');
+            loadingClassAdded = true;
+        } else if (!isLoading && loadingClassAdded) {
+            document.body.classList.remove('loading');
+            loadingClassAdded = false;
+        }
+    });
+
+    observer.observe(loadingSpinner, { attributes: true, attributeFilter: ['class'] });
+});
+</script>
+{% endblock %}

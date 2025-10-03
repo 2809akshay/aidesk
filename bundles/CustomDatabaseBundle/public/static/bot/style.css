@@ -98,37 +98,7 @@
     resize: vertical;
 }
 
-.structure-header {
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.2);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #8a2be2;
-}
 
-.structure-header h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    flex: 1;
-}
-
-.close-btn {
-    cursor: pointer;
-    font-size: 1.5rem;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: background 0.3s;
-}
-
-.close-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-}
 
 .structure-content {
     padding: 20px;
@@ -174,6 +144,7 @@
     display: flex;
     gap: 10px;
     align-items: center;
+    flex-direction: row-reverse; /* Send button on left */
 }
 
 #chat-input {
@@ -210,6 +181,32 @@
 }
 
 #send-btn svg {
+    display: block;
+}
+
+#mic-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: #ff5722;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+#mic-btn:hover {
+    background: #d84315;
+}
+
+#mic-btn.listening {
+    background: #4caf50;
+}
+
+#mic-btn svg {
     display: block;
 }
 
