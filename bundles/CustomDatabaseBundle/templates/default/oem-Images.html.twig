@@ -1,123 +1,163 @@
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">
-                            <i class="fas fa-images me-2"></i>
-                            OEM Images Extractor
-                        </h4>
-                
-                    </div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-images me-2"></i>
+                        OEM Images Extractor
+                    </h4>
+            
                 </div>
-                
-                <div class="card-body">
-                    {# Search Form #}
-                    <div class="row mb-4">
-                        <div class="col-md-8">
-                            <form id="searchForm" method="post" class="row g-3">
-                                <div class="col-md-8">
-                                    <label for="part_number" class="form-label fw-bold">OEM Part Number</label>
-                                    <input type="text" 
-                                           class="form-control form-control-lg" 
-                                           id="part_number" 
-                                           name="part_number" 
-                                           value="{{ part_number }}" 
-                                           placeholder="Enter OEM part number (e.g., BH-7101-01C)"
-                                           required>       
-                                    <button type="submit" class="btn btn-success btn-lg w-100" id="extractBtn">
-                                        <i class="fas fa-search me-2"></i>
-                                        Extract Images
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                    {# Loading Spinner #}
-                    <div id="loadingSpinner" class="d-none text-center py-5">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <h5 class="mt-3 text-white">Extracting Images...</h5>
-                        <p class="text-muted">Searching for OEM part images</p>
-                    </div>
-
-                    {# Error Alert #}
-                    {% if error %}
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Error:</strong> {{ error }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endif %}
-
-                    {# Results Section #}
-                    <div id="resultsSection" class="{% if images is empty %}d-none{% endif %}">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0">
-                                <i class="fas fa-list me-2"></i>
-                                Extracted Images: 
-                                <span class="badge bg-success" id="imageCount">{{ total_images }}</span>
-                            </h5>
-                            <div>
-                                <a href="{{ path('download_image_urls', {part_number: part_number}) }}" 
-                                   class="btn btn-outline-primary btn-sm me-2" 
-                                   id="downloadBtn">
-                                    <i class="fas fa-download me-1"></i>
-                                    Download URLs
-                                </a>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="clearResults()">
-                                    <i class="fas fa-trash me-1"></i>
-                                    Clear
+            </div>
+            
+            <div class="card-body">
+                {# Search Form #}
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <form id="searchForm" method="post" class="row g-3">
+                            <div class="col-md-6">
+                                <label for="part_number" class="form-label fw-bold">
+                                    <i class="fas fa-hashtag me-1"></i>OEM Part Number
+                                </label>
+                                <input type="text"
+                                        class="form-control form-control-lg"
+                                        id="part_number"
+                                        name="part_number"
+                                        value="{{ part_number }}"
+                                        placeholder="e.g., BH-7101-01C, WR55X10942"
+                                        required>
+                                <label for="part_title" class="form-label fw-bold">
+                                    <i class="fas fa-tag me-1"></i>OEM Part Title
+                                </label>
+                                <input type="text"
+                                        class="form-control form-control-lg"
+                                        id="part_title"
+                                        name="part_title"
+                                        value="{{ part_title|default('') }}"
+                                        placeholder="e.g., Lift Arm Assembly, Control Board">
+                                <label for="part_description" class="form-label fw-bold">
+                                    <i class="fas fa-align-left me-1"></i>OEM Part Description
+                                </label>
+                                    <textarea class="form-control form-control-lg"
+                                            id="part_description"
+                                            name="part_description"
+                                            placeholder="e.g., Hydraulic lift arm assembly for Challenger 70000 series, replacement control board for refrigerator">{{ part_description|default('') }}</textarea> 
+                                <button type="submit" class="btn btn-success btn-lg w-100" id="extractBtn">
+                                    <i class="fas fa-search me-2"></i>
+                                    Extract Images
                                 </button>
                             </div>
-                        </div>
+                        </form>
+                    </div>
+                </div>
 
-                        {# Images Grid #}
-                        <div id="imagesGrid" class="row g-3">
-                            {% for image in images %}
-                                <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12">
-                                    <div class="card h-100 image-card">
-                                        <div class="card-img-top-container" style="height: 200px; overflow: hidden; background: #f8f9fa;">
-                                            <img src="{{ image.url }}" 
-                                                 class="card-img-top" 
-                                                 alt="Part {{ part_number }}"
-                                                 style="height: 100%; width: 100%; object-fit: contain;"
-                                                 onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZThlOGU4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4='">
-                                        </div>
-                                        <div class="card-body">
-                                            <h6 class="card-title text-truncate" title="{{ image.url }}">
-                                                Image {{ loop.index }}
-                                            </h6>
-                                            <p class="card-text small text-muted mb-1">
-                                                <strong>Source:</strong> {{ image.source }}
-                                            </p>
-                                            <p class="card-text small text-muted mb-2 url-text" style="font-family: monospace; font-size: 0.75rem;">
-                                                {{ image.url|length > 50 ? image.url[:50] ~ '...' : image.url }}
-                                            </p>
-                                            <div class="d-grid">
-                                                <a href="{{ image.url }}" 
-                                                   target="_blank" 
-                                                   class="btn btn-outline-primary btn-sm">
-                                                    <i class="fas fa-external-link-alt me-1"></i>
-                                                    Open Original
-                                                </a>
+                {# Loading Spinner #}
+                <div id="loadingSpinner" class="d-none text-center py-5">
+                    <div class="mt-3">
+                        <small class="text-white-50">
+                            Processing: <span id="processingStep">Initializing search...</span>
+                        </small>
+                    </div>
+                </div>
+
+                {# Error Alert #}
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Error:</strong> {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endif %}
+
+                {# Results Section #}
+                <div id="resultsSection" class="{% if images is empty %}d-none{% endif %}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            Extracted Images: 
+                            <span class="badge bg-success" id="imageCount">{{ total_images }}</span>
+                        </h5>
+                        <div>
+                            <a href="{{ path('download_image_urls', {part_number: part_number}) }}" 
+                                class="btn btn-outline-primary btn-sm me-2" 
+                                id="downloadBtn">
+                                <i class="fas fa-download me-1"></i>
+                                Download URLs
+                            </a>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="clearResults()">
+                                <i class="fas fa-trash me-1"></i>
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    {# Images Grid with Details View #}
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div id="imagesGrid" class="row g-3">
+                                {% for image in images %}
+                                        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+                                            <div class="card h-100 image-card" onclick="showImageDetails({{ loop.index0 }}, '{{ image.title|escape('js') }}', '{{ image.description|escape('js') }}', {{ image.dimensions.width ?? 0 }}, {{ image.dimensions.height ?? 0 }}, '{{ image.source|escape('js') }}', '{{ image.method|escape('js') }}', '{{ image.url|escape('js') }}')">
+                                                <div class="card-img-top-container" style="height: 180px; overflow: hidden; background: rgba(255, 255, 255, 0.1);">
+                                                    <img src="{{ image.url }}"
+                                                        class="card-img-top"
+                                                        alt="Part {{ part_number }}"
+                                                        loading="lazy"
+                                                        style="height: 100%; width: 100%; object-fit: contain;"
+                                                        onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZThlOGU4Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIE5vdCBGb3VuZDwvdGV4dD48L3N2Zz4='">
+                                                    {% if image.dimensions %}
+                                                    <div class="image-overlay">
+                                                        <span class="badge bg-primary">{{ image.dimensions.width }}×{{ image.dimensions.height }}</span>
+                                                    </div>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="card-body p-2">
+                                                    <h6 class="card-title text-truncate mb-1" style="font-size: 0.9rem;">
+                                                        <i class="fas fa-image me-1 text-info"></i>{{ image.title|length > 30 ? image.title[:30] ~ '...' : image.title }}
+                                                    </h6>
+                                                    <p class="card-text small text-muted mb-2" style="font-size: 0.75rem;">
+                                                        <strong>Source:</strong> <span class="badge bg-light text-dark">{{ image.source }}</span>
+                                                    </p>
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <small class="text-white-50">{{ image.method }}</small>
+                                                        <a href="{{ image.url }}" target="_blank" class="btn btn-outline-primary btn-sm px-2 py-1" onclick="event.stopPropagation()">
+                                                            <i class="fas fa-external-link-alt"></i>
+                                                        </a>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
+                                    {% else %}
+                                        <div class="col-12">
+                                            <div class="text-center py-5">
+                                                <i class="fas fa-images fa-3x text-white-50 mb-3"></i>
+                                                <h5 class="text-white">No images extracted yet</h5>
+                                                <p class="text-white-50">Enter an OEM part number and click "Extract Images" to get started.</p>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                        </div>
+
+                        {# Image Details Sidebar #}
+                        <div class="col-lg-4">
+                            <div id="imageDetailsPanel" class="card h-100" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); display: none;">
+                                <div class="card-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                    <h6 class="mb-0 text-white">
+                                        <i class="fas fa-info-circle me-2 text-info"></i>Image Details
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="imageDetailsContent">
+                                        <div class="text-center text-white-50 py-4">
+                                            <i class="fas fa-image fa-2x mb-3"></i>
+                                            <p>Click on an image to view details</p>
+                                        </div>
                                     </div>
                                 </div>
-                            {% else %}
-                                <div class="col-12">
-                                    <div class="text-center py-5">
-                                        <i class="fas fa-images fa-3x text-muted mb-3"></i>
-                                        <h5 class="text-muted">No images extracted yet</h5>
-                                        <p class="text-muted">Enter an OEM part number and click "Extract Images" to get started.</p>
-                                    </div>
-                                </div>
-                            {% endfor %}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -125,6 +165,7 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block head_styles %}
@@ -615,6 +656,45 @@ body::before {
     animation: pulse 1.5s infinite;
 }
 
+/* Image Overlay */
+.image-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    padding: 4px 8px;
+}
+
+/* Details Panel */
+#imageDetailsPanel {
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+#imageDetailsPanel .card-body {
+    padding: 1.5rem;
+}
+
+/* Enhanced Image Cards */
+.image-card {
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.image-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: var(--shadow-dark);
+}
+
+.image-card.selected {
+    border-color: #4facfe;
+    box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.3);
+}
+
 /* Toast Notifications */
 .toast-notification {
     position: fixed;
@@ -656,6 +736,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const extractBtn = document.getElementById('extractBtn');
     const downloadBtn = document.getElementById('downloadBtn');
     const partNumberInput = document.getElementById('part_number');
+    const partTitleInput = document.getElementById('part_title');
+    const partDescriptionInput = document.getElementById('part_description');
 
     // Add fade-in animation to cards
     function addFadeInAnimation(element) {
@@ -701,18 +783,36 @@ document.addEventListener('DOMContentLoaded', function() {
         partNumberInput.classList.remove('is-invalid');
         partNumberInput.classList.add('is-valid');
 
-        // Enhanced loading state
+        // Enhanced loading state with progress updates
         loadingSpinner.classList.remove('d-none');
         resultsSection.classList.add('d-none');
         extractBtn.disabled = true;
         extractBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Extracting...';
+
+        // Update loading messages
+        const loadingSteps = [
+            'Initializing search...',
+            'Querying Google Images...',
+            'Processing image results...',
+            'Analyzing dimensions...',
+            'Generating metadata...',
+            'Finalizing results...'
+        ];
+
+        let stepIndex = 0;
+        const stepInterval = setInterval(() => {
+            if (stepIndex < loadingSteps.length) {
+                document.getElementById('processingStep').textContent = loadingSteps[stepIndex];
+                stepIndex++;
+            }
+        }, 3000);
 
         // Clear previous results
         clearResults();
 
         // AJAX request with timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout for image processing
 
         fetch('{{ path("extract_images_ajax") }}', {
             method: 'POST',
@@ -720,7 +820,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
-                'part_number': partNumber
+                'part_number': partNumber,
+                'part_title': partTitleInput.value.trim(),
+                'part_description': partDescriptionInput.value.trim()
             }),
             signal: controller.signal
         })
@@ -732,6 +834,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
+            clearInterval(stepInterval);
             loadingSpinner.classList.add('d-none');
             extractBtn.disabled = false;
             extractBtn.innerHTML = '<i class="fas fa-search me-2"></i>Extract Images';
@@ -744,6 +847,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             clearTimeout(timeoutId);
+            clearInterval(stepInterval);
             loadingSpinner.classList.add('d-none');
             extractBtn.disabled = false;
             extractBtn.innerHTML = '<i class="fas fa-search me-2"></i>Extract Images';
@@ -883,71 +987,66 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    window.showImageDetails = function(index, title, description, width, height, source, method) {
-        // Create modal for image details
-        const modal = document.createElement('div');
-        modal.className = 'modal fade';
-        modal.innerHTML = `
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content" style="background: var(--glass-bg); backdrop-filter: var(--blur); border: 1px solid var(--glass-border);">
-                    <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
-                        <h5 class="modal-title text-white">
-                            <i class="fas fa-info-circle me-2 text-info"></i>Image Details #${index}
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body text-white">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <h6 class="text-info mb-3"><i class="fas fa-tag me-1"></i>Title</h6>
-                                <p class="mb-4">${title}</p>
+    window.showImageDetails = function(index, title, description, width, height, source, method, imageUrl) {
+        const detailsPanel = document.getElementById('imageDetailsPanel');
+        const detailsContent = document.getElementById('imageDetailsContent');
 
-                                <h6 class="text-info mb-3"><i class="fas fa-align-left me-1"></i>Description</h6>
-                                <p class="mb-4">${description}</p>
+        // Show the panel
+        detailsPanel.style.display = 'block';
 
-                                <h6 class="text-info mb-3"><i class="fas fa-expand me-1"></i>Dimensions</h6>
-                                <p class="mb-4">
-                                    <span class="badge bg-primary me-2">${width}×${height}</span>
-                                    <small class="text-muted">Aspect Ratio: ${(width/height).toFixed(2)}</small>
-                                </p>
-                            </div>
-                            <div class="col-md-6">
-                                <h6 class="text-info mb-3"><i class="fas fa-server me-1"></i>Source</h6>
-                                <p class="mb-4">
-                                    <span class="badge bg-success">${source}</span>
-                                </p>
+        // Update content
+        detailsContent.innerHTML = `
+            <div class="text-center mb-4">
+                <img src="${imageUrl}" class="img-fluid rounded" style="max-height: 200px; object-fit: contain;" alt="Selected Image">
+            </div>
 
-                                <h6 class="text-info mb-3"><i class="fas fa-code me-1"></i>Extraction Method</h6>
-                                <p class="mb-4">
-                                    <span class="badge bg-secondary">${method}</span>
-                                </p>
+            <h6 class="text-info mb-3">
+                <i class="fas fa-tag me-1"></i>Title
+            </h6>
+            <p class="text-white mb-4">${title}</p>
 
-                                <h6 class="text-info mb-3"><i class="fas fa-file-image me-1"></i>Image Info</h6>
-                                <div class="small text-muted">
-                                    <p><strong>File Size:</strong> ~${Math.round((width * height * 3) / 1024)} KB (estimated)</p>
-                                    <p><strong>Format:</strong> JPEG/PNG/WebP</p>
-                                    <p><strong>Quality:</strong> High Resolution</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer" style="border-top: 1px solid rgba(255, 255, 255, 0.1);">
-                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times me-1"></i>Close
-                        </button>
-                    </div>
-                </div>
+            <h6 class="text-info mb-3">
+                <i class="fas fa-align-left me-1"></i>Description
+            </h6>
+            <p class="text-white mb-4">${description}</p>
+
+            <h6 class="text-info mb-3">
+                <i class="fas fa-expand me-1"></i>Dimensions
+            </h6>
+            <p class="mb-4">
+                <span class="badge bg-primary me-2">${width}×${height}</span>
+                <small class="text-white-50">Aspect Ratio: ${(width/height).toFixed(2)}</small>
+            </p>
+
+            <h6 class="text-info mb-3">
+                <i class="fas fa-server me-1"></i>Source & Method
+            </h6>
+            <p class="mb-4">
+                <span class="badge bg-success me-2">${source}</span>
+                <span class="badge bg-secondary">${method}</span>
+            </p>
+
+            <h6 class="text-info mb-3">
+                <i class="fas fa-file-image me-1"></i>Image Info
+            </h6>
+            <div class="small text-white-50 mb-4">
+                <p><strong>File Size:</strong> ~${Math.round((width * height * 3) / 1024)} KB (estimated)</p>
+                <p><strong>Format:</strong> JPEG/PNG/WebP</p>
+                <p><strong>Quality:</strong> High Resolution</p>
+            </div>
+
+            <div class="d-grid gap-2">
+                <a href="${imageUrl}" target="_blank" class="btn btn-primary">
+                    <i class="fas fa-external-link-alt me-1"></i>Open Full Size
+                </a>
+                <button class="btn btn-outline-light" onclick="copyToClipboard('${imageUrl}')">
+                    <i class="fas fa-copy me-1"></i>Copy URL
+                </button>
             </div>
         `;
 
-        document.body.appendChild(modal);
-        const bsModal = new bootstrap.Modal(modal);
-        bsModal.show();
-
-        // Remove modal from DOM after hiding
-        modal.addEventListener('hidden.bs.modal', () => {
-            modal.remove();
-        });
+        // Scroll to top of details panel
+        detailsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
     // Add keyboard shortcuts

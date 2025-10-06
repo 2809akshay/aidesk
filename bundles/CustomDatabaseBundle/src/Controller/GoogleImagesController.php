@@ -18,14 +18,18 @@ class GoogleImagesController extends FrontendController
     public function indexAction(Request $request): Response
     {
         $partNumber = $request->query->get('part_number', 'BH-7101-01C');
+        $partTitle = $request->query->get('part_title', '');
+        $partDescription = $request->query->get('part_description', '');
         $images = [];
         $error = null;
 
         if ($request->isMethod('POST')) {
             $partNumber = $request->request->get('part_number', $partNumber);
-            
+            $partTitle = $request->request->get('part_title', $partTitle);
+            $partDescription = $request->request->get('part_description', $partDescription);
+
             try {
-                $images = $this->extractGoogleImages($partNumber);
+                $images = $this->extractGoogleImages($partNumber, $partTitle, $partDescription);
             } catch (\Exception $e) {
                 $error = $e->getMessage();
             }
@@ -33,6 +37,8 @@ class GoogleImagesController extends FrontendController
 
         return $this->render('@CustomDatabase/default/oem-Images.html.twig', [
             'part_number' => $partNumber,
+            'part_title' => $partTitle,
+            'part_description' => $partDescription,
             'images' => $images,
             'error' => $error,
             'total_images' => count($images)
@@ -45,21 +51,27 @@ class GoogleImagesController extends FrontendController
     public function extractImagesAction(Request $request): JsonResponse
     {
         $partNumber = $request->request->get('part_number', 'BH-7101-01C');
-        
+        $partTitle = $request->request->get('part_title', '');
+        $partDescription = $request->request->get('part_description', '');
+
         try {
-            $images = $this->extractGoogleImages($partNumber);
-            
+            $images = $this->extractGoogleImages($partNumber, $partTitle, $partDescription);
+
             return $this->json([
                 'success' => true,
                 'images' => $images,
                 'total' => count($images),
-                'part_number' => $partNumber
+                'part_number' => $partNumber,
+                'part_title' => $partTitle,
+                'part_description' => $partDescription
             ]);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
                 'error' => $e->getMessage(),
-                'part_number' => $partNumber
+                'part_number' => $partNumber,
+                'part_title' => $partTitle,
+                'part_description' => $partDescription
             ]);
         }
     }
@@ -89,25 +101,50 @@ class GoogleImagesController extends FrontendController
         return $response;
     }
 
-    private function extractGoogleImages(string $partNumber): array
+    private function extractGoogleImages(string $partNumber, string $partTitle = '', string $partDescription = ''): array
     {
         // Use PHP-based image extraction as fallback when Python is not available
         try {
-            return $this->extractGoogleImagesWithPHP($partNumber);
+            return $this->extractGoogleImagesWithPHP($partNumber, $partTitle, $partDescription);
         } catch (\Exception $e) {
             // If PHP extraction fails, try Python as backup
             try {
-                return $this->extractGoogleImagesWithPython($partNumber);
+                return $this->extractGoogleImagesWithPython($partNumber, $partTitle, $partDescription);
             } catch (\Exception $pythonError) {
                 throw new \Exception('Both PHP and Python extraction methods failed. PHP error: ' . $e->getMessage() . '. Python error: ' . $pythonError->getMessage());
             }
         }
     }
 
-    private function extractGoogleImagesWithPHP(string $partNumber): array
+    private function extractGoogleImagesWithPHP(string $partNumber, string $partTitle = '', string $partDescription = ''): array
     {
         $images = [];
-        $query = urlencode($partNumber . ' OEM automotive part');
+
+        // Build comprehensive search query using all available information
+        $searchTerms = [$partNumber];
+
+        if (!empty($partTitle)) {
+            $searchTerms[] = $partTitle;
+        }
+
+        if (!empty($partDescription)) {
+            // Extract key terms from description (first 50 characters or up to first sentence)
+            $descSnippet = substr($partDescription, 0, 50);
+            if (strpos($descSnippet, '.') !== false) {
+                $descSnippet = substr($descSnippet, 0, strpos($descSnippet, '.'));
+            }
+            $searchTerms[] = $descSnippet;
+        }
+
+        // Add default automotive/OEM terms if not already present
+        $defaultTerms = ['OEM', 'automotive', 'part'];
+        foreach ($defaultTerms as $term) {
+            if (!preg_match('/\b' . preg_quote($term, '/') . '\b/i', implode(' ', $searchTerms))) {
+                $searchTerms[] = $term;
+            }
+        }
+
+        $query = urlencode(implode(' ', $searchTerms));
         $url = "https://www.google.com/search?q={$query}&udm=2&tbm=isch&source=hp&biw=1920&bih=1001";
 
         // Enhanced headers to mimic real browser
@@ -161,15 +198,25 @@ class GoogleImagesController extends FrontendController
         $foundUrls = array_unique($foundUrls);
 
         foreach ($foundUrls as $imgUrl) {
-            if (count($images) >= 10) break; // Limit to 10 images
+            if (count($images) >= 15) break; // Limit to 15 images for good balance of speed and quantity
 
             $cleanUrl = $this->cleanImageUrl($imgUrl);
             if ($cleanUrl && $this->isValidImageUrl($cleanUrl)) {
+                // Get image dimensions
+                $dimensions = $this->getImageDimensions($cleanUrl);
+
+                // Generate title and description
+                $title = $this->generateImageTitle($partNumber, $partTitle, $partDescription, $dimensions);
+                $description = $this->generateImageDescription($partNumber, $partTitle, $partDescription, $dimensions);
+
                 $images[] = [
                     'url' => $cleanUrl,
                     'source' => 'Google Images',
                     'part_number' => $partNumber,
-                    'method' => 'php_scrape'
+                    'method' => 'php_scrape',
+                    'dimensions' => $dimensions,
+                    'title' => $title,
+                    'description' => $description
                 ];
             }
         }
@@ -462,5 +509,86 @@ if __name__ == "__main__":
 PYTHON;
 
         file_put_contents($scriptPath, $pythonCode);
+    }
+
+    private function getImageDimensions(string $url): ?array
+    {
+        try {
+            // Set a shorter timeout for image dimension fetching
+            $context = stream_context_create([
+                'http' => [
+                    'timeout' => 5, // 5 second timeout for each image
+                    'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                ]
+            ]);
+
+            // Get image headers first to check content type
+            $headers = @get_headers($url, 1, $context);
+            if (!$headers || !isset($headers['Content-Type'])) {
+                return null;
+            }
+
+            $contentType = is_array($headers['Content-Type']) ? $headers['Content-Type'][0] : $headers['Content-Type'];
+
+            // Check if it's an image
+            if (!preg_match('/^image\/(jpeg|jpg|png|gif|webp|bmp)/i', $contentType)) {
+                return null;
+            }
+
+            // Get image dimensions with timeout
+            $imageInfo = @getimagesize($url);
+            if ($imageInfo && isset($imageInfo[0], $imageInfo[1])) {
+                return [
+                    'width' => $imageInfo[0],
+                    'height' => $imageInfo[1],
+                    'aspect_ratio' => round($imageInfo[0] / $imageInfo[1], 2),
+                    'mime_type' => $imageInfo['mime'] ?? $contentType
+                ];
+            }
+        } catch (\Exception $e) {
+            // Ignore errors and return null
+        }
+
+        return null;
+    }
+
+    private function generateImageTitle(string $partNumber, string $partTitle, string $partDescription, ?array $dimensions): string
+    {
+        $title = "OEM Part {$partNumber}";
+
+        if (!empty($partTitle)) {
+            $title .= " - {$partTitle}";
+        }
+
+        if ($dimensions) {
+            $title .= " ({$dimensions['width']}×{$dimensions['height']})";
+        }
+
+        return $title;
+    }
+
+    private function generateImageDescription(string $partNumber, string $partTitle, string $partDescription, ?array $dimensions): string
+    {
+        $description = "High-quality image of OEM part number {$partNumber}";
+
+        if (!empty($partTitle)) {
+            $description .= ", titled '{$partTitle}'";
+        }
+
+        if (!empty($partDescription)) {
+            $descSnippet = strlen($partDescription) > 50 ? substr($partDescription, 0, 50) . '...' : $partDescription;
+            $description .= ". Description: {$descSnippet}";
+        }
+
+        if ($dimensions) {
+            $description .= ". Image dimensions: {$dimensions['width']}×{$dimensions['height']} pixels";
+            if (isset($dimensions['aspect_ratio'])) {
+                $description .= " (aspect ratio: " . number_format($dimensions['aspect_ratio'], 2) . ")";
+            }
+        }
+
+        $description .= ". Perfect for automotive parts identification and cataloging.";
+
+        return $description;
     }
 }
