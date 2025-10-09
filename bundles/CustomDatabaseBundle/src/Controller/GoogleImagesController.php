@@ -108,11 +108,11 @@ class GoogleImagesController extends FrontendController
             return $this->extractGoogleImagesWithPHP($partNumber, $partTitle, $partDescription);
         } catch (\Exception $e) {
             // If PHP extraction fails, try Python as backup
-            try {
-                return $this->extractGoogleImagesWithPython($partNumber, $partTitle, $partDescription);
-            } catch (\Exception $pythonError) {
-                throw new \Exception('Both PHP and Python extraction methods failed. PHP error: ' . $e->getMessage() . '. Python error: ' . $pythonError->getMessage());
-            }
+            // try {
+            //     return $this->extractGoogleImagesWithPython($partNumber, $partTitle, $partDescription);
+            // } catch (\Exception $pythonError) {
+            //     throw new \Exception('Both PHP and Python extraction methods failed. PHP error: ' . $e->getMessage() . '. Python error: ' . $pythonError->getMessage());
+            // }
         }
     }
 
@@ -143,7 +143,7 @@ class GoogleImagesController extends FrontendController
                 $searchTerms[] = $term;
             }
         }
-
+        
         $query = urlencode(implode(' ', $searchTerms));
         $url = "https://www.google.com/search?q={$query}&udm=2&tbm=isch&source=hp&biw=1920&bih=1001";
 

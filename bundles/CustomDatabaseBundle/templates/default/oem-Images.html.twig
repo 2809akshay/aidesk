@@ -1,57 +1,214 @@
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">
-                        <i class="fas fa-images me-2"></i>
-                        OEM Images Extractor
-                    </h4>
-            
-                </div>
-            </div>
-            
-            <div class="card-body">
-                {# Search Form #}
-                <div class="row mb-4">
-                    <div class="col-md-8">
-                        <form id="searchForm" method="post" class="row g-3">
-                            <div class="col-md-6">
-                                <label for="part_number" class="form-label fw-bold">
-                                    <i class="fas fa-hashtag me-1"></i>OEM Part Number
-                                </label>
-                                <input type="text"
-                                        class="form-control form-control-lg"
-                                        id="part_number"
-                                        name="part_number"
-                                        value="{{ part_number }}"
-                                        placeholder="e.g., BH-7101-01C, WR55X10942"
-                                        required>
-                                <label for="part_title" class="form-label fw-bold">
-                                    <i class="fas fa-tag me-1"></i>OEM Part Title
-                                </label>
-                                <input type="text"
-                                        class="form-control form-control-lg"
-                                        id="part_title"
-                                        name="part_title"
-                                        value="{{ part_title|default('') }}"
-                                        placeholder="e.g., Lift Arm Assembly, Control Board">
-                                <label for="part_description" class="form-label fw-bold">
-                                    <i class="fas fa-align-left me-1"></i>OEM Part Description
-                                </label>
-                                    <textarea class="form-control form-control-lg"
-                                            id="part_description"
-                                            name="part_description"
-                                            placeholder="e.g., Hydraulic lift arm assembly for Challenger 70000 series, replacement control board for refrigerator">{{ part_description|default('') }}</textarea> 
-                                <button type="submit" class="btn btn-success btn-lg w-100" id="extractBtn">
-                                    <i class="fas fa-search me-2"></i>
-                                    Extract Images
-                                </button>
+<!-- Advanced Background with Floating Elements -->
+<div class="advanced-bg">
+    <!-- Animated Floating Shapes -->
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+        <div class="shape shape-4"></div>
+        <div class="shape shape-5"></div>
+        <div class="shape shape-6"></div>
+    </div>
+
+    <!-- Main Container -->
+    {# <div class="container-fluid py-5"> #}
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-11 col-xxl-9">
+
+                <!-- Hero Header Section -->
+                <div class="hero-section mb-5">
+                    <div class="hero-content-row">
+                        {# <div class="hero-icon-wrapper">
+                            <div class="hero-icon">
+                                <i class="fas fa-images"></i>
                             </div>
-                        </form>
+                            <div class="hero-glow"></div>
+                        </div> #}
+                        
+                        <div class="hero-text-content">
+                            <h1 class="hero-title">Advanced OEM Images Extractor</h1>
+                            <p class="hero-subtitle">Professional Google Images Search for Automotive Parts & Components</p>
+                        </div>
+                    </div>
+                    <div class="hero-features">
+                        <span class="feature-badge">
+                            <i class="fas fa-bolt"></i> Lightning Fast
+                        </span>
+                        <span class="feature-badge">
+                            <i class="fas fa-magic"></i> AI-Powered
+                        </span>
+                        <span class="feature-badge">
+                            <i class="fas fa-shield-alt"></i> High Quality
+                        </span>
                     </div>
                 </div>
+
+                <!-- Main Glass Card -->
+                <div class="main-glass-card">
+
+                    <!-- Enhanced Header -->
+                    <div class="glass-header">
+                        <div class="header-content">
+                            <div class="header-left">
+                                <div class="header-icon">
+                                    <i class="fas fa-search-plus"></i>
+                                </div>
+                                <div class="header-text">
+                                    <h3 class="header-title">Search Parameters</h3>
+                                    <p class="header-subtitle">Configure your OEM part search for optimal results</p>
+                                </div>
+                            </div>
+                            <div class="header-right">
+                                <div class="status-indicator">
+                                    <div class="status-dot"></div>
+                                    <span class="status-text">Ready</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="header-decoration"></div>
+                    </div>
+
+                    <!-- Enhanced Form Body -->
+                    <div class="glass-body">
+
+                        <!-- Advanced Search Form -->
+                        <form id="searchForm" method="post" class="advanced-form">
+
+                            <!-- Primary Input Row -->
+                            <div class="form-row-primary">
+                                <div class="input-group-advanced">
+                                    <div class="input-wrapper-advanced">
+                                        <label for="part_number" class="input-label-advanced">
+                                            <span class="label-icon">
+                                                <i class="fas fa-hashtag"></i>
+                                            </span>
+                                            <span class="label-text">OEM Part Number</span>
+                                            <span class="label-required">*</span>
+                                        </label>
+                                        <div class="input-field-wrapper">
+                                            <input type="text"
+                                                   class="input-field-modern"
+                                                   id="part_number"
+                                                   name="part_number"
+                                                   value="{{ part_number }}"
+                                                   placeholder="e.g., BH-7101-01C, WR55X10942, 12345-ABC"
+                                                   required>
+                                            <div class="input-field-icon">
+                                                <i class="fas fa-cog"></i>
+                                            </div>
+                                            <div class="input-field-border"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="input-group-advanced">
+                                    <div class="input-wrapper-advanced">
+                                        <label for="part_title" class="input-label-advanced">
+                                            <span class="label-icon">
+                                                <i class="fas fa-tag"></i>
+                                            </span>
+                                            <span class="label-text">Part Title</span>
+                                            <span class="label-optional">(Optional)</span>
+                                        </label>
+                                        <div class="input-field-wrapper">
+                                            <input type="text"
+                                                   class="input-field-modern"
+                                                   id="part_title"
+                                                   name="part_title"
+                                                   value="{{ part_title|default('') }}"
+                                                   placeholder="e.g., Lift Arm Assembly, Control Board">
+                                            <div class="input-field-icon">
+                                                <i class="fas fa-heading"></i>
+                                            </div>
+                                            <div class="input-field-border"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Secondary Input Row -->
+                            <div class="form-row-secondary">
+                                <div class="input-group-full">
+                                    <div class="input-wrapper-advanced">
+                                        <label for="part_description" class="input-label-advanced">
+                                            <span class="label-icon">
+                                                <i class="fas fa-align-left"></i>
+                                            </span>
+                                            <span class="label-text">Part Description</span>
+                                            <span class="label-optional">(Optional)</span>
+                                        </label>
+                                        <div class="input-field-wrapper">
+                                            <textarea class="input-field-modern textarea-modern"
+                                                      id="part_description"
+                                                      name="part_description"
+                                                      rows="4"
+                                                      placeholder="Provide detailed description for better search accuracy...">{{ part_description|default('') }}</textarea>
+                                            <div class="input-field-icon">
+                                                <i class="fas fa-file-alt"></i>
+                                            </div>
+                                            <div class="input-field-border"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons Row -->
+                            <div class="form-row-actions">
+                                <div class="button-group-advanced">
+                                    <button type="submit" class="btn-advanced btn-primary-advanced" id="extractBtn">
+                                        <div class="btn-content-advanced">
+                                            <div class="btn-icon">
+                                                <i class="fas fa-search"></i>
+                                            </div>
+                                            <div class="btn-text">
+                                                <span class="btn-main-text">Extract Images</span>
+                                                <span class="btn-sub-text">Search & Download</span>
+                                            </div>
+                                            <div class="btn-arrow">
+                                                <i class="fas fa-arrow-right"></i>
+                                            </div>
+                                        </div>
+                                        <div class="btn-shine"></div>
+                                    </button>
+
+                                    <button type="button" class="btn-advanced btn-secondary-advanced" onclick="clearForm()">
+                                        <div class="btn-content-advanced">
+                                            <div class="btn-icon">
+                                                <i class="fas fa-eraser"></i>
+                                            </div>
+                                            <div class="btn-text">
+                                                <span class="btn-main-text">Clear Form</span>
+                                                <span class="btn-sub-text">Reset All</span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+
+                                <!-- Quick Examples -->
+                                <div class="quick-examples">
+                                    <div class="examples-label">
+                                        <i class="fas fa-lightbulb"></i>
+                                        <span>Quick Examples:</span>
+                                    </div>
+                                    <div class="examples-buttons">
+                                        <button type="button" class="example-btn-modern" data-part="BH-7101-01C" data-title="Lift Arm Assembly">
+                                            <span class="example-code">BH-7101-01C</span>
+                                            <span class="example-desc">Lift Arm</span>
+                                        </button>
+                                        <button type="button" class="example-btn-modern" data-part="WR55X10942" data-title="Temperature Sensor">
+                                            <span class="example-code">WR55X10942</span>
+                                            <span class="example-desc">Sensor</span>
+                                        </button>
+                                        <button type="button" class="example-btn-modern" data-part="AP3993967" data-title="Control Board">
+                                            <span class="example-code">AP3993967</span>
+                                            <span class="example-desc">Board</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
 
                 {# Loading Spinner #}
                 <div id="loadingSpinner" class="d-none text-center py-5">
@@ -163,29 +320,1064 @@
                 </div>
             </div>
         </div>
-    </div>
+    {# </div> #}
 </div>
 
 {% endblock %}
 
 {% block head_styles %}
-{# {{ parent() }} #}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* Modern OEM Images Extractor Design */
+/* ===========================================
+   ADVANCED OEM IMAGES EXTRACTOR DESIGN
+   =========================================== */
+
 :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --accent-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-    --glass-bg: rgba(255, 255, 255, 0.25);
-    --glass-border: rgba(255, 255, 255, 0.18);
-    --shadow-light: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    --shadow-dark: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    --blur: blur(4px);
-    --border-radius: 16px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Monochrome Professional Color Palette */
+    --primary-black: #000000;
+    --primary-white: #ffffff;
+    --primary-gray-50: #f9fafb;
+    --primary-gray-100: #f3f4f6;
+    --primary-gray-200: #e5e7eb;
+    --primary-gray-300: #d1d5db;
+    --primary-gray-400: #9ca3af;
+    --primary-gray-500: #6b7280;
+    --primary-gray-600: #4b5563;
+    --primary-gray-700: #374151;
+    --primary-gray-800: #1f2937;
+    --primary-gray-900: #111827;
+
+    /* Accent Colors */
+    --accent-gold: #d4af37;
+    --accent-silver: #c0c0c0;
+    --accent-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-red: #ef4444;
+
+    /* Background Gradients - Monochrome */
+    --bg-gradient-1: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #000000 100%);
+    --bg-gradient-2: linear-gradient(135deg, #111827 0%, #000000 100%);
+    --bg-gradient-3: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    --bg-gradient-4: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+    --bg-gradient-5: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+
+    /* Glass Effects - Dark Theme */
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-bg-strong: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.4);
+
+    /* Typography */
+    --font-primary: 'Inter', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Spacing & Layout */
+    --border-radius: 20px;
+    --border-radius-sm: 12px;
+    --border-radius-lg: 28px;
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 0.75rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+    --spacing-2xl: 3rem;
+
+    /* Transitions */
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+/* ===========================================
+   GLOBAL STYLES
+   =========================================== */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-primary);
+    background: var(--bg-gradient-1);
+    color: #ffffff;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* ===========================================
+   ADVANCED BACKGROUND & ANIMATIONS
+   =========================================== */
+
+.advanced-bg {
+    position: relative;
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.01) 0%, transparent 50%),
+        var(--bg-gradient-1);
+    background-attachment: fixed;
+}
+
+.floating-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    animation: float-shape 20s infinite linear;
+}
+
+.shape-1 {
+    width: 80px;
+    height: 80px;
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.shape-2 {
+    width: 120px;
+    height: 120px;
+    top: 20%;
+    right: 15%;
+    animation-delay: -5s;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.shape-3 {
+    width: 60px;
+    height: 60px;
+    bottom: 30%;
+    left: 20%;
+    animation-delay: -10s;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.shape-4 {
+    width: 100px;
+    height: 100px;
+    bottom: 20%;
+    right: 10%;
+    animation-delay: -15s;
+    background: rgba(255, 255, 255, 0.008);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.shape-5 {
+    width: 40px;
+    height: 40px;
+    top: 60%;
+    left: 70%;
+    animation-delay: -7s;
+    background: rgba(255, 255, 255, 0.012);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.shape-6 {
+    width: 90px;
+    height: 90px;
+    top: 70%;
+    right: 30%;
+    animation-delay: -12s;
+    background: rgba(255, 255, 255, 0.006);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+@keyframes float-shape {
+    0%, 100% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+    }
+    25% {
+        transform: translateY(-20px) rotate(90deg) scale(1.1);
+    }
+    50% {
+        transform: translateY(-10px) rotate(180deg) scale(0.9);
+    }
+    75% {
+        transform: translateY(-30px) rotate(270deg) scale(1.05);
+    }
+}
+
+/* ===========================================
+   HERO SECTION
+   =========================================== */
+
+.hero-section {
+    position: relative;
+    z-index: 2;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.hero-content-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+}
+
+.hero-text-content {
+    text-align: left;
+}
+
+.hero-icon-wrapper {
+    flex-shrink: 0;
+}
+
+.hero-icon-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: var(--spacing-lg);
+}
+
+.hero-icon {
+    width: 120px;
+    height: 120px;
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--glass-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #ffffff;
+    position: relative;
+    z-index: 2;
+    box-shadow: var(--shadow-xl);
+    transition: var(--transition-normal);
+}
+
+.hero-icon:hover {
+    transform: scale(1.05) rotate(5deg);
+    box-shadow: var(--shadow-glow);
+}
+
+.hero-glow {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: var(--bg-gradient-3);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: pulse-glow 3s infinite;
+    z-index: 1;
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--primary-white);
+    margin-bottom: var(--spacing-md);
+    text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.5),
+        0 4px 8px rgba(0, 0, 0, 0.3),
+        0 8px 16px rgba(0, 0, 0, 0.2);
+    letter-spacing: -0.02em;
+    position: relative;
+    margin: 0;
+}
+
+.hero-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-gold), var(--accent-silver));
+    border-radius: 2px;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+    margin-bottom: var(--spacing-xl);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
+.hero-features {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.feature-badge {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary-white);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.feature-badge:hover::before {
+    left: 100%;
+}
+
+.feature-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--accent-gold);
+}
+
+.feature-badge i {
+    color: var(--accent-gold);
+}
+
+/* ===========================================
+   MAIN GLASS CARD
+   =========================================== */
+
+.main-glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--glass-shadow);
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    transition: var(--transition-normal);
+}
+
+.main-glass-card:hover {
+    box-shadow: var(--glass-shadow-hover);
+    transform: translateY(-2px);
+}
+
+.main-glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--bg-gradient-3);
+    z-index: 3;
+}
+
+/* ===========================================
+   GLASS HEADER
+   =========================================== */
+
+.glass-header {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: var(--spacing-2xl) var(--spacing-2xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, transparent 50%, rgba(255, 255, 255, 0.01) 100%);
+    pointer-events: none;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.header-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--bg-gradient-3);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    box-shadow: var(--shadow-lg);
+}
+
+.header-text h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: var(--spacing-xs);
+}
+
+.header-text p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    margin: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-xs) var(--spacing-md);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--success-color);
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.status-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.header-decoration {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+    transform: skewX(-15deg);
+    z-index: 1;
+}
+
+/* ===========================================
+   GLASS BODY & FORM
+   =========================================== */
+
+.glass-body {
+    padding: var(--spacing-2xl);
+}
+
+.advanced-form {
+    width: 100%;
+}
+
+/* Form Rows */
+.form-row-primary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.form-row-secondary {
+    margin-bottom: var(--spacing-2xl);
+}
+
+.form-row-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+/* Input Groups */
+.input-group-advanced {
+    width: 100%;
+}
+
+.input-group-full {
+    width: 100%;
+}
+
+.input-wrapper-advanced {
+    width: 100%;
+}
+
+/* Input Labels */
+.input-label-advanced {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: var(--spacing-md);
+}
+
+.label-icon {
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-silver));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: var(--primary-black);
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.label-text {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.label-required {
+    color: var(--error-color);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.label-optional {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+/* Input Fields */
+.input-field-wrapper {
+    position: relative;
+}
+
+.input-field-modern {
+    width: 100%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg) 3rem;
+    font-size: 1rem;
+    font-family: var(--font-primary);
+    color: var(--primary-white);
+    transition: var(--transition-fast);
+    outline: none;
+    position: relative;
+}
+
+.input-field-modern::placeholder {
+    color: var(--primary-gray-400);
+}
+
+.input-field-modern:focus {
+    background: var(--glass-bg-strong);
+    border-color: var(--accent-gold);
+    box-shadow:
+        0 0 0 3px rgba(212, 175, 55, 0.1),
+        0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.input-field-modern.is-valid {
+    border-color: var(--accent-green);
+    box-shadow:
+        0 0 0 3px rgba(16, 185, 129, 0.1),
+        0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.input-field-modern.is-invalid {
+    border-color: var(--accent-red);
+    box-shadow:
+        0 0 0 3px rgba(239, 68, 68, 0.1),
+        0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.textarea-modern {
+    resize: vertical;
+    min-height: 120px;
+    padding-top: var(--spacing-lg);
+}
+
+.input-field-icon {
+    position: absolute;
+    top: 50%;
+    left: var(--spacing-md);
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+    pointer-events: none;
+}
+
+.input-field-border {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent-gold), var(--accent-silver));
+    transform: scaleX(0);
+    transition: var(--transition-fast);
+}
+
+.input-field-modern:focus + .input-field-border {
+    transform: scaleX(1);
+}
+
+/* ===========================================
+   ADVANCED BUTTONS
+   =========================================== */
+
+.button-group-advanced {
+    display: flex;
+    gap: var(--spacing-lg);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-advanced {
+    border: none;
+    border-radius: var(--border-radius-lg);
+    font-family: var(--font-primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition-normal);
+    outline: none;
+    min-height: 60px;
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-content-advanced {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-md);
+    position: relative;
+    z-index: 2;
+}
+
+.btn-icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.btn-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.btn-main-text {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.btn-sub-text {
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+.btn-arrow {
+    font-size: 0.875rem;
+    transition: var(--transition-fast);
+}
+
+.btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s;
+}
+
+.btn-advanced:hover .btn-shine {
+    left: 100%;
+}
+
+.btn-advanced:hover .btn-arrow {
+    transform: translateX(4px);
+}
+
+/* Primary Button */
+.btn-primary-advanced {
+    background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-silver) 100%);
+    color: var(--primary-black);
+    min-width: 200px;
+    box-shadow: 0 8px 25px rgba(212, 175, 55, 0.3);
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary-advanced:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(212, 175, 55, 0.4);
+    background: linear-gradient(135deg, var(--accent-silver) 0%, var(--accent-gold) 100%);
+}
+
+/* Secondary Button */
+.btn-secondary-advanced {
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    border: 2px solid var(--glass-border);
+    color: var(--primary-white);
+    min-width: 160px;
+}
+
+.btn-secondary-advanced:hover {
+    background: var(--glass-bg-strong);
+    border-color: var(--accent-silver);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+    color: var(--primary-white);
+}
+
+/* ===========================================
+   QUICK EXAMPLES
+   =========================================== */
+
+.quick-examples {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.examples-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: var(--spacing-md);
+}
+
+.examples-label i {
+    color: var(--accent-color);
+}
+
+.examples-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.example-btn-modern {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    outline: none;
+    min-width: 120px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.example-btn-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+    transition: left 0.6s;
+}
+
+.example-btn-modern:hover::before {
+    left: 100%;
+}
+
+.example-btn-modern:hover {
+    background: var(--glass-bg);
+    border-color: var(--accent-gold);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.example-code {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 2px;
+}
+
+.example-desc {
+    display: block;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 400;
+}
+
+/* ===========================================
+   ADVANCED TOAST NOTIFICATIONS
+   =========================================== */
+
+.advanced-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 350px;
+    max-width: 450px;
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-xl);
+    z-index: 10000;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: var(--transition-normal);
+    overflow: hidden;
+}
+
+.advanced-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-content {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.toast-success .toast-icon {
+    background: var(--success-color);
+    color: white;
+}
+
+.toast-error .toast-icon {
+    background: var(--error-color);
+    color: white;
+}
+
+.toast-warning .toast-icon {
+    background: var(--warning-color);
+    color: white;
+}
+
+.toast-text {
+    flex: 1;
+}
+
+.toast-title {
+    font-weight: 700;
+    font-size: 0.875rem;
+    margin-bottom: 2px;
+    color: #ffffff;
+}
+
+.toast-message {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 50%;
+    transition: var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.toast-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+.toast-progress {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.toast-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-gold), var(--accent-silver));
+    width: 100%;
+    animation: toast-progress 5s linear forwards;
+}
+
+@keyframes toast-progress {
+    0% { width: 100%; }
+    100% { width: 0%; }
+}
+
+/* ===========================================
+   RESPONSIVE DESIGN
+   =========================================== */
+
+@media (max-width: 768px) {
+    .hero-content-row {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--spacing-lg);
+    }
+
+    .hero-text-content {
+        text-align: center;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .form-row-primary {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .button-group-advanced {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-advanced {
+        min-width: auto;
+    }
+
+    .examples-buttons {
+        flex-direction: column;
+    }
+
+    .example-btn-modern {
+        min-width: auto;
+    }
+
+    .glass-header,
+    .glass-body {
+        padding: var(--spacing-xl);
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: var(--spacing-lg);
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .hero-features {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .glass-header,
+    .glass-body {
+        padding: var(--spacing-lg);
+    }
 }
 
 * {
@@ -744,18 +1936,44 @@ document.addEventListener('DOMContentLoaded', function() {
         element.classList.add('fade-in');
     }
 
-    // Example part number buttons with animation
-    document.querySelectorAll('.example-btn').forEach(btn => {
+    // Example buttons with enhanced animation
+    document.querySelectorAll('.example-btn-modern').forEach(btn => {
         btn.addEventListener('click', function() {
-            partNumberInput.value = this.dataset.part;
+            const partNumber = this.dataset.part;
+            const partTitle = this.dataset.title;
+
+            partNumberInput.value = partNumber;
+            partTitleInput.value = partTitle;
+
             // Add visual feedback
             this.style.transform = 'scale(0.95)';
+            this.style.background = 'var(--bg-gradient-3)';
+
             setTimeout(() => {
                 this.style.transform = '';
+                this.style.background = '';
                 searchForm.dispatchEvent(new Event('submit'));
-            }, 150);
+            }, 200);
         });
     });
+
+    // Clear form function
+    window.clearForm = function() {
+        partNumberInput.value = '';
+        partTitleInput.value = '';
+        partDescriptionInput.value = '';
+
+        // Remove validation classes
+        [partNumberInput, partTitleInput, partDescriptionInput].forEach(input => {
+            input.classList.remove('is-valid', 'is-invalid');
+        });
+
+        // Reset button states
+        extractBtn.innerHTML = '<div class="btn-content-advanced"><div class="btn-icon"><i class="fas fa-search"></i></div><div class="btn-text"><span class="btn-main-text">Extract Images</span><span class="btn-sub-text">Search & Download</span></div><div class="btn-arrow"><i class="fas fa-arrow-right"></i></div></div><div class="btn-shine"></div>';
+
+        // Show success message
+        showToast('Form cleared successfully!', 'success');
+    };
 
     // Input validation and enhancement
     partNumberInput.addEventListener('input', function() {
@@ -787,7 +2005,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingSpinner.classList.remove('d-none');
         resultsSection.classList.add('d-none');
         extractBtn.disabled = true;
-        extractBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Extracting...';
+        extractBtn.innerHTML = '<div class="btn-content-advanced"><div class="btn-icon"><i class="fas fa-spinner fa-spin"></i></div><div class="btn-text"><span class="btn-main-text">Extracting...</span><span class="btn-sub-text">Please wait</span></div></div>';
 
         // Update loading messages
         const loadingSteps = [
@@ -837,7 +2055,7 @@ document.addEventListener('DOMContentLoaded', function() {
             clearInterval(stepInterval);
             loadingSpinner.classList.add('d-none');
             extractBtn.disabled = false;
-            extractBtn.innerHTML = '<i class="fas fa-search me-2"></i>Extract Images';
+            extractBtn.innerHTML = '<div class="btn-content-advanced"><div class="btn-icon"><i class="fas fa-search"></i></div><div class="btn-text"><span class="btn-main-text">Extract Images</span><span class="btn-sub-text">Search & Download</span></div><div class="btn-arrow"><i class="fas fa-arrow-right"></i></div></div>';
 
             if (data.success) {
                 updateResults(data.images, data.total, partNumber);
@@ -850,7 +2068,7 @@ document.addEventListener('DOMContentLoaded', function() {
             clearInterval(stepInterval);
             loadingSpinner.classList.add('d-none');
             extractBtn.disabled = false;
-            extractBtn.innerHTML = '<i class="fas fa-search me-2"></i>Extract Images';
+            extractBtn.innerHTML = '<div class="btn-content-advanced"><div class="btn-icon"><i class="fas fa-search"></i></div><div class="btn-text"><span class="btn-main-text">Extract Images</span><span class="btn-sub-text">Search & Download</span></div><div class="btn-arrow"><i class="fas fa-arrow-right"></i></div></div>';
 
             if (error.name === 'AbortError') {
                 showError('Request timed out. Please try again.');
@@ -945,25 +2163,46 @@ document.addEventListener('DOMContentLoaded', function() {
         img.alt = 'Image not available';
     }
 
-    function showError(message) {
-        // Create a modern toast notification
+    function showToast(message, type = 'error') {
+        // Create advanced toast notification
         const toast = document.createElement('div');
-        toast.className = 'alert alert-danger alert-dismissible fade show position-fixed';
-        toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.className = `advanced-toast toast-${type}`;
         toast.innerHTML = `
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            <strong>Error:</strong> ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="toast-content">
+                <div class="toast-icon">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-times-circle'}"></i>
+                </div>
+                <div class="toast-text">
+                    <div class="toast-title">${type === 'success' ? 'Success' : type === 'warning' ? 'Warning' : 'Error'}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="toast-progress">
+                <div class="toast-progress-bar"></div>
+            </div>
         `;
 
         document.body.appendChild(toast);
 
+        // Trigger animation
+        setTimeout(() => toast.classList.add('show'), 10);
+
         // Auto remove after 5 seconds
         setTimeout(() => {
-            if (toast.parentNode) {
-                toast.remove();
-            }
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            }, 300);
         }, 5000);
+    }
+
+    function showError(message) {
+        showToast(message, 'error');
     }
 
     window.clearResults = function() {
