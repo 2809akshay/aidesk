@@ -1,0 +1,25 @@
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                mapping_types:
+                    enum: string
+    orm:
+        default_entity_manager: default
+        entity_managers:
+            default:
+                connection: default
+                mappings:
+                    FormBuilderBundle:
+                        is_bundle: false
+                        type: xml
+                        dir: '%kernel.project_dir%/vendor/dachcom-digital/formbuilder/config/doctrine/model'
+                        prefix: 'FormBuilderBundle\Model'
+                        alias: FormBuilder
+                    PimcoreGenericExecutionEngineBundle:
+                        is_bundle: false
+                        type: attribute
+                        dir: '%kernel.project_dir%/vendor/pimcore/pimcore/bundles/GenericExecutionEngineBundle/src/Entity'
+                        prefix: 'Pimcore\Bundle\GenericExecutionEngineBundle\Entity'
+                        alias: PimcoreGenericExecutionEngineBundle

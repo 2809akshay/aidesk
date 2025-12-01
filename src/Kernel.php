@@ -34,5 +34,9 @@ class Kernel extends PimcoreKernel
 
         // activate Presta\Sitemap Bundle for sitemaps generation
         $collection->addBundle(PrestaSitemapBundle::class);
+        // $collection->addBundle(new \FormBuilderBundle\FormBuilderBundle());
+        // $mappings = [
+        //     realpath(__DIR__.'/Resources/config/doctrine') => 'FormBuilderBundle\Model'
+        // ];
     }
 }

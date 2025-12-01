@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Pimcore\Model\DataObject\DatabaseConn;
 use Pimcore\Db\ConnectionInterface;
+use Pimcore\Tool;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -116,7 +117,6 @@ class ObjectController extends AbstractController
             $newObject->setPublished(true);
             $newObject->save();
            
-
             return new JsonResponse([
                 'success' => true,
                 'object' => [
@@ -130,6 +130,49 @@ class ObjectController extends AbstractController
         }
     }
 
+    /**
+     * @Route("/update-all-fields", name="update_all_fields", methods={"POST"})
+     */
+    public function updateAllFields(Request $request): JsonResponse
+    {
+        try {
+            $data = json_decode($request->getContent(), true);
+
+            if (empty($data['id'])) {
+                return new JsonResponse(['success' => false, 'message' => 'Missing object ID']);
+            }
+
+            $object = \Pimcore\Model\DataObject\DatabaseConn::getById($data['id']);
+            if (!$object) {
+                return new JsonResponse(['success' => false, 'message' => 'Object not found']);
+            }
+
+            // Update description if provided
+            if (isset($data['description'])) {
+                $object->setDescription($data['description']);
+            }
+
+            // Update localized fields if provided
+            if (isset($data['localizedFields']) && is_array($data['localizedFields'])) {
+                $localizedFields = $object->getLocalizedfields();
+                foreach ($data['localizedFields'] as $lang => $fields) {
+                    if (isset($fields['dataDescription'])) {
+                        $localizedFields->setLocalizedValue('dataDescription', $fields['dataDescription'], $lang);
+                    }
+                    if (isset($fields['sortDescription'])) {
+                        $localizedFields->setLocalizedValue('sortDescription', $fields['sortDescription'], $lang);
+                    }
+                }
+            }
+
+            $object->save();
+
+            return new JsonResponse(['success' => true, 'message' => 'All fields updated successfully']);
+
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
 
     /**
      * @Route("/object-multi-selector", name="object_multi_selector")
@@ -174,6 +217,48 @@ class ObjectController extends AbstractController
         return $this->render('@CustomDatabase/default/object-multi-selector.html.twig', [
             'products' => $products,
             'classes' => $classes
+        ]);
+    }
+
+
+    /**
+     * @Route("/object-localizedfields", name="object_localizedfields")
+     */
+    public function objectLocalizedfields(Request $request): Response
+    {
+        $className = 'DatabaseConn';
+        $listClass = "\\Pimcore\\Model\\DataObject\\{$className}\\Listing";
+
+        $objects = [];
+        $languages = Tool::getValidLanguages();
+
+        if (class_exists($listClass)) {
+            $list = new $listClass();
+            $list->setLimit(100 ); // limit for performance
+
+            foreach ($list as $object) {
+                $objectData = [
+                    'id' => $object->getId(),
+                    'key' => $object->getKey(),
+                    'connectionName' => $object->getConnectionName(),
+                    'description' => $object->getDescription(),
+                    'localizedFields' => []
+                ];
+
+                foreach ($languages as $lang) {
+                    $objectData['localizedFields'][$lang] = [
+                        'dataDescription' => $object->getLocalizedfields()->getLocalizedValue('dataDescription', $lang),
+                        'sortDescription' => $object->getLocalizedfields()->getLocalizedValue('sortDescription', $lang)
+                    ];
+                }
+
+                $objects[] = $objectData;
+            }
+        }
+
+        return $this->render('@CustomDatabase/default/object-localizedfields.html.twig', [
+            'objects' => $objects,
+            'languages' => $languages
         ]);
     }
 }

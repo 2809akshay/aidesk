@@ -49,5 +49,6 @@ return [
     PimcoreGenericExecutionEngineBundle::class => ['all' => true],
     CustomDatabaseBundle\CustomDatabaseBundle::class => ['all' => true],
     AideskAuthBundle\AideskAuthBundle::class => ['all' => true],
+    FormBuilderBundle\FormBuilderBundle::class => ['all' => true],
 
 ];
